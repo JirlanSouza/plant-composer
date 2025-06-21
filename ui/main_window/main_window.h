@@ -28,7 +28,7 @@ private:
     ComponentsLibraryModel *libraryModel_;
     ComponentsLibraryView *libraryView_;
 
-    const std::vector<Library> &libraries_;
+    const std::vector<Library> libraries_;
 
 private slots:
     void showComponentLibraryPropertiesDialog(int libraryId, int componentId);
