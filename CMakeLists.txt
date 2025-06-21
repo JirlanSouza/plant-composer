@@ -15,10 +15,15 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(nlohmann_json 3.12.0 REQUIRED)
 
-set(TS_FILES plant-composer_en_US.ts)
+set(TS_FILES
+        translations/plant-composer_en_US.ts
+        translations/plant-composer_pt_BR.ts
+)
 
 set(PROJECT_SOURCES
         main.cpp
+        app_initializer.cpp
+        app_initializer.h
         ${TS_FILES}
 )
 add_subdirectory(domain)
