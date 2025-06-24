@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.9.1/macos/lib/cmake/Qt6")
 add_compile_definitions(SOURCE_ROOT="${CMAKE_SOURCE_DIR}")
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools SvgWidgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools SvgWidgets)
 find_package(nlohmann_json 3.12.0 REQUIRED)
 
 set(TS_FILES
@@ -26,10 +26,10 @@ set(PROJECT_SOURCES
         app_initializer.h
         ${TS_FILES}
 )
-add_subdirectory(domain)
-add_subdirectory(adapters)
-add_subdirectory(ui)
-add_subdirectory(common_utils)
+add_subdirectory(src/domain)
+add_subdirectory(src/adapters)
+add_subdirectory(src/ui)
+add_subdirectory(src/common_utils)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(plant-composer
@@ -61,6 +61,7 @@ endif ()
 target_link_libraries(plant-composer
         PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::SvgWidgets
         nlohmann_json::nlohmann_json
         domain
         adapters
