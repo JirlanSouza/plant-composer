@@ -8,7 +8,10 @@
 #include "components_library/json_components_library_loader.h"
 #include "settings/qt_app_settings.h"
 
-std::unique_ptr<MainWindow> AppInitializer::initialize(int argc, char *argv[]) {
+using adapters::settings::QtAppSettings;
+using adapters::components_library::JsonComponentsLibraryLoader;
+
+std::unique_ptr<AppMainWindow> AppInitializer::initialize(int argc, char *argv[]) {
     Q_UNUSED(argc);
     Q_UNUSED(argv);
 
@@ -18,7 +21,8 @@ std::unique_ptr<MainWindow> AppInitializer::initialize(int argc, char *argv[]) {
         const auto appSettings = createAppSettings();
         appSettings->setAssetsDir(assetsDir);
         const std::vector<Library> libraries = loadComponentsLibraries(appSettings.get());
-        return std::make_unique<MainWindow>(nullptr, std::move(libraries), appSettings.get());
+        return std::make_unique<AppMainWindow>(nullptr, std::make_shared<std::vector<Library> >(libraries),
+                                               appSettings);
     } catch (const std::exception &e) {
         std::cerr << e.what() << std::endl;
     }
@@ -43,7 +47,7 @@ std::string AppInitializer::getAssetsDir() {
     return assetsDir;
 }
 
-std::unique_ptr<AppSettings> AppInitializer::createAppSettings() {
+std::shared_ptr<AppSettings> AppInitializer::createAppSettings() {
     return std::make_unique<QtAppSettings>(new QSettings("Plant Composer", "PlantComposer"));
 }
 
