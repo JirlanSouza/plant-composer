@@ -1,0 +1,134 @@
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "Standard Library",
+  "version": "1.0.0",
+  "author": "Plant composer",
+  "description": "A standard library containing common components for fluid systems.",
+  "portTypes": [
+    {
+      "id": 1,
+      "name": "LiquidPort",
+      "measurements": [
+        {
+          "name": "Pressure",
+          "dataType": "REAL",
+          "unit": "bar"
+        },
+        {
+          "name": "Flow",
+          "dataType": "REAL",
+          "unit": "l/h"
+        },
+        {
+          "name": "Temperature",
+          "dataType": "REAL",
+          "unit": "ºc"
+        },
+        {
+          "name": "Density",
+          "dataType": "REAL",
+          "unit": "g/mL"
+        },
+        {
+          "name": "Viscosity",
+          "dataType": "REAL",
+          "unit": "Pa.s"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "EnergyPowerPort",
+      "measurements": [
+        {
+          "name": "Voltage",
+          "dataType": "REAL",
+          "unit": "V"
+        },
+        {
+          "name": "Current",
+          "dataType": "REAL",
+          "unit": "A"
+        }
+      ]
+    }
+  ],
+  "components": [
+    {
+      "id": "b7e2c1a2-4f3a-4e2b-9c1d-8a2e4f1b2c3d",
+      "name": "Valve On/Off",
+      "symbolPath": "svgs/twoway-digital-static.svg",
+      "fmuPath": "/fmus/valve_onoff.fmu",
+      "constants": [
+        {
+          "name": "diameter",
+          "dataType": "REAL",
+          "defaultValue": "0.5"
+        }
+      ],
+      "ports": {
+        "inputs": [
+          {
+            "name": "liquidIn",
+            "physicalDomain": "fluids",
+            "typeId": 1
+          }
+        ],
+        "outputs": [
+          {
+            "name": "liquidOut",
+            "physicalDomain": "fluids",
+            "typeId": 1
+          }
+        ]
+      },
+      "signalsIo": {
+        "inputs": [
+          {
+            "name": "open",
+            "dataType": "BOOLEAN"
+          }
+        ],
+        "outputs": []
+      }
+    },
+    {
+      "id": "b7e2c1a2-4f3a-4e2b-9c1d-8a2e4f12ac4d",
+      "name": "Pump on/off",
+      "symbolPath": "svgs/pump-static-horizontal.svg",
+      "fmuPath": "/fmus/pump_onoff.fmu",
+      "constants": [
+        {
+          "name": "pressureGain",
+          "dataType": "REAL",
+          "defaultValue": "10.0"
+        }
+      ],
+      "ports": {
+        "inputs": [
+          {
+            "name": "liquidIn",
+            "physicalDomain": "fluids",
+            "typeId": 1
+          }
+        ],
+        "outputs": [
+          {
+            "name": "liquidOut",
+            "physicalDomain": "fluids",
+            "typeId": 1
+          }
+        ]
+      },
+      "signalsIo": {
+        "inputs": [
+          {
+            "name": "on",
+            "dataType": "BOOLEAN"
+          }
+        ],
+        "outputs": []
+      }
+    }
+  ]
+}
