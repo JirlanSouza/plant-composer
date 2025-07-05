@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.9.1/macos/lib/cmake/Qt6")
 add_compile_definitions(SOURCE_ROOT="${CMAKE_SOURCE_DIR}")
@@ -21,9 +21,9 @@ set(TS_FILES
 )
 
 set(PROJECT_SOURCES
-        main.cpp
-        app_initializer.cpp
-        app_initializer.h
+        src/main.cpp
+        src/plant_composer_application.cpp
+        src/plant_composer_application.h
         ${TS_FILES}
 )
 add_subdirectory(src/domain)

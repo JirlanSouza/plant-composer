@@ -80,4 +80,9 @@ CMakeLists.txt.user*
 .rcc/
 .uic/
 /build*/
+
+
+
+/suport
 /assets/libraries/svgs/
+/.gemini/

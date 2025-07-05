@@ -1,0 +1,228 @@
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "name": "Motion Library",
+  "version": "1.0.0",
+  "description": "A motion library containing common components for motion systems.",
+  "components": [
+    {
+      "id": "b7e2c1a2-4f3a-4e2b-9c1d-8a2e4f1b2c3d",
+      "name": "Valve On/Off",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath": "",
+      "fmuPath": "/fmus/valve_onoff.fmu",
+      "constants": [
+        {
+          "name": "diameter",
+          "dataType": "REAL",
+          "defaultValue": "0.5"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "openSignal",
+          "dataType": "BOOLEAN"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "position",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "e3f1d2b4-5c6a-4e7b-8d2e-9f3a1b2c4d5e",
+      "name": "Valve modulating",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/valve_modulating.fmu",
+      "constants": [
+        {
+          "name": "diameter",
+          "dataType": "REAL",
+          "defaultValue": "0.5"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "controlSignal",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "position",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "c4d5e6f7-8a9b-0c1d-2e3f-4a5b6c7d8e9f",
+      "name": "Centrifugal Pump",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/centrifugal_pump.fmu",
+      "constants": [
+        {
+          "name": "flowRate",
+          "dataType": "REAL",
+          "defaultValue": "10.0"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "powerInput",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "flowOutput",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "d1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f67",
+      "name": "Storage Tank",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/storage_tank.fmu",
+      "constants": [
+        {
+          "name": "capacity",
+          "dataType": "REAL",
+          "defaultValue": "100.0"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "inletFlow",
+          "dataType": "REAL"
+        },
+        {
+          "name": "outletFlow",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "currentLevel",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "e2f3a4b5-6c7d-8e9f-0a1b-2c3d4e5f647b",
+      "name": "Heat Exchanger",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/heat_exchanger.fmu",
+      "constants": [
+        {
+          "name": "efficiency",
+          "dataType": "REAL",
+          "defaultValue": "0.85"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "hotInletTemp",
+          "dataType": "REAL"
+        },
+        {
+          "name": "coldInletTemp",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "hotOutletTemp",
+          "dataType": "REAL"
+        },
+        {
+          "name": "coldOutletTemp",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "f3a4b5c6-7d8e-9f0a-1b2c-3d4e5f6d7d8a",
+      "name": "Flow Sensor",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/flow_sensor.fmu",
+      "constants": [
+        {
+          "name": "calibrationFactor",
+          "dataType": "REAL",
+          "defaultValue": "1.0"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "flowInput",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "flowRate",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "d4b5c6d7-8e9f-0a1b-2c3d-4e5f6a768e90",
+      "name": "Pressure Sensor",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/pressure_sensor.fmu",
+      "constants": [
+        {
+          "name": "calibrationFactor",
+          "dataType": "REAL",
+          "defaultValue": "1.0"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "pressureInput",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "pressureValue",
+          "dataType": "REAL"
+        }
+      ]
+    },
+    {
+      "id": "c5c6d7e8-9f0a-1b2c-3d4e-5f637a8d9c0a",
+      "name": "Temperature Sensor",
+      "iconPath": "/svgs/twoway-digital-static.svg",
+      "chartGraphicPath":  "",
+      "fmuPath": "/fmus/temperature_sensor.fmu",
+      "constants": [
+        {
+          "name": "calibrationFactor",
+          "dataType": "REAL",
+          "defaultValue": "1.0"
+        }
+      ],
+      "inputs": [
+        {
+          "name": "temperatureInput",
+          "dataType": "REAL"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "temperatureValue",
+          "dataType": "REAL"
+        }
+      ]
+    }
+  ]
+}
