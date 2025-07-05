@@ -1,11 +1,9 @@
 #include "qt_app_settings.h"
 
-#include <iostream>
-
 namespace adapters::settings {
     std::string QtAppSettings::getAssetsDir() {
         const QVariant value = settings_->value(assets_dir_key);
-        if (!value.isValid() || value.typeId() != QVariant::String) {
+        if (!value.isValid() || value.typeId() != QMetaType::QString) {
             return "";
         }
 

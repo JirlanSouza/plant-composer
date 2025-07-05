@@ -1,7 +1,7 @@
 #pragma once
-
-#include "../../domain/settings/app_settings.h"
 #include <QSettings>
+
+#include "domain/settings/app_settings.h"
 
 using domain::settings::AppSettings;
 
@@ -13,7 +13,7 @@ namespace adapters::settings {
 
         std::string getAssetsDir() override;
 
-        void setAssetsDir(const std::string& assetsDir) override;
+        void setAssetsDir(const std::string &assetsDir) override;
 
         std::string getComponentsLibraryDir() override;
 
