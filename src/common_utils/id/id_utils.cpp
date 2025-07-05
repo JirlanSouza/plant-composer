@@ -1,4 +1,5 @@
 #include "id_utils.h"
+
 #include <QUuid>
 
 std::string newId() {

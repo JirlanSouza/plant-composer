@@ -1,9 +1,17 @@
-file(GLOB_RECURSE COMMON_UTILS_SOURCES CONFIGURE_DEPENDS *.cpp *.h)
+add_library(common_utils STATIC)
 
-add_library(common_utils STATIC ${COMMON_UTILS_SOURCES})
+target_sources(common_utils
+        PUBLIC
+        id/id_utils.h
+        id/id_utils.cpp
+
+        json/json_utils.h
+        json/json_utils.cpp
+)
 
 target_include_directories(common_utils PUBLIC .)
 
 target_link_libraries(common_utils
         nlohmann_json::nlohmann_json
+        Qt6::Core
 )
