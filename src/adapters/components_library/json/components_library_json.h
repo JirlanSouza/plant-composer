@@ -1,6 +1,7 @@
 #pragma once
-#include "../../../domain/components_library/model/library.h"
 #include <nlohmann/json.hpp>
+
+#include "domain/components_library/model/library.h"
 
 using json = nlohmann::json;
 

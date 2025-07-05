@@ -1,5 +1,5 @@
 #pragma once
-#include "../../domain/components_library/components_library_loader.h"
+#include "domain/components_library/components_library_loader.h"
 
 using domain::components_library::ComponentsLibraryLoader;
 using domain::components_library::Library;

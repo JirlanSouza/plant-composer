@@ -1,14 +1,22 @@
 #include "components_library_json.h"
+
 #include <fstream>
-#include "../../../domain/components_library/model/data_type.h"
+
+#include "domain/components_library/model/data_type.h"
 
 namespace domain::components_library {
-    NLOHMANN_JSON_SERIALIZE_ENUM(DataType, {
-                                 { DataType::BOOLEAN, "BOOLEAN"},
-                                 { DataType::INTEGER, "INTEGER"},
-                                 { DataType::REAL, "REAL"},
-                                 { DataType::STRING, "STRING"}
-                                 });
+    NLOHMANN_JSON_SERIALIZE_ENUM(
+        DataType,
+        { { DataType::BOOLEAN,
+        "BOOLEAN"},
+        { DataType::INTEGER,
+        "INTEGER"},
+        { DataType::REAL,
+        "REAL"},
+        { DataType::STRING,
+        "STRING"}
+        }
+    );
 
     void to_json(json &j, const Constant &constant) {
         j = json{
@@ -117,7 +125,7 @@ namespace domain::components_library {
             {"name", library.name},
             {"version", library.version},
             {"author", library.author},
-            { "portTypes", library.portTypes},
+            {"portTypes", library.portTypes},
             {"components", library.components}
         };
     }
