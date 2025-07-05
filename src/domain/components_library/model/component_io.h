@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+
 #include "data_type.h"
 
 namespace domain::components_library {
