@@ -19,7 +19,7 @@
 #pragma once
 
 namespace domain::diagram {
-    struct GraphicItemPosition {
+    struct NodeTransform {
         int x;
         int y;
         int rotation;

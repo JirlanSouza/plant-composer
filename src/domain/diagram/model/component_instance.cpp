@@ -23,7 +23,7 @@ namespace domain::diagram {
         std::string id,
         std::string name,
         std::string typeId,
-        GraphicItemPosition position,
+        NodeTransform position,
         const dcl::Component *component,
         std::string assetsPath
     ): id_(id),
@@ -38,7 +38,7 @@ namespace domain::diagram {
         name_ = newName;
     }
 
-    void ComponentInstance::setPosition(const GraphicItemPosition &newPosition) {
+    void ComponentInstance::setPosition(const NodeTransform &newPosition) {
         position_ = newPosition;
     }
 

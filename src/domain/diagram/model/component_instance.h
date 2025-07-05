@@ -19,7 +19,7 @@
 #pragma once
 #include <unordered_map>
 
-#include "graphic_item_position.h"
+#include "node_transform.h"
 #include "domain/components_library/model/component.h"
 
 namespace dcl = domain::components_library;
@@ -31,7 +31,7 @@ namespace domain::diagram {
             std::string id,
             std::string name,
             std::string typeId,
-            GraphicItemPosition position,
+            NodeTransform position,
             const dcl::Component *component,
             std::string assetsPath
         );
@@ -44,14 +44,14 @@ namespace domain::diagram {
 
         [[nodiscard]] std::string getTypeId() const { return componentTypeId_; }
 
-        [[nodiscard]] GraphicItemPosition getPosition() const { return position_; }
+        [[nodiscard]] NodeTransform getPosition() const { return position_; }
 
         [[nodiscard]] std::string getSymbolPath() const { return assetsPath_ + "/" + component_->symbolPath; };
 
 
         void rename(const std::string &newName);
 
-        void setPosition(const GraphicItemPosition &newPosition);
+        void setPosition(const NodeTransform &newPosition);
 
         void setConstantValue(const std::string &name, const std::string &value);
 
@@ -59,7 +59,7 @@ namespace domain::diagram {
         std::string id_;
         std::string name_;
         std::string componentTypeId_;
-        GraphicItemPosition position_;
+        NodeTransform position_;
         const dcl::Component *component_;
         std::string assetsPath_;
 

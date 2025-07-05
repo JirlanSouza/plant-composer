@@ -10,7 +10,7 @@ target_sources(domain
 
         diagram/model/component_instance.h
         diagram/model/component_instance.cpp
-        diagram/model/graphic_item_position.h
+        diagram/model/node_transform.h
         diagram/model/diagram.h
         diagram/model/diagram.cpp
 

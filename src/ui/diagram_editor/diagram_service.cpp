@@ -77,7 +77,7 @@ namespace ui::diagram_editor {
             return;
         }
 
-        auto position = dd::GraphicItemPosition();
+        auto position = dd::NodeTransform();
         position.x = posi.x();
         position.y = posi.y();
 
