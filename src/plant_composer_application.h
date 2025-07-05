@@ -18,13 +18,16 @@
 
 #pragma once
 #include <string>
+#include <memory>
 
 #include "domain/settings/app_settings.h"
 #include "domain/components_library/components_library_loader.h"
 #include "adapters/components_library/json_components_library_loader.h"
 #include "adapters/settings/qt_app_settings.h"
+#include "adapters/shared/quuid_id_factory.h"
 #include "ui/main_window/main_window.h"
 #include "ui/diagram_editor/diagram_manager.h"
+#include "domain/diagram/component_instance_factory.h"
 
 using ui::main_window::AppMainWindow;
 using domain::settings::AppSettings;
@@ -32,6 +35,7 @@ using domain::components_library::Library;
 using adapters::settings::QtAppSettings;
 using adapters::components_library::JsonComponentsLibraryLoader;
 using ui::diagram_editor::DiagramManager;
+using domain::diagram::ComponentInstanceFactory;
 
 class PlantComposerApplication {
 public:
@@ -49,6 +53,8 @@ private:
     std::unique_ptr<JsonComponentsLibraryLoader> librariesLoader_;
     std::vector<Library> libraries_;
     std::unique_ptr<AppMainWindow> appMainWindow_;
+    std::unique_ptr<adapters::QUuidIdFactory> idFactory_;
+    std::unique_ptr<ComponentInstanceFactory> componentInstanceFactory_;
 
     static std::string getAssetsDir();
 

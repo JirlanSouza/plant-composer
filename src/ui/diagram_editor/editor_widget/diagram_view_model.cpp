@@ -19,7 +19,11 @@
 #include "diagram_view_model.h"
 
 namespace ui::diagram_editor {
-    DiagramViewModel::DiagramViewModel(dd::Diagram *diagram, QObject *parent): QObject(parent), diagram_(diagram) {
+    DiagramViewModel::DiagramViewModel(
+        dd::Diagram *diagram,
+        dd::ComponentInstanceFactory *componentInstanceFactory,
+        QObject *parent
+    ): QObject(parent), diagram_(diagram), componentInstanceFactory_(componentInstanceFactory) {
         for (auto component: diagram_->getComponents()) {
             const auto newComponentViewModel = new ComponentViewModel(&component, this);
             componentViewModels_.append(newComponentViewModel);
@@ -28,8 +32,16 @@ namespace ui::diagram_editor {
 
     DiagramViewModel::~DiagramViewModel() = default;
 
-    void DiagramViewModel::addComponent(const dd::ComponentInstance &component) {
-        diagram_->addComponent(component);
+    void DiagramViewModel::addComponent(const int libraryId, const int componentId, const QPointF posi) {
+        const dd::NodeTransform position{static_cast<int>(posi.x()), static_cast<int>(posi.y())};
+
+        const auto componentInstance = componentInstanceFactory_->createComponentInstance(
+            libraryId,
+            componentId,
+            position
+        );
+
+        diagram_->addComponent(componentInstance);
 
         const auto newComponentViewModel = new ComponentViewModel(diagram_->getLastAddedComponent(), this);
         componentViewModels_.append(newComponentViewModel);

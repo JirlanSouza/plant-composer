@@ -63,8 +63,10 @@ namespace ui::diagram_editor {
         connect(
             diagramEditorView,
             &DiagramEditorView::addComponentToScene,
-            diagramService_,
-            &DiagramManager::addComponent
+            this,
+            [diagram](const std::string &diagramId, int libraryId, int componentId, QPointF posi) {
+                diagram->addComponent(libraryId, componentId, posi);
+            }
         );
     }
 

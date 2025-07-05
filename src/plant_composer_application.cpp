@@ -20,15 +20,20 @@
 
 #include <iostream>
 #include <QTranslator>
-
-
-using adapters::settings::QtAppSettings;
-using adapters::components_library::JsonComponentsLibraryLoader;
+#include <QSettings>
+#include <QLocale>
+#include <QCoreApplication>
 
 PlantComposerApplication::PlantComposerApplication() {
     appSettings_ = std::make_unique<QtAppSettings>(new QSettings(ORGANIZATION_NAME, APPLICATION_NAME));
     appSettings_->setAssetsDir(getAssetsDir());
     librariesLoader_ = std::make_unique<JsonComponentsLibraryLoader>(appSettings_->getComponentsLibraryDir());
+    idFactory_ = std::make_unique<adapters::QUuidIdFactory>();
+    componentInstanceFactory_ = std::make_unique<ComponentInstanceFactory>(
+        idFactory_.get(),
+        &libraries_,
+        appSettings_.get()
+    );
 };
 
 
@@ -42,6 +47,7 @@ void PlantComposerApplication::initialize(int argc, char *argv[]) {
         appMainWindow_ = std::make_unique<AppMainWindow>(
             &libraries_,
             appSettings_.get(),
+            componentInstanceFactory_.get(),
             nullptr
         );
     } catch (const std::exception &e) {

@@ -17,43 +17,41 @@
  */
 
 #pragma once
-#include <QObject>
-#include <unordered_map>
+#include <string>
+#include <vector>
 
-#include "editor_widget/diagram_view_model.h"
+#include "model/component_instance.h"
+#include "model/node_transform.h"
 #include "domain/components_library/model/library.h"
 #include "domain/settings/app_settings.h"
-#include "domain/diagram/component_instance_factory.h"
+#include "domain/shared/id_factory.h"
 
-namespace dd = domain::diagram;
 namespace dcl = domain::components_library;
 namespace dst = domain::settings;
 
-namespace ui::diagram_editor {
-    class DiagramManager final : public QObject {
-        Q_OBJECT
-
+namespace domain::diagram {
+    class ComponentInstanceFactory {
     public:
-        explicit DiagramManager(
+        explicit ComponentInstanceFactory(
+            IDFactory *idFactory,
             std::vector<dcl::Library> *libraries,
-            dst::AppSettings *appSettings,
-            dd::ComponentInstanceFactory *componentInstanceFactory,
-            QObject *parent
+            dst::AppSettings *appSettings
         );
 
-        ~DiagramManager() override;
-
-        void openDiagram(const std::string &diagramId);
-
-        DiagramViewModel *getDiagram(const std::string &diagramId);
-
-    signals:
-        void diagramOpened(std::string diagramId);
+        [[nodiscard]] ComponentInstance createComponentInstance(
+            int libraryId,
+            int componentId,
+            NodeTransform position
+        ) const;
 
     private:
+        IDFactory *idFactory_;
         std::vector<dcl::Library> *libraries_;
-        std::unordered_map<std::string, DiagramViewModel *> openedDiagrams_;
         dst::AppSettings *appSettings_;
-        dd::ComponentInstanceFactory *componentInstanceFactory_;
+
+        [[nodiscard]] const dcl::Component *getComponentDefinition(
+            int libraryId,
+            int componentId
+        ) const;
     };
 }

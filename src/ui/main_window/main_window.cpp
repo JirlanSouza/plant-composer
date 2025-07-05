@@ -27,15 +27,21 @@ namespace ui::main_window {
     AppMainWindow::AppMainWindow(
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings,
+        dd::ComponentInstanceFactory *componentInstanceFactory,
         QWidget *parent
     ) : QMainWindow(parent),
         appSettings_(appSettings), appLayoutManager_(new uil::AppLayoutManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         diagramEditorManager_(
             new ui::diagram_editor::DiagramEditorManager(
-                new ui::diagram_editor::DiagramManager(libraries, appSettings, this)
+                new ui::diagram_editor::DiagramManager(
+                    libraries,
+                    appSettings,
+                    componentInstanceFactory,
+                    this
+                )
             )
-        ) {
+        ), componentInstanceFactory_(componentInstanceFactory) {
         // Change type and namespace
         auto t0 = new QLabel("Project left side bar");
         auto l0 = new QVBoxLayout();

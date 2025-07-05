@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "component_instance_view.h"
+#include "component_view.h"
 
 #include <QPainter>
 #include <qpen.h>
@@ -42,6 +42,7 @@ namespace ui::diagram_editor {
             &ComponentViewModel::positionChanged,
             this,
             [this]() {
+                qDebug() << "Position changed";
                 setPos(componentViewModel_->getPosition());
             }
         );
@@ -86,10 +87,14 @@ namespace ui::diagram_editor {
     }
 
     QVariant ComponentInstanceView::itemChange(const GraphicsItemChange change, const QVariant &value) {
-        if (change == ItemPositionChange && scene()) {
+        if (change == ItemPositionChange && scene() && componentViewModelPositionIsEqual(value.toPointF())) {
             const QPointF newPos = value.toPointF();
             componentViewModel_->setPosition(newPos);
         }
         return QGraphicsSvgItem::itemChange(change, value);
+    }
+
+    bool ComponentInstanceView::componentViewModelPositionIsEqual(const QPointF &posi) const {
+        return comparesEqual(componentViewModel_->getPosition(), posi);
     }
 }

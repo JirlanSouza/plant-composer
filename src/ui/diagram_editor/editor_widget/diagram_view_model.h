@@ -19,9 +19,11 @@
 #pragma once
 #include <QObject>
 #include <QList>
+#include <QPointF>
 
 #include "domain/diagram/model/diagram.h"
 #include "component_view_model.h"
+#include "domain/diagram/component_instance_factory.h"
 
 namespace dd = domain::diagram;
 
@@ -30,11 +32,11 @@ namespace ui::diagram_editor {
         Q_OBJECT
 
     public:
-        explicit DiagramViewModel(dd::Diagram *diagram, QObject *parent = nullptr);
+        explicit DiagramViewModel(dd::Diagram *diagram, dd::ComponentInstanceFactory *componentInstanceFactory, QObject *parent = nullptr);
 
         ~DiagramViewModel() override;
 
-        void addComponent(const dd::ComponentInstance &component);
+        void addComponent(int libraryId, int componentId, QPointF posi);
 
         ComponentViewModel *getLastAddedComponentViewModel();
 
@@ -53,6 +55,7 @@ namespace ui::diagram_editor {
 
     private:
         dd::Diagram *diagram_;
+        dd::ComponentInstanceFactory *componentInstanceFactory_;
 
         QList<ComponentViewModel *> componentViewModels_;
     };

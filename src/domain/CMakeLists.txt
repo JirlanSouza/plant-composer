@@ -1,6 +1,8 @@
 add_library(domain STATIC)
 target_sources(domain
         PUBLIC
+        shared/id_factory.h
+
         components_library/model/component.h
         components_library/model/component_io.h
         components_library/model/data_type.h
@@ -13,6 +15,8 @@ target_sources(domain
         diagram/model/node_transform.h
         diagram/model/diagram.h
         diagram/model/diagram.cpp
+        diagram/component_instance_factory.h
+        diagram/component_instance_factory.cpp
 
         settings/app_settings.h
 )

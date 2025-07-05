@@ -21,7 +21,7 @@
 #include <QPainter>
 
 #include "diagram_view_model.h"
-#include "component_instance_view.h"
+#include "component_view.h"
 #include "component_view_model.h"
 
 namespace ui::diagram_editor {

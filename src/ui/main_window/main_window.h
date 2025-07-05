@@ -17,17 +17,20 @@
  */
 
 #pragma once
+#include <QMainWindow>
+#include <memory>
+
 #include "app_layout_manager.h"
-#include "domain/components_library/model/library.h"
-#include "domain/settings/app_settings.h"
 #include "components_library/libraries_view_manager.h"
 #include "diagram_editor/diagram_editor_manager.h"
+#include "domain/diagram/component_instance_factory.h"
 
 namespace dcl = domain::components_library;
 namespace dst = domain::settings;
 namespace ucl = ui::components_library;
 namespace ude = ui::diagram_editor;
 namespace uil = ui::layout;
+namespace dd = domain::diagram;
 
 namespace ui::main_window {
     class AppMainWindow final : public QMainWindow {
@@ -37,6 +40,7 @@ namespace ui::main_window {
         AppMainWindow(
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings,
+            dd::ComponentInstanceFactory *componentInstanceFactory,
             QWidget *parent
         );
 
@@ -47,6 +51,7 @@ namespace ui::main_window {
         uil::AppLayoutManager *appLayoutManager_;
         ucl::LibrariesViewManager *librariesViewManager_;
         ude::DiagramEditorManager *diagramEditorManager_;
+        dd::ComponentInstanceFactory *componentInstanceFactory_;
 
     private slots:
         void showComponentLibraryPropertiesDialog(int libraryId, int componentId);

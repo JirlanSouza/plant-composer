@@ -27,7 +27,7 @@ target_sources(ui
         diagram_editor/diagram_manager.h
         diagram_editor/diagram_manager.cpp
         diagram_editor/editor_widget/component_instance_view.cpp
-        diagram_editor/editor_widget/component_instance_view.h
+        diagram_editor/editor_widget/component_view.h
         diagram_editor/editor_widget/component_view_model.cpp
         diagram_editor/editor_widget/component_view_model.h
         diagram_editor/editor_widget/diagram_editor_scene.cpp

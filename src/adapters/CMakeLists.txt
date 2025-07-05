@@ -2,6 +2,9 @@ add_library(adapters STATIC)
 
 target_sources(adapters
         PUBLIC
+        shared/quuid_id_factory.h
+        shared/quuid_id_factory.cpp
+
         components_library/json/components_library_json.cpp
         components_library/json/components_library_json.h
         components_library/json_components_library_loader.cpp

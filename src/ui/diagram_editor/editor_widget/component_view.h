@@ -49,6 +49,8 @@ namespace ui::diagram_editor {
 
         QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
+        bool componentViewModelPositionIsEqual(const QPointF &posi) const;
+
     private
     :
         ComponentViewModel *componentViewModel_;
