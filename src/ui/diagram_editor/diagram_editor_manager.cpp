@@ -21,7 +21,7 @@
 #include <QTabBar>
 
 namespace ui::diagram_editor {
-    DiagramEditorManager::DiagramEditorManager(DiagramService *diagramService, QWidget *parent): QObject(parent),
+    DiagramEditorManager::DiagramEditorManager(DiagramManager *diagramService, QWidget *parent): QObject(parent),
         diagramService_(diagramService) {
         editorArea_ = new QTabWidget();
         editorArea_->setDocumentMode(true);
@@ -31,13 +31,13 @@ namespace ui::diagram_editor {
         connect(editorArea_, &QTabWidget::tabCloseRequested, this, &DiagramEditorManager::onTabCloseRequested);
         connect(editorArea_->tabBar(), &QTabBar::tabMoved, this, &DiagramEditorManager::onTabMoved);
 
-        diagramService_->openChart("lkfdg0q9jgdjnvofruifdek");
+        diagramService_->openDiagram("lkfdg0q9jgdjnvofruifdek");
         onOpenedDiagram("lkfdg0q9jgdjnvofruifdek");
 
-        diagramService_->openChart("lkfdg0q9jgdjnvofruif438dsf");
+        diagramService_->openDiagram("lkfdg0q9jgdjnvofruif438dsf");
         onOpenedDiagram("lkfdg0q9jgdjnvofruif438dsf");
 
-        diagramService_->openChart("lkfdg0q9jgdjnvofruisdu82k");
+        diagramService_->openDiagram("lkfdg0q9jgdjnvofruisdu82k");
         onOpenedDiagram("lkfdg0q9jgdjnvofruisdu82k");
     }
 
@@ -64,7 +64,7 @@ namespace ui::diagram_editor {
             diagramEditorView,
             &DiagramEditorView::addComponentToScene,
             diagramService_,
-            &DiagramService::addComponent
+            &DiagramManager::addComponent
         );
     }
 

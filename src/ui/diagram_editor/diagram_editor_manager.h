@@ -20,7 +20,7 @@
 #include <qtabwidget.h>
 
 #include "domain/settings/app_settings.h"
-#include "diagram_service.h"
+#include "diagram_manager.h"
 #include "editor_widget/diagram_editor_scene.h"
 #include "editor_widget/diagram_editor_view.h"
 #include "editor_widget/diagram_view_model.h"
@@ -39,14 +39,14 @@ namespace ui::diagram_editor {
         Q_OBJECT
 
     public:
-        explicit DiagramEditorManager(DiagramService *diagramService, QWidget *parent = nullptr);
+        explicit DiagramEditorManager(DiagramManager *diagramService, QWidget *parent = nullptr);
 
         ~DiagramEditorManager() override;
 
         [[nodiscard]] QWidget *getView() const;
 
     private:
-        DiagramService *diagramService_;
+        DiagramManager *diagramService_;
         QTabWidget *editorArea_;
         std::unordered_map<std::string, DiagramEditorTab> diagramEditorTabs_;
         std::vector<std::string> editorTabsOrder_;

@@ -24,8 +24,8 @@ target_sources(ui
         components_library/properties_dialog/component_properties_view.cpp
         diagram_editor/diagram_editor_manager.cpp
         diagram_editor/diagram_editor_manager.h
-        diagram_editor/diagram_service.h
-        diagram_editor/diagram_service.cpp
+        diagram_editor/diagram_manager.h
+        diagram_editor/diagram_manager.cpp
         diagram_editor/editor_widget/component_instance_view.cpp
         diagram_editor/editor_widget/component_instance_view.h
         diagram_editor/editor_widget/component_view_model.cpp

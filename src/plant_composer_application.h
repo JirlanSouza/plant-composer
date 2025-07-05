@@ -24,14 +24,14 @@
 #include "adapters/components_library/json_components_library_loader.h"
 #include "adapters/settings/qt_app_settings.h"
 #include "ui/main_window/main_window.h"
-#include "ui/diagram_editor/diagram_service.h"
+#include "ui/diagram_editor/diagram_manager.h"
 
 using ui::main_window::AppMainWindow;
 using domain::settings::AppSettings;
 using domain::components_library::Library;
 using adapters::settings::QtAppSettings;
 using adapters::components_library::JsonComponentsLibraryLoader;
-using ui::diagram_editor::DiagramService;
+using ui::diagram_editor::DiagramManager;
 
 class PlantComposerApplication {
 public:

@@ -33,7 +33,7 @@ namespace ui::main_window {
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         diagramEditorManager_(
             new ui::diagram_editor::DiagramEditorManager(
-                new ui::diagram_editor::DiagramService(libraries, appSettings, this)
+                new ui::diagram_editor::DiagramManager(libraries, appSettings, this)
             )
         ) {
         // Change type and namespace

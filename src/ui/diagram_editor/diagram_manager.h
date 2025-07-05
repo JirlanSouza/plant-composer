@@ -28,21 +28,21 @@ namespace dcl = domain::components_library;
 namespace dst = domain::settings;
 
 namespace ui::diagram_editor {
-    class DiagramService final : public QObject {
+    class DiagramManager final : public QObject {
         Q_OBJECT
 
     public:
-        explicit DiagramService(std::vector<dcl::Library> *libraries, dst::AppSettings *appSettings, QObject *parent);
+        explicit DiagramManager(std::vector<dcl::Library> *libraries, dst::AppSettings *appSettings, QObject *parent);
 
-        ~DiagramService() override;
+        ~DiagramManager() override;
 
-        void openChart(std::string chartId);
+        void openDiagram(const std::string &diagramId);
 
 
-        DiagramViewModel *getDiagram(const std::string &chartId);
+        DiagramViewModel *getDiagram(const std::string &diagramId);
 
     signals:
-        void chartOpened(std::string chartId);
+        void diagramOpened(std::string diagramId);
 
     private:
         std::vector<dcl::Library> *libraries_;
@@ -53,6 +53,6 @@ namespace ui::diagram_editor {
         [[nodiscard]] const dcl::Component *getComponent(int libraryId, int componentId) const;
 
     public slots:
-        void addComponent(const std::string &chartId, int libraryId, int componentId, QPointF posi) const;
+        void addComponent(const std::string &diagramId, int libraryId, int componentId, QPointF posi) const;
     };
 }

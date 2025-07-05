@@ -16,14 +16,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "diagram_service.h"
+#include "diagram_manager.h"
 
 #include <iostream>
 #include <qpoint.h>
 #include "id/id_utils.h"
 
 namespace ui::diagram_editor {
-    DiagramService::DiagramService(
+    DiagramManager::DiagramManager(
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings,
         QObject *parent
@@ -34,40 +34,40 @@ namespace ui::diagram_editor {
         appSettings_(appSettings) {
     }
 
-    DiagramService::~DiagramService() = default;
+    DiagramManager::~DiagramManager() = default;
 
 
-    void DiagramService::openChart(std::string chartId) {
-        if (openedDiagrams_.contains(chartId)) {
-            emit chartOpened(chartId);
+    void DiagramManager::openDiagram(const std::string &diagramId) {
+        if (openedDiagrams_.contains(diagramId)) {
+            emit diagramOpened(diagramId);
             return;
         }
 
-        const auto chart = new dd::Diagram(chartId, "Chart_" + std::to_string(openedDiagrams_.size()));
+        const auto diagram = new dd::Diagram(diagramId, "Diagram_" + std::to_string(openedDiagrams_.size()));
 
-        openedDiagrams_[chartId] = new DiagramViewModel(chart, this);
+        openedDiagrams_[diagramId] = new DiagramViewModel(diagram, this);
 
-        emit chartOpened(chartId);
+        emit diagramOpened(diagramId);
     }
 
 
-    DiagramViewModel *DiagramService::getDiagram(const std::string &chartId) {
-        return openedDiagrams_[chartId];
+    DiagramViewModel *DiagramManager::getDiagram(const std::string &diagramId) {
+        return openedDiagrams_[diagramId];
     }
 
 
-    void DiagramService::addComponent(
-        const std::string &chartId,
+    void DiagramManager::addComponent(
+        const std::string &diagramId,
         const int libraryId,
         const int componentId,
         const QPointF posi
     ) const {
-        if (!openedDiagrams_.contains(chartId)) {
+        if (!openedDiagrams_.contains(diagramId)) {
             return;
         }
 
 
-        DiagramViewModel *diagram = openedDiagrams_.at(chartId);
+        DiagramViewModel *diagram = openedDiagrams_.at(diagramId);
 
         std::cout << libraries_->size() << std::endl;
 
@@ -96,7 +96,7 @@ namespace ui::diagram_editor {
         diagram->addComponent(componentInstance);
     }
 
-    const dcl::Component *DiagramService::getComponent(const int libraryId, const int componentId) const {
+    const dcl::Component *DiagramManager::getComponent(const int libraryId, const int componentId) const {
         if (libraryId < 0 || libraryId >= static_cast<int>(libraries_->size())) {
             std::cerr << "Invalid libraryId: " << libraryId << std::endl;
             return nullptr;
