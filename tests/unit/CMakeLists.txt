@@ -16,6 +16,8 @@ add_executable(unit_tests
     test_diagram.cpp
     test_components_library.h
     test_components_library.cpp
+    test_app_settings.h
+    test_app_settings.cpp
 )
 
 target_link_libraries(unit_tests
