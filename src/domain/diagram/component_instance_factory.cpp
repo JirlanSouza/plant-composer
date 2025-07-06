@@ -55,7 +55,7 @@ namespace domain::diagram {
         };
     }
 
-    const dcl::Component *ComponentInstanceFactory::getComponentDefinition(
+    const dcl::ComponentType *ComponentInstanceFactory::getComponentDefinition(
         const int libraryId,
         const int componentId
     ) const {

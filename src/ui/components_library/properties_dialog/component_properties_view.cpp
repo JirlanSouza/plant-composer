@@ -26,7 +26,7 @@
 namespace ui::components_library {
     LibraryComponentPropertiesView::LibraryComponentPropertiesView(
         QWidget *parent,
-        const dcl::Component &component,
+        const dcl::ComponentType &component,
         std::unordered_map<int, dcl::PortType>
         &portTypes
     ) : QDialog(parent),

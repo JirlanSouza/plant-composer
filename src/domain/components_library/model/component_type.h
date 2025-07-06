@@ -23,7 +23,7 @@
 #include "component_io.h"
 
 namespace domain::components_library {
-    struct Component {
+    struct ComponentType {
         std::string id;
         std::string name;
         std::string symbolPath;

@@ -20,7 +20,7 @@
 #include <unordered_map>
 
 #include "node_transform.h"
-#include "domain/components_library/model/component.h"
+#include "domain/components_library/model/component_type.h"
 
 namespace dcl = domain::components_library;
 
@@ -32,11 +32,11 @@ namespace domain::diagram {
             std::string name,
             std::string typeId,
             NodeTransform position,
-            const dcl::Component *component,
+            const dcl::ComponentType *component,
             std::string assetsPath
         );
 
-        [[nodiscard]] const dcl::Component *getDefinition() const { return component_; }
+        [[nodiscard]] const dcl::ComponentType *getDefinition() const { return component_; }
 
         [[nodiscard]] std::string getId() const { return id_; }
 
@@ -60,7 +60,7 @@ namespace domain::diagram {
         std::string name_;
         std::string componentTypeId_;
         NodeTransform position_;
-        const dcl::Component *component_;
+        const dcl::ComponentType *component_;
         std::string assetsPath_;
 
         std::unordered_map<std::string, std::string> constants;

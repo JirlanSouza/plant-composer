@@ -44,9 +44,9 @@ namespace domain::components_library {
 
     void from_json(const json &j, Signal &signal);
 
-    void to_json(json &j, const Component &component);
+    void to_json(json &j, const ComponentType &component);
 
-    void from_json(const json &j, Component &component);
+void from_json(const json &j, ComponentType &component);
 
     void to_json(json &j, const Library &library);
 

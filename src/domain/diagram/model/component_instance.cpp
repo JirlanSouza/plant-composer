@@ -24,7 +24,7 @@ namespace domain::diagram {
         std::string name,
         std::string typeId,
         NodeTransform position,
-        const dcl::Component *component,
+        const dcl::ComponentType *component,
         std::string assetsPath
     ): id_(id),
         name_(name),

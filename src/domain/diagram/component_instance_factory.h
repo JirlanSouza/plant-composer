@@ -49,7 +49,7 @@ namespace domain::diagram {
         std::vector<dcl::Library> *libraries_;
         dst::AppSettings *appSettings_;
 
-        [[nodiscard]] const dcl::Component *getComponentDefinition(
+        [[nodiscard]] const dcl::ComponentType *getComponentDefinition(
             int libraryId,
             int componentId
         ) const;

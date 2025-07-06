@@ -103,7 +103,7 @@ namespace domain::components_library {
         signal.dataType = j.at("dataType").get<DataType>();
     }
 
-    void to_json(json &j, const Component &component) {
+    void to_json(json &j, const ComponentType &component) {
         json portsJson = {
             {"inputs", component.ports.inputs},
             {"outputs", component.ports.outputs}
@@ -125,7 +125,7 @@ namespace domain::components_library {
         };
     }
 
-    void from_json(const json &j, Component &component) {
+    void from_json(const json &j, ComponentType &component) {
         component.id = j.at("id").get<std::string>();
         component.name = j.at("name").get<std::string>();
         component.symbolPath = j.at("symbolPath").get<std::string>();
@@ -154,6 +154,6 @@ namespace domain::components_library {
         library.version = j.at("version").get<std::string>();
         library.author = j.at("author").get<std::string>();
         library.portTypes = j.at("portTypes").get<std::vector<PortType> >();
-        library.components = j.at("components").get<std::vector<Component> >();
+        library.components = j.at("components").get<std::vector<ComponentType> >();
     }
 }

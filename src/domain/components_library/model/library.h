@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-#include "component.h"
+#include "component_type.h"
 
 namespace domain::components_library {
     struct Library {
@@ -29,6 +29,6 @@ namespace domain::components_library {
         std::string version;
         std::string author;
         std::vector<PortType> portTypes;
-        std::vector<Component> components;
+        std::vector<ComponentType> components;
     };
 }

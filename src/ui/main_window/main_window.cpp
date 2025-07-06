@@ -75,7 +75,7 @@ namespace ui::main_window {
 
     void AppMainWindow::showComponentLibraryPropertiesDialog(const int libraryId, const int componentId) {
         // const dcl::Library library = libraries_->at(libraryId);
-        // const dcl::Component component = library.components[componentId];
+        // const dcl::ComponentType component = library.components[componentId];
         // std::unordered_map<int, dcl::PortType> portTypes;
         //
         // for (const auto &portType: library.portTypes) {

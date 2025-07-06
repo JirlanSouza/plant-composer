@@ -38,7 +38,7 @@
 #include <QGroupBox>
 #include <QTableWidget>
 
-#include "domain/components_library/model/component.h"
+#include "domain/components_library/model/component_type.h"
 
 namespace dcl = domain::components_library;
 
@@ -49,14 +49,14 @@ namespace ui::components_library {
     public:
         LibraryComponentPropertiesView(
             QWidget *parent,
-            const dcl::Component &component,
+            const dcl::ComponentType &component,
             std::unordered_map<int, dcl::PortType> &portTypes
         );
 
         ~LibraryComponentPropertiesView() override = default;
 
     private:
-        const dcl::Component &component_;
+        const dcl::ComponentType &component_;
         std::unordered_map<int, dcl::PortType> &portTypes_;
 
         void buildUI();
