@@ -1,6 +1,7 @@
 add_library(domain STATIC
         project/model/project.cpp
-        project/model/project.h)
+        project/model/project.h
+        project/project_loader.h)
 target_sources(domain
         PUBLIC
         shared/id_factory.h
