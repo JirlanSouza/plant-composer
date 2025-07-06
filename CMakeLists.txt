@@ -30,6 +30,7 @@ add_subdirectory(src/domain)
 add_subdirectory(src/adapters)
 add_subdirectory(src/ui)
 add_subdirectory(src/common_utils)
+add_subdirectory(tests/unit)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(plant-composer
