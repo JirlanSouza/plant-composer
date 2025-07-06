@@ -16,37 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <QtTest/QTest>
+#include "gtest/gtest.h"
 
-#include "test_connection.h"
-#include "test_project.h"
-#include "test_diagram.h"
-#include "test_components_library.h"
-#include "test_app_settings.h"
-
-int main(int argc, char *argv[]) {
-    Q_UNUSED(argc)
-    Q_UNUSED(argv)
-
-    int status = 0; {
-        TestConnection tc;
-        status |= QTest::qExec(&tc, argc, argv);
-    } {
-        TestProject tp;
-        status |= QTest::qExec(&tp, argc, argv);
-    }
-    {
-        TestDiagram td;
-        status |= QTest::qExec(&td, argc, argv);
-    }
-    {
-        TestComponentsLibrary tcl;
-        status |= QTest::qExec(&tcl, argc, argv);
-    }
-    {
-        TestAppSettings tas;
-        status |= QTest::qExec(&tas, argc, argv);
-    }
-
-    return status;
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

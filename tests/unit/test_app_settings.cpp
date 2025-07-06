@@ -16,5 +16,45 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "test_app_settings.h"
-#include "test_app_settings.moc"
+#include "gtest/gtest.h"
+#include <QCoreApplication>
+#include <QSettings>
+#include <QTemporaryFile>
+
+#include "adapters/settings/qt_app_settings.h"
+
+namespace as = adapters::settings;
+
+class AppSettingsTest : public ::testing::Test {
+protected:
+    void SetUp() override {
+        int argc = 0;
+        static QCoreApplication app(argc, nullptr);
+
+        ASSERT_TRUE(settingsFile.open());
+        settingsFile.close();
+
+        settings = new QSettings(settingsFile.fileName(), QSettings::IniFormat);
+        settings->setValue("assets_dir", "/test/assets");
+    }
+
+    void TearDown() override {
+        delete settings;
+        QFile::remove(settingsFile.fileName());
+    }
+
+    QTemporaryFile settingsFile;
+    QSettings *settings;
+};
+
+TEST_F(AppSettingsTest, GetComponentsLibraryDir) {
+    as::QtAppSettings appSettings(settings);
+    std::string expectedDir = "/test/assets/libraries";
+    ASSERT_EQ(appSettings.getComponentsLibraryDir(), expectedDir);
+}
+
+TEST_F(AppSettingsTest, GetComponentIconPath) {
+    as::QtAppSettings appSettings(settings);
+    std::string expectedPath = "/test/assets/icons/puzzle.svg";
+    ASSERT_EQ(appSettings.getComponentIconPath(), expectedPath);
+}
