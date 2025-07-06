@@ -12,17 +12,20 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable(unit_tests
-        main.cpp
-        test_connection.cpp
-        test_diagram.cpp
-        test_components_library.cpp
-        test_project.cpp
+    main.cpp
+    test_connection.cpp
+    test_diagram.cpp
+    test_components_library.cpp
 )
 
 target_link_libraries(unit_tests
-        PRIVATE
+    PRIVATE
         GTest::gtest_main
+        gmock
+        Qt6::Core
         domain
+        adapters
+        ui
 )
 
 add_test(NAME unit_tests COMMAND unit_tests)

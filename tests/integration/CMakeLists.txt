@@ -3,6 +3,9 @@ project(integration_tests LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_PREFIX_PATH "$ENV{HOME}/Qt/6.9.1/macos/lib/cmake/Qt6")
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools SvgWidgets)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -12,17 +15,22 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 add_executable(integration_tests
-        test_json_components_library_loader.cpp
-        test_qt_app_settings.cpp
-        test_flat_buffer_project_loader.cpp
+    test_json_components_library_loader.cpp
+    test_qt_app_settings.cpp
+    test_component_view_model.cpp
+    test_diagram_view_model.cpp
 )
 
 target_link_libraries(integration_tests
-        PRIVATE
+    PRIVATE
         GTest::gtest_main
-        Qt6::Core
+        gmock
+        Qt6::Widgets
+        Qt6::SvgWidgets
         domain
         adapters
+        ui
+        common_utils
 )
 
 add_test(NAME integration_tests COMMAND integration_tests)
