@@ -13,14 +13,14 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.nu/licenses/>.
  */
 
 #include "diagram.h"
 
 namespace domain::diagram {
     Diagram::Diagram(const std::string &id, const std::string &name): id_(id), name_(name), width_(1920), height_(1080),
-        components_(std::vector<ComponentInstance>()) {
+        components_(std::vector<ComponentInstance>()), connections_(std::vector<Connection>()) {
     };
 
     Diagram::~Diagram() = default;
@@ -30,6 +30,10 @@ namespace domain::diagram {
         components_.emplace_back(component);
     }
 
+    void Diagram::addConnection(const Connection &connection) {
+        connections_.emplace_back(connection);
+    }
+
     ComponentInstance *Diagram::getLastAddedComponent() {
         return &components_[components_.size() - 1];
     }
@@ -37,6 +41,10 @@ namespace domain::diagram {
 
     int Diagram::componentsCount() const {
         return static_cast<int>(components_.size());
+    }
+
+    int Diagram::connectionsCount() const {
+        return static_cast<int>(connections_.size());
     }
 
     std::string Diagram::getId() const {
@@ -58,5 +66,9 @@ namespace domain::diagram {
 
     std::vector<ComponentInstance> Diagram::getComponents() const {
         return components_;
+    }
+
+    std::vector<Connection> Diagram::getConnections() const {
+        return connections_;
     }
 }
