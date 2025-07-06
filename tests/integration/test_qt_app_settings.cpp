@@ -25,7 +25,7 @@
 
 namespace as = adapters::settings;
 
-class AppSettingsTest : public ::testing::Test {
+class QtAppSettingsTest : public ::testing::Test {
 protected:
     void SetUp() override {
         int argc = 0;
@@ -47,13 +47,13 @@ protected:
     QSettings *settings;
 };
 
-TEST_F(AppSettingsTest, GetComponentsLibraryDir) {
+TEST_F(QtAppSettingsTest, GetComponentsLibraryDir) {
     as::QtAppSettings appSettings(settings);
     std::string expectedDir = "/test/assets/libraries";
     ASSERT_EQ(appSettings.getComponentsLibraryDir(), expectedDir);
 }
 
-TEST_F(AppSettingsTest, GetComponentIconPath) {
+TEST_F(QtAppSettingsTest, GetComponentIconPath) {
     as::QtAppSettings appSettings(settings);
     std::string expectedPath = "/test/assets/icons/puzzle.svg";
     ASSERT_EQ(appSettings.getComponentIconPath(), expectedPath);

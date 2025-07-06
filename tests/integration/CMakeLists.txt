@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(unit_tests LANGUAGES CXX)
+project(integration_tests LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,18 +11,18 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-add_executable(unit_tests
-        main.cpp
-        test_connection.cpp
-        test_diagram.cpp
-        test_components_library.cpp
-        test_project.cpp
+add_executable(integration_tests
+        test_json_components_library_loader.cpp
+        test_qt_app_settings.cpp
+        test_flat_buffer_project_loader.cpp
 )
 
-target_link_libraries(unit_tests
+target_link_libraries(integration_tests
         PRIVATE
         GTest::gtest_main
+        Qt6::Core
         domain
+        adapters
 )
 
-add_test(NAME unit_tests COMMAND unit_tests)
+add_test(NAME integration_tests COMMAND integration_tests)

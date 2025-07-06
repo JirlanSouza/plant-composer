@@ -31,6 +31,7 @@ add_subdirectory(src/adapters)
 add_subdirectory(src/ui)
 add_subdirectory(src/common_utils)
 add_subdirectory(tests/unit)
+add_subdirectory(tests/integration)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(plant-composer

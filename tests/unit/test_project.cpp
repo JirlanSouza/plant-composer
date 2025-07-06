@@ -17,34 +17,12 @@
  */
 
 #include "gtest/gtest.h"
-#include <QDir>
-#include <QFile>
-#include <QCoreApplication>
 
 #include "domain/project/model/project.h"
-#include "adapters/project/flat_buffer_project_loader.h"
 
 namespace dp = domain::project;
-namespace ap = adapters::project;
 
-class ProjectTest : public ::testing::Test {
-protected:
-    void SetUp() override {
-        int argc = 0;
-        static QCoreApplication app(argc, nullptr);
-
-        filePath = QDir::tempPath().toStdString() + "/test_project.fbs";
-        QFile::remove(QString::fromStdString(filePath));
-    }
-
-    void TearDown() override {
-        QFile::remove(QString::fromStdString(filePath));
-    }
-
-    std::string filePath;
-};
-
-TEST_F(ProjectTest, ProjectCreation) {
+TEST(ProjectTest, ProjectCreation) {
     dp::Project project(
         "proj1",
         "My Project",
@@ -63,7 +41,7 @@ TEST_F(ProjectTest, ProjectCreation) {
     ASSERT_TRUE(project.getDiagramsMetadata().empty());
 }
 
-TEST_F(ProjectTest, AddDiagramMetadata) {
+TEST(ProjectTest, AddDiagramMetadata) {
     dp::Project project("proj2", "Another Project", "", "", "", "");
     dp::Project::DiagramMetadata metadata1 = {"diag1", "Diagram One", "diagrams/diag1.fbs"};
     dp::Project::DiagramMetadata metadata2 = {"diag2", "Diagram Two", "diagrams/diag2.fbs"};
@@ -74,45 +52,4 @@ TEST_F(ProjectTest, AddDiagramMetadata) {
     ASSERT_EQ(project.getDiagramsMetadata().size(), 2);
     ASSERT_EQ(project.getDiagramsMetadata()[0].id, std::string("diag1"));
     ASSERT_EQ(project.getDiagramsMetadata()[1].name, std::string("Diagram Two"));
-}
-
-TEST_F(ProjectTest, SaveAndLoadProject) {
-    dp::Project originalProject(
-        "proj3",
-        "Serializable Project",
-        "This project should be saved and loaded.",
-        "Serializer",
-        "1.0.0",
-        filePath
-    );
-    originalProject.addDiagramMetadata({"diagA", "Diagram A", "diagrams/diagA.fbs"});
-    originalProject.addDiagramMetadata({"diagB", "Diagram B", "diagrams/diagB.fbs"});
-
-
-    ap::FlatBufferProjectLoader loader;
-    loader.saveProject(originalProject);
-
-
-    std::unique_ptr<dp::Project> loadedProject = loader.loadProject(filePath);
-
-
-    ASSERT_NE(loadedProject, nullptr);
-    ASSERT_EQ(loadedProject->getId(), originalProject.getId());
-    ASSERT_EQ(loadedProject->getName(), originalProject.getName());
-    ASSERT_EQ(loadedProject->getDescription(), originalProject.getDescription());
-    ASSERT_EQ(loadedProject->getAuthor(), originalProject.getAuthor());
-    ASSERT_EQ(loadedProject->getVersion(), originalProject.getVersion());
-    ASSERT_EQ(loadedProject->getPath(), originalProject.getPath());
-
-    ASSERT_EQ(loadedProject->getDiagramsMetadata().size(), originalProject.getDiagramsMetadata().size());
-    if (loadedProject->getDiagramsMetadata().size() == originalProject.getDiagramsMetadata().size()) {
-        for (size_t i = 0; i < loadedProject->getDiagramsMetadata().size(); ++i) {
-            ASSERT_EQ(loadedProject->getDiagramsMetadata()[i].id, originalProject.getDiagramsMetadata()[i].id);
-            ASSERT_EQ(loadedProject->getDiagramsMetadata()[i].name, originalProject.getDiagramsMetadata()[i].name);
-            ASSERT_EQ(
-                loadedProject->getDiagramsMetadata()[i].filePath,
-                originalProject.getDiagramsMetadata()[i].filePath
-            );
-        }
-    }
 }
