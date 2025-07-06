@@ -12,6 +12,9 @@ target_sources(adapters
 
         settings/qt_app_settings.cpp
         settings/qt_app_settings.h
+
+        project/flat_buffer_project_loader.h
+        project/flat_buffer_project_loader.cpp
 )
 
 target_include_directories(adapters PUBLIC ../
