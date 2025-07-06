@@ -143,6 +143,7 @@ namespace domain::components_library {
             {"name", library.name},
             {"version", library.version},
             {"author", library.author},
+            {"description", library.description},
             {"portTypes", library.portTypes},
             {"components", library.components}
         };
@@ -153,6 +154,7 @@ namespace domain::components_library {
         library.name = j.at("name").get<std::string>();
         library.version = j.at("version").get<std::string>();
         library.author = j.at("author").get<std::string>();
+        library.description = j.at("description").get<std::string>();
         library.portTypes = j.at("portTypes").get<std::vector<PortType> >();
         library.components = j.at("components").get<std::vector<ComponentType> >();
     }

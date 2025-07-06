@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include <string>
 #include <vector>
 
@@ -28,6 +29,7 @@ namespace domain::components_library {
         std::string name;
         std::string version;
         std::string author;
+        std::string description;
         std::vector<PortType> portTypes;
         std::vector<ComponentType> components;
     };
