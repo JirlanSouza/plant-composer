@@ -31,6 +31,11 @@ namespace ui::diagram_editor {
         return QString::fromStdString(componentInstance_->getName());
     }
 
+    void ComponentViewModel::setName(const QString &name) {
+        componentInstance_->rename(name.toStdString());
+        emit nameChanged();
+    }
+
     QString ComponentViewModel::getSymbolPath() const {
         return QString::fromStdString(componentInstance_->getSymbolPath());
     }

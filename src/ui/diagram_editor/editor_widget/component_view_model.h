@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include <QObject>
 #include <QPointF>
 #include <QString>
@@ -29,11 +30,6 @@ namespace ui::diagram_editor {
     class ComponentViewModel : public QObject {
         Q_OBJECT
 
-        Q_PROPERTY(QString id READ getId CONSTANT)
-        Q_PROPERTY(QString name READ getName NOTIFY nameChanged)
-        Q_PROPERTY(QString symbolPath READ getSymbolPath CONSTANT)
-        Q_PROPERTY(QPointF position READ getPosition WRITE setPosition NOTIFY positionChanged)
-
     public:
         explicit ComponentViewModel(dd::ComponentInstance *componentInstance, QObject *parent = nullptr);
 
@@ -42,6 +38,8 @@ namespace ui::diagram_editor {
         [[nodiscard]] QString getId() const;
 
         [[nodiscard]] QString getName() const;
+
+        void setName(const QString &name);
 
         [[nodiscard]] QString getSymbolPath() const;
 
