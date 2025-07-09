@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include <QDialog>
 
 namespace ui::diagram_editor {

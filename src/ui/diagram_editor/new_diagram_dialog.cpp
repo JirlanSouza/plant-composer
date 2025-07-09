@@ -47,7 +47,7 @@ namespace ui::diagram_editor {
         okButton->setEnabled(false);
 
         mainLayout->addLayout(formLayout);
-        mainLayout->addStretch(); // empurra o buttonBox para baixo
+        mainLayout->addStretch();
         mainLayout->addWidget(buttonBox);
 
         connect(
@@ -55,7 +55,7 @@ namespace ui::diagram_editor {
             &QLineEdit::textChanged,
             this,
             [okButton](const QString &text) {
-                okButton->setEnabled(!text.isEmpty());
+                okButton->setEnabled(text.length() > 3 && text.length() < 50);
             }
         );
         connect(
