@@ -32,15 +32,6 @@ namespace ui::main_window {
         appSettings_(appSettings), appLayoutManager_(new uil::AppLayoutManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
-        diagramManager_ = new ui::diagram_editor::DiagramManager(
-            libraries,
-            appSettings,
-            componentInstanceFactory,
-            this
-        );
-        diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_);
-
-
         auto project = new domain::project::Project(
             "proj1",
             "Test Project",
@@ -50,12 +41,19 @@ namespace ui::main_window {
             "/test_project.fbs"
         );
 
-        project->addDiagramMetadata({"diag1", "Diagram 1", "diagrams/diag1->fbs"});
-        project->addDiagramMetadata({"diag2", "Diagram 2", "diagrams/diag2.fbs"});
+        projectViewModel_ = new uip::ProjectViewModel(project, this);
+        diagramManager_ = new ui::diagram_editor::DiagramManager(
+            libraries,
+            appSettings,
+            componentInstanceFactory,
+            projectViewModel_,
+            this
+        );
 
-        projectViewManager_ = new uip::ProjectViewManager(project, this);
-        appLayoutManager_->addSideBarView("Project", projectViewManager_->getView(), uil::LEFT);
-        appLayoutManager_->addSideBarView("Libraries", librariesViewManager_->getView(), uil::RIGHT);
+        diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_, projectViewModel_, this);
+        projectViewManager_ = new uip::ProjectViewManager(projectViewModel_, this);
+        appLayoutManager_->addSideBarView(tr("Project"), projectViewManager_->getView(), uil::LEFT);
+        appLayoutManager_->addSideBarView(tr("Libraries"), librariesViewManager_->getView(), uil::RIGHT);
         appLayoutManager_->setCentralWidget(diagramEditorManager_->getView());
 
         connect(

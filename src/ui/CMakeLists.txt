@@ -16,6 +16,8 @@ target_sources(ui
 
         project/project_view_manager.h
         project/project_view_manager.cpp
+        project/project_view_model.h
+        project/project_view_model.cpp
         project/project_tree/project_tree_model.h
         project/project_tree/project_tree_model.cpp
         project/project_tree/project_tree_view.h

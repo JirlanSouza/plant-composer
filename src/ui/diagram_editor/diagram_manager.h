@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include <QObject>
 #include <unordered_map>
 
@@ -24,6 +25,7 @@
 #include "domain/components_library/model/library.h"
 #include "domain/settings/app_settings.h"
 #include "domain/diagram/component_instance_factory.h"
+#include "ui/project/project_view_model.h"
 
 namespace dd = domain::diagram;
 namespace dcl = domain::components_library;
@@ -38,6 +40,7 @@ namespace ui::diagram_editor {
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings,
             dd::ComponentInstanceFactory *componentInstanceFactory,
+            ui::project::ProjectViewModel *projectViewModel,
             QObject *parent
         );
 
@@ -46,18 +49,16 @@ namespace ui::diagram_editor {
         DiagramViewModel *getDiagram(const std::string &diagramId);
 
     public slots:
-        void addDiagram(const std::string &diagramName);
-
-        void openDiagram(const std::string &diagramId);
+        void openDiagram(const dp::Project::DiagramMetadata &diagramMetadata);
 
     signals:
         void diagramOpened(std::string diagramId);
-        void diagramNameInvalid(const std::string &diagramName);
 
     private:
         std::vector<dcl::Library> *libraries_;
         std::unordered_map<std::string, DiagramViewModel *> openedDiagrams_;
         dst::AppSettings *appSettings_;
         dd::ComponentInstanceFactory *componentInstanceFactory_;
+        ui::project::ProjectViewModel *projectViewModel_;
     };
 }

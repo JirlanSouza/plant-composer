@@ -22,6 +22,7 @@
 
 #include "app_layout_manager.h"
 #include "ui/project/project_view_manager.h"
+#include "ui/project/project_view_model.h"
 #include "components_library/libraries_view_manager.h"
 #include "diagram_editor/diagram_editor_manager.h"
 #include "domain/diagram/component_instance_factory.h"
@@ -54,6 +55,7 @@ namespace ui::main_window {
         std::shared_ptr<dst::AppSettings> appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
         uip::ProjectViewManager *projectViewManager_;
+        uip::ProjectViewModel *projectViewModel_;
         ucl::LibrariesViewManager *librariesViewManager_;
         ude::DiagramManager *diagramManager_;
         ude::DiagramEditorManager *diagramEditorManager_;

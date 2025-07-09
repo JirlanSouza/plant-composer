@@ -22,8 +22,13 @@
 #include <QMessageBox>
 
 namespace ui::diagram_editor {
-    DiagramEditorManager::DiagramEditorManager(DiagramManager *diagramManager, QWidget *parent): QObject(parent),
-        diagramManager_(diagramManager) {
+    DiagramEditorManager::DiagramEditorManager(
+        DiagramManager *diagramManager,
+        ui::project::ProjectViewModel *projectViewModel,
+        QWidget *parent
+    ): QObject(parent),
+        diagramManager_(diagramManager),
+        projectViewModel_(projectViewModel) {
         editorArea_ = new QTabWidget();
         editorArea_->setDocumentMode(true);
         editorArea_->setMovable(true);
@@ -34,12 +39,17 @@ namespace ui::diagram_editor {
         connect(editorArea_->tabBar(), &QTabBar::tabMoved, this, &DiagramEditorManager::onTabMoved);
         connect(diagramManager_, &DiagramManager::diagramOpened, this, &DiagramEditorManager::onOpenedDiagram);
         connect(
-            diagramManager_,
-            &DiagramManager::diagramNameInvalid,
-            this,
-            &DiagramEditorManager::onInvalidDiagramName
+            newDiagramDialog_,
+            &NewDiagramDialog::diagramNameEntered,
+            projectViewModel_,
+            &ui::project::ProjectViewModel::addDiagram
         );
-        connect(newDiagramDialog_, &NewDiagramDialog::diagramNameEntered, diagramManager_, &DiagramManager::addDiagram);
+        connect(
+            projectViewModel_,
+            &ui::project::ProjectViewModel::diagramAdded,
+            diagramManager_,
+            &DiagramManager::openDiagram
+        );
     }
 
     DiagramEditorManager::~DiagramEditorManager() = default;
@@ -55,7 +65,6 @@ namespace ui::diagram_editor {
             QString::fromStdString("The diagram name '" + diagramName + "' is invalid. Please choose a different name.")
         );
     }
-
 
     void DiagramEditorManager::onOpenedDiagram(const std::string &diagramId) {
         if (diagramEditorTabs_.contains(diagramId)) {

@@ -26,43 +26,29 @@ namespace ui::diagram_editor {
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings,
         dd::ComponentInstanceFactory *componentInstanceFactory,
+        ui::project::ProjectViewModel *projectViewModel,
         QObject *parent
     ): QObject(parent),
         libraries_(libraries),
         openedDiagrams_(std::unordered_map<std::string, DiagramViewModel *>()),
         appSettings_(appSettings),
-        componentInstanceFactory_(componentInstanceFactory) {
+        componentInstanceFactory_(componentInstanceFactory),
+        projectViewModel_(projectViewModel) {
     }
 
     DiagramManager::~DiagramManager() = default;
 
-    void DiagramManager::addDiagram(const std::string &diagramName) {
-        if (diagramName.empty()) {
-            emit diagramNameInvalid(diagramName);
+    void DiagramManager::openDiagram(const dp::Project::DiagramMetadata &diagramMetadata) {
+        if (openedDiagrams_.contains(diagramMetadata.id)) {
+            emit diagramOpened(diagramMetadata.id);
             return;
         }
 
-        const auto diagram = new dd::Diagram(newId(), diagramName);
-
-        openedDiagrams_[diagram->getId()] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
-
-        emit diagramOpened(diagram->getId());
+        // TODO: This should load the diagram from a file, not create a new one.
+        const auto diagram = new dd::Diagram(diagramMetadata.id, diagramMetadata.name);
+        openedDiagrams_[diagramMetadata.id] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
+        emit diagramOpened(diagramMetadata.id);
     }
-
-
-    void DiagramManager::openDiagram(const std::string &diagramId) {
-        if (openedDiagrams_.contains(diagramId)) {
-            emit diagramOpened(diagramId);
-            return;
-        }
-
-        const auto diagram = new dd::Diagram(diagramId, "Diagram_" + std::to_string(openedDiagrams_.size()));
-
-        openedDiagrams_[diagramId] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
-
-        emit diagramOpened(diagramId);
-    }
-
 
     DiagramViewModel *DiagramManager::getDiagram(const std::string &diagramId) {
         return openedDiagrams_[diagramId];

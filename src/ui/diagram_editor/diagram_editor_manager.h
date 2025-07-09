@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include <qtabwidget.h>
 
 #include "domain/settings/app_settings.h"
@@ -25,6 +26,7 @@
 #include "editor_widget/diagram_editor_scene.h"
 #include "editor_widget/diagram_editor_view.h"
 #include "editor_widget/diagram_view_model.h"
+#include "ui/project/project_view_model.h"
 
 namespace dcl = domain::components_library;
 namespace dst = domain::settings;
@@ -40,7 +42,11 @@ namespace ui::diagram_editor {
         Q_OBJECT
 
     public:
-        explicit DiagramEditorManager(DiagramManager *diagramManager, QWidget *parent = nullptr);
+        explicit DiagramEditorManager(
+            DiagramManager *diagramManager,
+            ui::project::ProjectViewModel *projectViewModel,
+            QWidget *parent = nullptr
+        );
 
         ~DiagramEditorManager() override;
 
@@ -53,6 +59,7 @@ namespace ui::diagram_editor {
 
     private:
         DiagramManager *diagramManager_;
+        ui::project::ProjectViewModel *projectViewModel_;
         QTabWidget *editorArea_;
         std::unordered_map<std::string, DiagramEditorTab> diagramEditorTabs_;
         std::vector<std::string> editorTabsOrder_;
