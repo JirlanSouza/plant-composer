@@ -22,7 +22,6 @@
 
 #include "domain/settings/app_settings.h"
 #include "diagram_manager.h"
-#include "new_diagram_dialog.h"
 #include "editor_widget/diagram_editor_scene.h"
 #include "editor_widget/diagram_editor_view.h"
 #include "editor_widget/diagram_view_model.h"
@@ -52,18 +51,12 @@ namespace ui::diagram_editor {
 
         [[nodiscard]] QWidget *getView() const;
 
-    public slots:
-        void addNewDiagram() const;
-
-        void onInvalidDiagramName(const std::string &diagramName) const;
-
     private:
         DiagramManager *diagramManager_;
         ui::project::ProjectViewModel *projectViewModel_;
         QTabWidget *editorArea_;
         std::unordered_map<std::string, DiagramEditorTab> diagramEditorTabs_;
         std::vector<std::string> editorTabsOrder_;
-        NewDiagramDialog *newDiagramDialog_;
 
     private slots:
         void onOpenedDiagram(const std::string &diagramId);

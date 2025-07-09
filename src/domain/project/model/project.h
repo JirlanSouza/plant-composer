@@ -17,18 +17,19 @@
  */
 
 #pragma once
+
 #include <string>
 #include <vector>
 
 namespace domain::project {
+    struct DiagramMetadata {
+        std::string id;
+        std::string name;
+        std::string filePath;
+    };
+
     class Project {
     public:
-        struct DiagramMetadata {
-            std::string id;
-            std::string name;
-            std::string filePath;
-        };
-
         Project(
             const std::string &id,
             const std::string &name,

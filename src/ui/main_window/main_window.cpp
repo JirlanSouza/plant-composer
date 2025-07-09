@@ -44,24 +44,17 @@ namespace ui::main_window {
         projectViewModel_ = new uip::ProjectViewModel(project, this);
         diagramManager_ = new ui::diagram_editor::DiagramManager(
             libraries,
-            appSettings,
-            componentInstanceFactory,
+            appSettings_,
+            componentInstanceFactory_,
             projectViewModel_,
             this
         );
 
-        diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_, projectViewModel_, this);
         projectViewManager_ = new uip::ProjectViewManager(projectViewModel_, this);
+        diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_, projectViewModel_, this);
         appLayoutManager_->addSideBarView(tr("Project"), projectViewManager_->getView(), uil::LEFT);
         appLayoutManager_->addSideBarView(tr("Libraries"), librariesViewManager_->getView(), uil::RIGHT);
         appLayoutManager_->setCentralWidget(diagramEditorManager_->getView());
-
-        connect(
-            projectViewManager_,
-            &uip::ProjectViewManager::addDiagramClicked,
-            diagramEditorManager_,
-            &ui::diagram_editor::DiagramEditorManager::addNewDiagram
-        );
     }
 
     AppMainWindow::~AppMainWindow() = default;

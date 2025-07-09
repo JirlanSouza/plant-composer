@@ -28,7 +28,7 @@ namespace ui::project {
         return project_;
     }
 
-    dp::Project::DiagramMetadata ProjectViewModel::getDiagramMetadata(const std::string &diagramId) const {
+    dp::DiagramMetadata ProjectViewModel::getDiagramMetadata(const std::string &diagramId) const {
         for (const auto &metadata: project_->getDiagramsMetadata()) {
             if (metadata.id == diagramId) {
                 return metadata;
@@ -39,7 +39,7 @@ namespace ui::project {
     }
 
     void ProjectViewModel::addDiagram(const std::string &name) {
-        dp::Project::DiagramMetadata metadata{
+        dp::DiagramMetadata metadata{
             newId(),
             name,
             "diagrams/" + name + ".fbs"

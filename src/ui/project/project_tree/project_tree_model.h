@@ -39,34 +39,23 @@ namespace ui::project {
 
         [[nodiscard]] QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
-        bool isAddDiagramItem(const QModelIndex &index) const;
+        [[nodiscard]] bool isAddDiagramItem(const QModelIndex &index) const;
 
     private slots:
-        void onDiagramAdded(const dp::Project::DiagramMetadata &metadata) const;
+        void onDiagramAdded(const domain::project::DiagramMetadata &metadata) const;
 
     private:
         ProjectViewModel *projectViewModel_;
         const std::string projectItemIconPath_;
         QStandardItem *projectTreeRootItem_;
+        QStandardItem *diagramsFolderItem_;
         QStandardItem *addDiagramItem_;
-
-        [[nodiscard]] QStandardItem *itemFromIndex(const QModelIndex &index) const {
-            return static_cast<QStandardItem *>(QStandardItemModel::itemFromIndex(index));
-        }
-
-        [[nodiscard]] QStandardItem *diagramFolderItem() const {
-            return projectTreeRootItem_->child(0);
-        }
-
-        [[nodiscard]] QStandardItem *addDiagramItem() const {
-            return diagramFolderItem()->child(0);
-        }
 
         void buildProjectRootModel();
 
         void addDiagramFolder();
 
-        void appendDiagram(const dp::Project::DiagramMetadata &metadata) const;
+        void appendDiagram(const dp::DiagramMetadata &metadata) const;
 
         [[nodiscard]] QIcon newDiagramItemIcon() const {
             return QIcon(QString::fromStdString(projectItemIconPath_));

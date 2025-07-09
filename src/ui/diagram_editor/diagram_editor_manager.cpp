@@ -19,7 +19,6 @@
 #include "diagram_editor_manager.h"
 
 #include <QTabBar>
-#include <QMessageBox>
 
 namespace ui::diagram_editor {
     DiagramEditorManager::DiagramEditorManager(
@@ -33,47 +32,18 @@ namespace ui::diagram_editor {
         editorArea_->setDocumentMode(true);
         editorArea_->setMovable(true);
         editorArea_->setTabsClosable(true);
-        newDiagramDialog_ = new NewDiagramDialog(editorArea_);
 
         connect(editorArea_, &QTabWidget::tabCloseRequested, this, &DiagramEditorManager::onTabCloseRequested);
         connect(editorArea_->tabBar(), &QTabBar::tabMoved, this, &DiagramEditorManager::onTabMoved);
         connect(diagramManager_, &DiagramManager::diagramOpened, this, &DiagramEditorManager::onOpenedDiagram);
-        connect(
-            newDiagramDialog_,
-            &NewDiagramDialog::diagramNameEntered,
-            projectViewModel_,
-            &ui::project::ProjectViewModel::addDiagram
-        );
-        connect(
-            projectViewModel_,
-            &ui::project::ProjectViewModel::diagramAdded,
-            diagramManager_,
-            &DiagramManager::openDiagram
-        );
     }
 
     DiagramEditorManager::~DiagramEditorManager() = default;
-
-    void DiagramEditorManager::addNewDiagram() const {
-        newDiagramDialog_->execForName("");
-    }
-
-    void DiagramEditorManager::onInvalidDiagramName(const std::string &diagramName) const {
-        QMessageBox::warning(
-            editorArea_,
-            tr("Invalid Diagram Name"),
-            QString::fromStdString("The diagram name '" + diagramName + "' is invalid. Please choose a different name.")
-        );
-    }
 
     void DiagramEditorManager::onOpenedDiagram(const std::string &diagramId) {
         if (diagramEditorTabs_.contains(diagramId)) {
             editorArea_->setCurrentWidget(diagramEditorTabs_[diagramId].diagramEditorView_);
             return;
-        }
-
-        if (newDiagramDialog_->isVisible()) {
-            newDiagramDialog_->accept();
         }
 
         DiagramViewModel *diagram = diagramManager_->getDiagram(diagramId);
@@ -87,6 +57,7 @@ namespace ui::diagram_editor {
         editorArea_->setCurrentWidget(diagramEditorTab.diagramEditorView_);
         editorTabsOrder_.push_back(diagramId);
         diagramEditorTab.diagramEditorView_->fitSceneToView();
+
         connect(
             diagramEditorView,
             &DiagramEditorView::addComponentToScene,

@@ -53,16 +53,16 @@ namespace ui::project {
         }
 
         setColumnCount(1);
-        auto *diagramsItem = new QStandardItem(QIcon(":/icons/folder.svg"), tr("Diagrams"));
-        diagramsItem->setFlags(Qt::ItemIsEnabled);
-        projectTreeRootItem_->appendRow({diagramsItem});
+        diagramsFolderItem_ = new QStandardItem(QIcon(":/icons/folder.svg"), tr("Diagrams"));
+        diagramsFolderItem_->setFlags(Qt::ItemIsEnabled);
+        projectTreeRootItem_->appendRow({diagramsFolderItem_});
 
         addDiagramItem_ = new QStandardItem(
             QIcon(":/icons/diagram_file_add.svg"),
             tr("Add Diagram")
         );
         addDiagramItem_->setFlags(Qt::ItemIsEnabled);
-        diagramsItem->appendRow({addDiagramItem_});
+        diagramsFolderItem_->appendRow({addDiagramItem_});
 
         const auto diagramsMetadata = projectViewModel_->getProject()->getDiagramsMetadata();
         for (const auto &diagramMetadata: diagramsMetadata) {
@@ -70,7 +70,7 @@ namespace ui::project {
         }
     }
 
-    void ProjectTreeModel::appendDiagram(const dp::Project::DiagramMetadata &metadata) const {
+    void ProjectTreeModel::appendDiagram(const dp::DiagramMetadata &metadata) const {
         auto *diagramItem = new QStandardItem(
             QIcon(":/icons/diagram_file.svg"),
             QString::fromStdString(metadata.name)
@@ -81,10 +81,10 @@ namespace ui::project {
             Qt::ItemIsDragEnabled
         );
         diagramItem->setData(QVariant::fromValue(QString::fromStdString(metadata.id)), Qt::UserRole);
-        diagramFolderItem()->appendRow({diagramItem});
+        diagramsFolderItem_->appendRow({diagramItem});
     }
 
-    void ProjectTreeModel::onDiagramAdded(const dp::Project::DiagramMetadata &metadata) const {
+    void ProjectTreeModel::onDiagramAdded(const dp::DiagramMetadata &metadata) const {
         appendDiagram(metadata);
     }
 
@@ -97,7 +97,7 @@ namespace ui::project {
 
         const QModelIndex &index = indexes.first();
         if (!index.isValid() || isAddDiagramItem(index) || !index.parent().isValid() || index.parent() !=
-            diagramFolderItem()->index()) {
+            diagramsFolderItem_->index()) {
             return nullptr;
         }
 

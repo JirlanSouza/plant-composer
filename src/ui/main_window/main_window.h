@@ -17,8 +17,8 @@
  */
 
 #pragma once
+
 #include <QMainWindow>
-#include <memory>
 
 #include "app_layout_manager.h"
 #include "ui/project/project_view_manager.h"
@@ -52,7 +52,7 @@ namespace ui::main_window {
         ~AppMainWindow() override;
 
     private:
-        std::shared_ptr<dst::AppSettings> appSettings_;
+        dst::AppSettings *appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
         uip::ProjectViewManager *projectViewManager_;
         uip::ProjectViewModel *projectViewModel_;

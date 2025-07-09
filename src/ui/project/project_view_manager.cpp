@@ -23,20 +23,24 @@ namespace ui::project {
         projectViewModel_(projectViewModel) {
         projectTreeModel_ = new ProjectTreeModel(projectViewModel_, "", this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
+        newDiagramDialog_ = new NewDiagramDialog(projectTreeView_);
 
         connect(
             projectTreeView_,
             &ProjectTreeView::doubleClicked,
             this,
-            [=](const QModelIndex &index) {
-                if (index.isValid()) {
-                    if (projectTreeModel_->isAddDiagramItem(index)) {
-                        emit addDiagramClicked();
-                    } else {
-                        // Handle other double-click actions if needed
-                    }
+            [this](const QModelIndex &index) {
+                if (index.isValid() && projectTreeModel_->isAddDiagramItem(index)) {
+                    newDiagramDialog_->exec();
                 }
             }
+        );
+
+        connect(
+            newDiagramDialog_,
+            &NewDiagramDialog::diagramNameEntered,
+            projectViewModel_,
+            &ProjectViewModel::addDiagram
         );
     }
 

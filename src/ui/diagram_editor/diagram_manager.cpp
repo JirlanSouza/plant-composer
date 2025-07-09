@@ -19,6 +19,7 @@
 #include "diagram_manager.h"
 
 #include <iostream>
+
 #include "id/id_utils.h"
 
 namespace ui::diagram_editor {
@@ -34,11 +35,12 @@ namespace ui::diagram_editor {
         appSettings_(appSettings),
         componentInstanceFactory_(componentInstanceFactory),
         projectViewModel_(projectViewModel) {
+        connect(projectViewModel_, &ui::project::ProjectViewModel::diagramAdded, this, &DiagramManager::openDiagram);
     }
 
     DiagramManager::~DiagramManager() = default;
 
-    void DiagramManager::openDiagram(const dp::Project::DiagramMetadata &diagramMetadata) {
+    void DiagramManager::openDiagram(const dp::DiagramMetadata &diagramMetadata) {
         if (openedDiagrams_.contains(diagramMetadata.id)) {
             emit diagramOpened(diagramMetadata.id);
             return;

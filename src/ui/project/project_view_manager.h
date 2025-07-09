@@ -17,12 +17,12 @@
  */
 
 #pragma once
-
 #include <QObject>
 
 #include "project_tree/project_tree_model.h"
 #include "project_tree/project_tree_view.h"
 #include "project_view_model.h"
+#include "new_diagram_dialog.h"
 
 namespace dp = domain::project;
 
@@ -40,12 +40,10 @@ namespace ui::project {
 
         [[nodiscard]] QWidget *getView() const;
 
-    signals:
-        void addDiagramClicked();
-
     private:
         ProjectViewModel *projectViewModel_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
+        NewDiagramDialog *newDiagramDialog_;
     };
 }

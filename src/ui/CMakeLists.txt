@@ -18,6 +18,8 @@ target_sources(ui
         project/project_view_manager.cpp
         project/project_view_model.h
         project/project_view_model.cpp
+        project/new_diagram_dialog.cpp
+        project/new_diagram_dialog.h
         project/project_tree/project_tree_model.h
         project/project_tree/project_tree_model.cpp
         project/project_tree/project_tree_view.h
@@ -36,8 +38,6 @@ target_sources(ui
         diagram_editor/diagram_editor_manager.h
         diagram_editor/diagram_manager.h
         diagram_editor/diagram_manager.cpp
-        diagram_editor/new_diagram_dialog.cpp
-        diagram_editor/new_diagram_dialog.h
         diagram_editor/editor_widget/component_view.cpp
         diagram_editor/editor_widget/component_view.h
         diagram_editor/editor_widget/component_view_model.cpp

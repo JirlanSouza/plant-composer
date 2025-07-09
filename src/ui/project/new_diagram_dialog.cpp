@@ -24,9 +24,7 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 
-#include "components_library/properties_dialog/component_properties_view.h"
-
-namespace ui::diagram_editor {
+namespace ui::project {
     NewDiagramDialog::NewDiagramDialog(QWidget *parent)
         : QDialog(parent) {
         setWindowTitle(tr("New Diagram"));
@@ -37,10 +35,10 @@ namespace ui::diagram_editor {
 
         auto *formLayout = new QFormLayout();
         auto *label = new QLabel(tr("Enter the name of the new diagram:"), this);
-        QLineEdit *lineEdit = new QLineEdit(this);
+        namelineEdit_ = new QLineEdit(this);
 
         formLayout->addRow(label);
-        formLayout->addRow(lineEdit);
+        formLayout->addRow(namelineEdit_);
 
         auto *buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
         auto *okButton = buttonBox->button(QDialogButtonBox::Ok);
@@ -51,7 +49,7 @@ namespace ui::diagram_editor {
         mainLayout->addWidget(buttonBox);
 
         connect(
-            lineEdit,
+            namelineEdit_,
             &QLineEdit::textChanged,
             this,
             [okButton](const QString &text) {
@@ -62,8 +60,10 @@ namespace ui::diagram_editor {
             buttonBox,
             &QDialogButtonBox::accepted,
             this,
-            [this, lineEdit]() {
-                emit diagramNameEntered(lineEdit->text().toStdString());
+            [this]() {
+                accept();
+                emit diagramNameEntered(namelineEdit_->text().toStdString());
+                namelineEdit_->clear();
             }
         );
         connect(buttonBox, &QDialogButtonBox::rejected, this, &NewDiagramDialog::reject);
@@ -71,7 +71,13 @@ namespace ui::diagram_editor {
 
     NewDiagramDialog::~NewDiagramDialog() = default;
 
-    int NewDiagramDialog::execForName(std::string diagramName) {
+    int NewDiagramDialog::execForName(const std::string &diagramName) {
+        namelineEdit_->setText(QString::fromStdString(diagramName));
         return QDialog::exec();
+    }
+
+    void NewDiagramDialog::reject() {
+        namelineEdit_->clear();
+        QDialog::reject();
     }
 }

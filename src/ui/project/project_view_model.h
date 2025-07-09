@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QObject>
+
 #include "domain/project/model/project.h"
 
 namespace dp = domain::project;
@@ -32,13 +33,13 @@ namespace ui::project {
 
         [[nodiscard]] dp::Project *getProject() const;
 
-        [[nodiscard]] dp::Project::DiagramMetadata getDiagramMetadata(const std::string &diagramId) const;
+        [[nodiscard]] dp::DiagramMetadata getDiagramMetadata(const std::string &diagramId) const;
 
     public slots:
         void addDiagram(const std::string &name);
 
     signals:
-        void diagramAdded(const dp::Project::DiagramMetadata &metadata);
+        void diagramAdded(const domain::project::DiagramMetadata &metadata);
 
     private:
         dp::Project *project_;

@@ -19,8 +19,9 @@
 #pragma once
 
 #include <QDialog>
+#include <QLineEdit>
 
-namespace ui::diagram_editor {
+namespace ui::project {
     class NewDiagramDialog : public QDialog {
         Q_OBJECT
 
@@ -29,9 +30,14 @@ namespace ui::diagram_editor {
 
         ~NewDiagramDialog() override;
 
-        int execForName(std::string diagramName);
+        int execForName(const std::string& diagramName);
+
+        void reject() override;
 
     signals:
         void diagramNameEntered(const std::string &diagramName);
+
+    private:
+        QLineEdit *namelineEdit_;
     };
 }

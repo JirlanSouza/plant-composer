@@ -32,9 +32,11 @@ namespace domain::project {
         virtual ~IProjectLoader() = default;
 
         virtual std::unique_ptr<Project> loadProject(const std::string &path) = 0;
+
         virtual void saveProject(const Project &project) = 0;
 
-        virtual std::unique_ptr<dd::Diagram> loadDiagram(const Project::DiagramMetadata &metadata) = 0;
+        virtual std::unique_ptr<dd::Diagram> loadDiagram(const DiagramMetadata &metadata) = 0;
+
         virtual void saveDiagram(const dd::Diagram &diagram) = 0;
     };
 }

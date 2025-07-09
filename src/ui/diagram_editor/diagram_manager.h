@@ -49,7 +49,7 @@ namespace ui::diagram_editor {
         DiagramViewModel *getDiagram(const std::string &diagramId);
 
     public slots:
-        void openDiagram(const dp::Project::DiagramMetadata &diagramMetadata);
+        void openDiagram(const domain::project::DiagramMetadata &diagramMetadata);
 
     signals:
         void diagramOpened(std::string diagramId);

@@ -19,13 +19,21 @@
 #include "project.h"
 
 namespace domain::project {
-    Project::Project(const std::string &id, const std::string &name, const std::string &description, const std::string &author, const std::string &version, const std::string &path)
+    Project::Project(
+        const std::string &id,
+        const std::string &name,
+        const std::string &description,
+        const std::string &author,
+        const std::string &version,
+        const std::string &path
+    )
         : id_(id),
-          name_(name),
-          description_(description),
-          author_(author),
-          version_(version),
-          path_(path) {}
+        name_(name),
+        description_(description),
+        author_(author),
+        version_(version),
+        path_(path) {
+    }
 
     Project::~Project() = default;
 
@@ -53,7 +61,7 @@ namespace domain::project {
         return path_;
     }
 
-    std::vector<Project::DiagramMetadata> Project::getDiagramsMetadata() const {
+    std::vector<DiagramMetadata> Project::getDiagramsMetadata() const {
         return diagramsMetadata_;
     }
 
