@@ -14,6 +14,13 @@ target_sources(ui
         main_window/sidebar/side_bar_item.h
         main_window/sidebar/side_bar_item.cpp
 
+        project/project_view_manager.h
+        project/project_view_manager.cpp
+        project/project_tree/project_tree_model.h
+        project/project_tree/project_tree_model.cpp
+        project/project_tree/project_tree_view.h
+        project/project_tree/project_tree_view.cpp
+
         components_library/libraries_view_manager.h
         components_library/libraries_view_manager.cpp
         components_library/component_tree/components_library_model.h
@@ -22,11 +29,14 @@ target_sources(ui
         components_library/component_tree/components_library_view.cpp
         components_library/properties_dialog/component_properties_view.h
         components_library/properties_dialog/component_properties_view.cpp
+
         diagram_editor/diagram_editor_manager.cpp
         diagram_editor/diagram_editor_manager.h
         diagram_editor/diagram_manager.h
         diagram_editor/diagram_manager.cpp
-        diagram_editor/editor_widget/component_instance_view.cpp
+        diagram_editor/new_diagram_dialog.cpp
+        diagram_editor/new_diagram_dialog.h
+        diagram_editor/editor_widget/component_view.cpp
         diagram_editor/editor_widget/component_view.h
         diagram_editor/editor_widget/component_view_model.cpp
         diagram_editor/editor_widget/component_view_model.h

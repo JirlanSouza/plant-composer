@@ -21,7 +21,6 @@
 #include <iostream>
 #include <qboxlayout.h>
 #include <QMdiSubWindow>
-#include <QLabel>
 
 namespace ui::main_window {
     AppMainWindow::AppMainWindow(
@@ -32,57 +31,43 @@ namespace ui::main_window {
     ) : QMainWindow(parent),
         appSettings_(appSettings), appLayoutManager_(new uil::AppLayoutManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
-        diagramEditorManager_(
-            new ui::diagram_editor::DiagramEditorManager(
-                new ui::diagram_editor::DiagramManager(
-                    libraries,
-                    appSettings,
-                    componentInstanceFactory,
-                    this
-                )
-            )
-        ), componentInstanceFactory_(componentInstanceFactory) {
-        // Change type and namespace
-        auto t0 = new QLabel("Project left side bar");
-        auto l0 = new QVBoxLayout();
-        l0->addWidget(t0);
-        auto w0 = new QWidget(this);
-        w0->setLayout(l0);
-
-        appLayoutManager_->addSideBarView("Project", w0, uil::LEFT);
-        auto t1 = new QLabel("Version control left side bar");
-        auto l1 = new QVBoxLayout();
-        l1->addWidget(t1);
-        auto w1 = new QWidget(this);
-        w1->setLayout(l1);
-        appLayoutManager_->addSideBarView("Version control", w1, uil::LEFT);
+        componentInstanceFactory_(componentInstanceFactory) {
+        diagramManager_ = new ui::diagram_editor::DiagramManager(
+            libraries,
+            appSettings,
+            componentInstanceFactory,
+            this
+        );
+        diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_);
 
 
+        auto project = new domain::project::Project(
+            "proj1",
+            "Test Project",
+            "This is a test project.",
+            "Test Author",
+            "1.0.0",
+            "/test_project.fbs"
+        );
+
+        project->addDiagramMetadata({"diag1", "Diagram 1", "diagrams/diag1->fbs"});
+        project->addDiagramMetadata({"diag2", "Diagram 2", "diagrams/diag2.fbs"});
+
+        projectViewManager_ = new uip::ProjectViewManager(project, this);
+        appLayoutManager_->addSideBarView("Project", projectViewManager_->getView(), uil::LEFT);
         appLayoutManager_->addSideBarView("Libraries", librariesViewManager_->getView(), uil::RIGHT);
-        auto t = new QLabel("Drivers content");
-        auto l = new QVBoxLayout();
-        l->addWidget(t);
-        auto w = new QWidget(this);
-        w->setLayout(l);
-        appLayoutManager_->addSideBarView("Properties", w, uil::RIGHT);
         appLayoutManager_->setCentralWidget(diagramEditorManager_->getView());
 
-        /*connect(libraryView_, &ucl::ComponentsLibraryView::componentPropertiesViewRequested, this,
-                &AppMainWindow::showComponentLibraryPropertiesDialog);*/
+        connect(
+            projectViewManager_,
+            &uip::ProjectViewManager::addDiagramClicked,
+            diagramEditorManager_,
+            &ui::diagram_editor::DiagramEditorManager::addNewDiagram
+        );
     }
 
     AppMainWindow::~AppMainWindow() = default;
 
     void AppMainWindow::showComponentLibraryPropertiesDialog(const int libraryId, const int componentId) {
-        // const dcl::Library library = libraries_->at(libraryId);
-        // const dcl::ComponentType component = library.components[componentId];
-        // std::unordered_map<int, dcl::PortType> portTypes;
-        //
-        // for (const auto &portType: library.portTypes) {
-        //     portTypes.emplace(portType.id, portType);
-        // }
-        //
-        // const auto dialog = new ucl::LibraryComponentPropertiesView(this, component, portTypes);
-        // dialog->exec();
     }
 }

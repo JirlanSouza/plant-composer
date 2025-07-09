@@ -34,9 +34,11 @@ add_subdirectory(tests/unit)
 add_subdirectory(tests/integration)
 
 if (${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+    qt_add_resources(RESOURCES_RCC src/resources/resources.qrc)
     qt_add_executable(plant-composer
             MANUAL_FINALIZATION
             ${PROJECT_SOURCES}
+            ${RESOURCES_RCC}
     )
     # Define target properties for Android with Qt 6 as:
     #    set_property(TARGET plant-composer APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

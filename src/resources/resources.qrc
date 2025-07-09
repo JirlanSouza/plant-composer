@@ -1,0 +1,10 @@
+<RCC>
+    <qresource>
+        <file>icons/project.svg</file>
+        <file>icons/components_library.svg</file>
+        <file>icons/component_type.svg</file>
+        <file>icons/folder.svg</file>
+        <file>icons/diagram_file_add.svg</file>
+        <file>icons/diagram_file.svg</file>
+        </qresource>
+</RCC>

@@ -39,7 +39,10 @@ namespace ui::components_library {
 
     void ComponentsLibraryModel::addLibrary(const int libraryIndex, const dcl::Library &library) {
         setColumnCount(1);
-        auto *libraryItem = new QStandardItem(QString::fromStdString(library.name));
+        auto *libraryItem = new QStandardItem(
+            QIcon(":/icons/components_library.svg"),
+            QString::fromStdString(library.name)
+        );
         libraryItem->setFlags(Qt::ItemIsEnabled);
         libraryItem->setData(libraryIndex, Qt::UserRole);
 
@@ -48,7 +51,7 @@ namespace ui::components_library {
         for (int i = 0; i < library.components.size(); ++i) {
             auto component = library.components[i];
             auto *componentItem = new QStandardItem(
-                newComponentIcon(),
+                QIcon(":/icons/component_type.svg"),
                 QString::fromStdString(component.name)
             );
             componentItem->setFlags(

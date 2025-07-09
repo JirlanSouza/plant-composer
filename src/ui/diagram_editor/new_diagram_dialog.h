@@ -19,11 +19,18 @@
 #pragma once
 #include <QDialog>
 
-class NewDiagramDialog : QDialog {
-public:
-    NewDiagramDialog(QWidget *parent = nullptr);
+namespace ui::diagram_editor {
+    class NewDiagramDialog : public QDialog {
+        Q_OBJECT
 
-    ~NewDiagramDialog();
+    public:
+        explicit NewDiagramDialog(QWidget *parent = nullptr);
 
-    int exec(std::string diagramName);
-};
+        ~NewDiagramDialog() override;
+
+        int execForName(std::string diagramName);
+
+    signals:
+        void diagramNameEntered(const std::string &diagramName);
+    };
+}

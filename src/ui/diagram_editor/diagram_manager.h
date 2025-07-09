@@ -43,12 +43,16 @@ namespace ui::diagram_editor {
 
         ~DiagramManager() override;
 
-        void openDiagram(const std::string &diagramId);
-
         DiagramViewModel *getDiagram(const std::string &diagramId);
+
+    public slots:
+        void addDiagram(const std::string &diagramName);
+
+        void openDiagram(const std::string &diagramId);
 
     signals:
         void diagramOpened(std::string diagramId);
+        void diagramNameInvalid(const std::string &diagramName);
 
     private:
         std::vector<dcl::Library> *libraries_;

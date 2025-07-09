@@ -38,6 +38,14 @@ namespace ui::diagram_editor {
         setDragMode(QGraphicsView::RubberBandDrag);
     }
 
+    void DiagramEditorView::fitSceneToView() {
+        if (!scene()) {
+            return;
+        }
+
+        fitInView(scene()->sceneRect(), Qt::KeepAspectRatio);
+    }
+
 
     void DiagramEditorView::wheelEvent(QWheelEvent *event) {
         constexpr double zoomFactor = 1.15;

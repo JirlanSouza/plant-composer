@@ -21,12 +21,13 @@
 namespace ui::diagram_editor {
     DiagramEditorScene::DiagramEditorScene(DiagramViewModel *diagramModel, QObject *parent) : QGraphicsScene(parent),
         diagramModel_(diagramModel), parent_(parent) {
+        setSceneRect(0, 0, diagramModel->getWidth(), diagramModel->getHeight());
         connect(diagramModel_, &DiagramViewModel::componentAdded, this, &DiagramEditorScene::onComponentAdded);
     }
 
-    void DiagramEditorScene::drawBackground(QPainter *painter, const QRectF &rect) {
+    void DiagramEditorScene::drawBackground(QPainter *painter, const QRectF &_) {
         painter->setPen(QPen(gridColor, 0.4, Qt::DashLine));
-
+        const auto rect = sceneRect();
         const int left = static_cast<int>(std::floor(rect.left()));
         const int right = static_cast<int>(std::ceil(rect.right()));
         const int top = static_cast<int>(std::floor(rect.top()));
@@ -39,13 +40,16 @@ namespace ui::diagram_editor {
         for (int y = top - (top % gridSize); y < bottom; y += gridSize) {
             painter->drawLine(left, y, right, y);
         }
+
+        painter->setPen(QPen(QColor(240, 240, 240), 2, Qt::SolidLine));
+        painter->drawRect(rect);
     }
 
     void DiagramEditorScene::onComponentAdded(ComponentViewModel *componentViewModel) {
         if (componentViewModel == nullptr) {
             return;
         }
-        const auto item = new ComponentInstanceView(componentViewModel, nullptr);
+        const auto item = new ComponentView(componentViewModel, nullptr);
         componentInstanceViews_[componentViewModel->getId().toStdString()] = item;
         addItem(item);
     }

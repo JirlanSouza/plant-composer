@@ -19,29 +19,43 @@
 #include "diagram_editor_manager.h"
 
 #include <QTabBar>
+#include <QMessageBox>
 
 namespace ui::diagram_editor {
-    DiagramEditorManager::DiagramEditorManager(DiagramManager *diagramService, QWidget *parent): QObject(parent),
-        diagramService_(diagramService) {
+    DiagramEditorManager::DiagramEditorManager(DiagramManager *diagramManager, QWidget *parent): QObject(parent),
+        diagramManager_(diagramManager) {
         editorArea_ = new QTabWidget();
         editorArea_->setDocumentMode(true);
         editorArea_->setMovable(true);
         editorArea_->setTabsClosable(true);
+        newDiagramDialog_ = new NewDiagramDialog(editorArea_);
 
         connect(editorArea_, &QTabWidget::tabCloseRequested, this, &DiagramEditorManager::onTabCloseRequested);
         connect(editorArea_->tabBar(), &QTabBar::tabMoved, this, &DiagramEditorManager::onTabMoved);
-
-        diagramService_->openDiagram("lkfdg0q9jgdjnvofruifdek");
-        onOpenedDiagram("lkfdg0q9jgdjnvofruifdek");
-
-        diagramService_->openDiagram("lkfdg0q9jgdjnvofruif438dsf");
-        onOpenedDiagram("lkfdg0q9jgdjnvofruif438dsf");
-
-        diagramService_->openDiagram("lkfdg0q9jgdjnvofruisdu82k");
-        onOpenedDiagram("lkfdg0q9jgdjnvofruisdu82k");
+        connect(diagramManager_, &DiagramManager::diagramOpened, this, &DiagramEditorManager::onOpenedDiagram);
+        connect(
+            diagramManager_,
+            &DiagramManager::diagramNameInvalid,
+            this,
+            &DiagramEditorManager::onInvalidDiagramName
+        );
+        connect(newDiagramDialog_, &NewDiagramDialog::diagramNameEntered, diagramManager_, &DiagramManager::addDiagram);
     }
 
     DiagramEditorManager::~DiagramEditorManager() = default;
+
+    void DiagramEditorManager::addNewDiagram() const {
+        newDiagramDialog_->execForName("");
+    }
+
+    void DiagramEditorManager::onInvalidDiagramName(const std::string &diagramName) const {
+        QMessageBox::warning(
+            editorArea_,
+            tr("Invalid Diagram Name"),
+            QString::fromStdString("The diagram name '" + diagramName + "' is invalid. Please choose a different name.")
+        );
+    }
+
 
     void DiagramEditorManager::onOpenedDiagram(const std::string &diagramId) {
         if (diagramEditorTabs_.contains(diagramId)) {
@@ -49,17 +63,21 @@ namespace ui::diagram_editor {
             return;
         }
 
-        DiagramViewModel *diagram = diagramService_->getDiagram(diagramId);
+        if (newDiagramDialog_->isVisible()) {
+            newDiagramDialog_->accept();
+        }
+
+        DiagramViewModel *diagram = diagramManager_->getDiagram(diagramId);
         auto *diagramEditorView = new DiagramEditorView(diagramId, editorArea_);
         auto *diagramEditorScene = new DiagramEditorScene(diagram, diagramEditorView);
-        diagramEditorScene->setSceneRect(0, 0, diagram->getWidth(), diagram->getHeight());
         diagramEditorView->setScene(diagramEditorScene);
 
         const DiagramEditorTab diagramEditorTab{diagram, diagramEditorView, diagramEditorScene};
         diagramEditorTabs_[diagramId] = diagramEditorTab;
         editorArea_->addTab(diagramEditorTab.diagramEditorView_, QString::fromStdString(diagram->getName()));
+        editorArea_->setCurrentWidget(diagramEditorTab.diagramEditorView_);
         editorTabsOrder_.push_back(diagramId);
-
+        diagramEditorTab.diagramEditorView_->fitSceneToView();
         connect(
             diagramEditorView,
             &DiagramEditorView::addComponentToScene,

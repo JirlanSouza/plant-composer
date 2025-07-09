@@ -31,6 +31,9 @@ namespace ui::diagram_editor {
     signals:
         void addComponentToScene(std::string diagramId, int libraryId, int componentId, QPointF posi);
 
+        public slots:
+        void fitSceneToView();
+
     protected:
         void wheelEvent(QWheelEvent *event) override;
 

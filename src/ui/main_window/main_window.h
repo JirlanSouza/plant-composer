@@ -21,16 +21,20 @@
 #include <memory>
 
 #include "app_layout_manager.h"
+#include "ui/project/project_view_manager.h"
 #include "components_library/libraries_view_manager.h"
 #include "diagram_editor/diagram_editor_manager.h"
 #include "domain/diagram/component_instance_factory.h"
+#include "domain/project/model/project.h"
 
-namespace dcl = domain::components_library;
-namespace dst = domain::settings;
+namespace uil = ui::layout;
+namespace uip = ui::project;
 namespace ucl = ui::components_library;
 namespace ude = ui::diagram_editor;
-namespace uil = ui::layout;
+namespace dst = domain::settings;
+namespace dcl = domain::components_library;
 namespace dd = domain::diagram;
+namespace dp = domain::project;
 
 namespace ui::main_window {
     class AppMainWindow final : public QMainWindow {
@@ -49,7 +53,9 @@ namespace ui::main_window {
     private:
         std::shared_ptr<dst::AppSettings> appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
+        uip::ProjectViewManager *projectViewManager_;
         ucl::LibrariesViewManager *librariesViewManager_;
+        ude::DiagramManager *diagramManager_;
         ude::DiagramEditorManager *diagramEditorManager_;
         dd::ComponentInstanceFactory *componentInstanceFactory_;
 
