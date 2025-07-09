@@ -22,16 +22,16 @@
 #include "component_view_model.h"
 
 namespace ui::diagram_editor {
-    class ComponentInstanceView final : public QGraphicsSvgItem {
+    class ComponentView final : public QGraphicsSvgItem {
         Q_OBJECT
 
     public:
-        explicit ComponentInstanceView(
+        explicit ComponentView(
             ComponentViewModel *componentViewModel,
             QGraphicsItem *parent
         );
 
-        ~ComponentInstanceView() override = default;
+        ~ComponentView() override = default;
 
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
 
@@ -49,7 +49,7 @@ namespace ui::diagram_editor {
 
         QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
-        bool componentViewModelPositionIsEqual(const QPointF &posi) const;
+        bool isPositionSameAsViewModel(const QPointF &posi) const;
 
     private
     :

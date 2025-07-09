@@ -41,7 +41,7 @@ namespace ui::diagram_editor {
         QObject *parent_;
         const int gridSize = 50;
         const QColor gridColor = QColor(220, 220, 220);
-        std::unordered_map<std::string, ComponentInstanceView *> componentInstanceViews_;
+        std::unordered_map<std::string, ComponentView *> componentInstanceViews_;
 
     public slots:
         void onComponentAdded(ui::diagram_editor::ComponentViewModel *componentViewModel);

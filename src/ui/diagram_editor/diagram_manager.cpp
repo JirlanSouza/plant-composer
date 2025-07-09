@@ -36,6 +36,19 @@ namespace ui::diagram_editor {
 
     DiagramManager::~DiagramManager() = default;
 
+    void DiagramManager::addDiagram(const std::string &diagramName) {
+        if (diagramName.empty()) {
+            emit diagramNameInvalid(diagramName);
+            return;
+        }
+
+        const auto diagram = new dd::Diagram(newId(), diagramName);
+
+        openedDiagrams_[diagram->getId()] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
+
+        emit diagramOpened(diagram->getId());
+    }
+
 
     void DiagramManager::openDiagram(const std::string &diagramId) {
         if (openedDiagrams_.contains(diagramId)) {

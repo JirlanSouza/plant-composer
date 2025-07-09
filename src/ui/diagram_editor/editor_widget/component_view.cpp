@@ -23,7 +23,7 @@
 #include <QSvgRenderer>
 
 namespace ui::diagram_editor {
-    ComponentInstanceView::ComponentInstanceView(
+    ComponentView::ComponentView(
         ComponentViewModel *componentViewModel,
         QGraphicsItem *parent
     ): QGraphicsSvgItem(
@@ -42,7 +42,6 @@ namespace ui::diagram_editor {
             &ComponentViewModel::positionChanged,
             this,
             [this]() {
-                qDebug() << "Position changed";
                 setPos(componentViewModel_->getPosition());
             }
         );
@@ -50,7 +49,7 @@ namespace ui::diagram_editor {
         setPos(componentViewModel_->getPosition());
     }
 
-    void ComponentInstanceView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+    void ComponentView::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
         QGraphicsSvgItem::paint(painter, option, widget);
 
         if (isSelected()) {
@@ -62,39 +61,39 @@ namespace ui::diagram_editor {
         }
     }
 
-    void ComponentInstanceView::setCenterPosition(const int x, const int y) const {
+    void ComponentView::setCenterPosition(const int x, const int y) const {
         const auto xOffset = boundingRect().width() / 2;
         const auto yOffset = boundingRect().height() / 2;
         componentViewModel_->setPosition(QPointF(x - xOffset, y - yOffset));
     }
 
-    void ComponentInstanceView::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+    void ComponentView::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         setSelected(true);
         update();
         QGraphicsSvgItem::mousePressEvent(event);
     }
 
-    void ComponentInstanceView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+    void ComponentView::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
         QGraphicsSvgItem::mouseReleaseEvent(event);
     }
 
-    void ComponentInstanceView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
+    void ComponentView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) {
         QGraphicsSvgItem::mouseDoubleClickEvent(event);
     }
 
-    void ComponentInstanceView::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    void ComponentView::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         QGraphicsSvgItem::mouseMoveEvent(event);
     }
 
-    QVariant ComponentInstanceView::itemChange(const GraphicsItemChange change, const QVariant &value) {
-        if (change == ItemPositionChange && scene() && componentViewModelPositionIsEqual(value.toPointF())) {
+    QVariant ComponentView::itemChange(const GraphicsItemChange change, const QVariant &value) {
+        if (change == ItemPositionChange && scene() && !isPositionSameAsViewModel(value.toPointF())) {
             const QPointF newPos = value.toPointF();
             componentViewModel_->setPosition(newPos);
         }
         return QGraphicsSvgItem::itemChange(change, value);
     }
 
-    bool ComponentInstanceView::componentViewModelPositionIsEqual(const QPointF &posi) const {
+    bool ComponentView::isPositionSameAsViewModel(const QPointF &posi) const {
         return comparesEqual(componentViewModel_->getPosition(), posi);
     }
 }
