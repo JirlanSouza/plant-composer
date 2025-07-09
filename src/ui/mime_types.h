@@ -18,4 +18,5 @@
 
 #pragma once
 
-constexpr auto MIME_TYPE_COMPONENT = "application/vnd.plant-composer.component";
+#define MIME_TYPE_COMPONENT "application/plant-composer.component"
+#define MIME_TYPE_DIAGRAM "application/plant-composer.diagram"
