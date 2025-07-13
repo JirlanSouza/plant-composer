@@ -47,6 +47,7 @@ void PlantComposerApplication::initialize(int argc, char *argv[]) {
         appMainWindow_ = std::make_unique<AppMainWindow>(
             &libraries_,
             appSettings_.get(),
+            idFactory_.get(),
             componentInstanceFactory_.get(),
             nullptr
         );
