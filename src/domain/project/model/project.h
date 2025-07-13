@@ -19,13 +19,26 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <memory>
+
+#include "project_node.h"
 
 namespace domain::project {
-    struct DiagramMetadata {
-        std::string id;
-        std::string name;
-        std::string filePath;
+    class DiagramMetadata : public ProjectNode<DiagramMetadata> {
+    public:
+        DiagramMetadata(
+            const std::string &id,
+            NodeContainer<DiagramMetadata> *parent,
+            const std::string &name,
+            const std::string &filePath
+        );
+
+        std::optional<NodeContainer<DiagramMetadata> *> getAsFolder() override;
+
+        std::optional<DiagramMetadata *> getAsFile() override;
+
+    private:
+        std::string filePath_;
     };
 
     class Project {
@@ -53,9 +66,7 @@ namespace domain::project {
 
         [[nodiscard]] std::string getPath() const;
 
-        [[nodiscard]] std::vector<DiagramMetadata> getDiagramsMetadata() const;
-
-        void addDiagramMetadata(const DiagramMetadata &metadata);
+        [[nodiscard]] ProjectCategory<DiagramMetadata> *diagrams() const;
 
     private:
         std::string id_;
@@ -64,6 +75,6 @@ namespace domain::project {
         std::string author_;
         std::string version_;
         std::string path_;
-        std::vector<DiagramMetadata> diagramsMetadata_;
+        std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams_;
     };
 }

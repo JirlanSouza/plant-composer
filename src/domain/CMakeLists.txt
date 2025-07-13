@@ -1,10 +1,9 @@
-add_library(domain STATIC
-        project/model/project.cpp
-        project/model/project.h
-        project/project_loader.h)
+add_library(domain STATIC)
+
 target_sources(domain
         PUBLIC
         shared/id_factory.h
+        settings/app_settings.h
 
         components_library/model/component_type.h
         components_library/model/component_io.h
@@ -23,7 +22,11 @@ target_sources(domain
         diagram/component_instance_factory.h
         diagram/component_instance_factory.cpp
 
-        settings/app_settings.h
+        project/model/project.cpp
+        project/model/project.h
+        project/project_loader.h
+        project/model/project_node.h
+
 )
 
 target_include_directories(domain PUBLIC ../)

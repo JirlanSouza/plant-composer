@@ -33,39 +33,36 @@ namespace domain::project {
         author_(author),
         version_(version),
         path_(path) {
+        diagrams_ = std::make_unique<ProjectCategory<DiagramMetadata>>("diagrams_root", "Diagrams");
     }
 
     Project::~Project() = default;
 
-    std::string Project::getId() const {
-        return id_;
+    std::string Project::getId() const { return id_; }
+    std::string Project::getName() const { return name_; }
+    std::string Project::getDescription() const { return description_; }
+    std::string Project::getAuthor() const { return author_; }
+    std::string Project::getVersion() const { return version_; }
+    std::string Project::getPath() const { return path_; }
+
+    ProjectCategory<DiagramMetadata> *Project::diagrams() const {
+        return diagrams_.get();
     }
 
-    std::string Project::getName() const {
-        return name_;
+    DiagramMetadata::DiagramMetadata(
+        const std::string &id,
+        NodeContainer<DiagramMetadata> *parent,
+        const std::string &name,
+        const std::string &filePath
+    ): ProjectNode<DiagramMetadata>(NodeType::FILE, id, name, parent),
+        filePath_(filePath) {
     }
 
-    std::string Project::getDescription() const {
-        return description_;
+    std::optional<NodeContainer<DiagramMetadata> *> DiagramMetadata::getAsFolder() {
+        return std::nullopt;
     }
 
-    std::string Project::getAuthor() const {
-        return author_;
-    }
-
-    std::string Project::getVersion() const {
-        return version_;
-    }
-
-    std::string Project::getPath() const {
-        return path_;
-    }
-
-    std::vector<DiagramMetadata> Project::getDiagramsMetadata() const {
-        return diagramsMetadata_;
-    }
-
-    void Project::addDiagramMetadata(const DiagramMetadata &metadata) {
-        diagramsMetadata_.emplace_back(metadata);
+    std::optional<DiagramMetadata *> DiagramMetadata::getAsFile() {
+        return this;
     }
 }
