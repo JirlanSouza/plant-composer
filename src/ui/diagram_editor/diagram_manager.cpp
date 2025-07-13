@@ -35,21 +35,20 @@ namespace ui::diagram_editor {
         appSettings_(appSettings),
         componentInstanceFactory_(componentInstanceFactory),
         projectViewModel_(projectViewModel) {
-        connect(projectViewModel_, &ui::project::ProjectViewModel::diagramAdded, this, &DiagramManager::openDiagram);
+        connect(projectViewModel_, &ui::project::ProjectViewModel::openDiagram, this, &DiagramManager::openDiagram);
     }
 
     DiagramManager::~DiagramManager() = default;
 
-    void DiagramManager::openDiagram(const dp::DiagramMetadata &diagramMetadata) {
-        if (openedDiagrams_.contains(diagramMetadata.id)) {
-            emit diagramOpened(diagramMetadata.id);
+    void DiagramManager::openDiagram(const dp::DiagramMetadata *diagramMetadata) {
+        if (openedDiagrams_.contains(diagramMetadata->getId())) {
+            emit diagramOpened(diagramMetadata->getId());
             return;
         }
 
-        // TODO: This should load the diagram from a file, not create a new one.
-        const auto diagram = new dd::Diagram(diagramMetadata.id, diagramMetadata.name);
-        openedDiagrams_[diagramMetadata.id] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
-        emit diagramOpened(diagramMetadata.id);
+        const auto diagram = new dd::Diagram(diagramMetadata->getId(), diagramMetadata->getName());
+        openedDiagrams_[diagramMetadata->getId()] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
+        emit diagramOpened(diagramMetadata->getId());
     }
 
     DiagramViewModel *DiagramManager::getDiagram(const std::string &diagramId) {
