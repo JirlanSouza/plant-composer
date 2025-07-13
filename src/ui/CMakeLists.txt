@@ -20,6 +20,8 @@ target_sources(ui
         project/project_view_model.cpp
         project/new_diagram_dialog.cpp
         project/new_diagram_dialog.h
+        project/project_tree/project_tree_item_type.h
+        project/project_tree/project_tree_item_type.cpp
         project/project_tree/project_tree_model.h
         project/project_tree/project_tree_model.cpp
         project/project_tree/project_tree_view.h

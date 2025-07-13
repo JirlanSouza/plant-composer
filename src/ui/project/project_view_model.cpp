@@ -18,33 +18,64 @@
 
 #include "project_view_model.h"
 
-#include "id/id_utils.h"
+#include <iostream>
 
 namespace ui::project {
-    ProjectViewModel::ProjectViewModel(dp::Project *project, QObject *parent) : QObject(parent), project_(project) {
+    ProjectViewModel::ProjectViewModel(IDFactory *idFactory, dp::Project *project, QObject *parent)
+        : QObject(parent), idFactory_(idFactory), project_(project) {
     }
 
     dp::Project *ProjectViewModel::getProject() const {
         return project_;
     }
 
-    dp::DiagramMetadata ProjectViewModel::getDiagramMetadata(const std::string &diagramId) const {
-        for (const auto &metadata: project_->getDiagramsMetadata()) {
-            if (metadata.id == diagramId) {
-                return metadata;
-            }
-        }
-        // TODO: Handle error if diagram not found. For now, return empty metadata.
-        return {};
-    }
+    void ProjectViewModel::addNewDiagram(const std::string &parentFolderId, const std::string &name) {
+        dp::NodeContainer<dp::DiagramMetadata> *parentFolder;
 
-    void ProjectViewModel::addDiagram(const std::string &name) {
-        dp::DiagramMetadata metadata{
-            newId(),
+        if (parentFolderId == project_->diagrams()->getId()) {
+            parentFolder = project_->diagrams();
+        } else {
+            auto parentFolderOpt = project_->diagrams()->getFolder(parentFolderId);
+            if (!parentFolderOpt.has_value()) {
+                return;
+            }
+
+            parentFolder = parentFolderOpt.value();
+        }
+
+
+        auto diagram = std::make_unique<dp::DiagramMetadata>(
+            idFactory_->newId(),
+            parentFolder,
             name,
             "diagrams/" + name + ".fbs"
-        };
-        project_->addDiagramMetadata(metadata);
-        emit diagramAdded(metadata);
+        );
+
+        emit diagramAdded(diagram.get());
+        parentFolder->addChild(std::move(diagram));
+    }
+
+    void ProjectViewModel::addNewDiagramFolder(const std::string &parentFolderId, const std::string &name) {
+        dp::NodeContainer<dp::DiagramMetadata> *parentFolder;
+
+        if (parentFolderId == project_->diagrams()->getId()) {
+            parentFolder = project_->diagrams();
+        } else {
+            auto parentFolderOpt = project_->diagrams()->getFolder(parentFolderId);
+            if (!parentFolderOpt.has_value()) {
+                return;
+            }
+
+            parentFolder = parentFolderOpt.value();
+        }
+
+        auto newFolder = std::make_unique<dp::NodeContainer<dp::DiagramMetadata> >(
+            idFactory_->newId(),
+            parentFolder,
+            name
+        );
+
+        emit diagramFolderAdded(newFolder.get());
+        parentFolder->addChild(std::move(newFolder));
     }
 }

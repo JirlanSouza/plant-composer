@@ -19,50 +19,61 @@
 #pragma once
 
 #include <QStandardItemModel>
+#include <unordered_map>
+
+#include "project_tree_item_type.h"
 #include "domain/project/model/project.h"
 #include "ui/project/project_view_model.h"
 
 namespace dp = domain::project;
 
 namespace ui::project {
+    enum ProjectTreeRole {
+        ITEM_TYPE_ROLE = Qt::UserRole + 1, ITEM_ID_ROLE,
+    };
+
     class ProjectTreeModel final : public QStandardItemModel {
         Q_OBJECT
 
     public:
         explicit ProjectTreeModel(
             ProjectViewModel *projectViewModel,
-            const std::string &projectItemIconPath,
-            QObject *parent
+            QObject *parent = nullptr
         );
 
-        [[nodiscard]] QStringList mimeTypes() const override;
-
-        [[nodiscard]] QMimeData *mimeData(const QModelIndexList &indexes) const override;
-
-        [[nodiscard]] bool isAddDiagramItem(const QModelIndex &index) const;
-
     private slots:
-        void onDiagramAdded(const domain::project::DiagramMetadata &metadata) const;
+        void onDiagramAdded(const domain::project::DiagramMetadata *diagram);
+
+        void onDiagramFolderAdded(
+            const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder
+        );
 
     private:
         ProjectViewModel *projectViewModel_;
-        const std::string projectItemIconPath_;
-        QStandardItem *projectTreeRootItem_;
-        QStandardItem *diagramsFolderItem_;
-        QStandardItem *addDiagramItem_;
+        std::unordered_map<std::string, QStandardItem *> itemMap_;
 
-        void buildProjectRootModel();
+        void buildModel();
 
-        void addDiagramFolder();
+        void populateFolder(
+            QStandardItem *parentItem,
+            const dp::NodeContainer<dp::DiagramMetadata> *folder,
+            TreeItemTypes::TreeItemType type
+        );
 
-        void appendDiagram(const dp::DiagramMetadata &metadata) const;
+        void appendItem(
+            QStandardItem *parent,
+            const dp::DiagramMetadata *diagram,
+            TreeItemTypes::TreeItemType type
+        );
 
-        [[nodiscard]] QIcon newDiagramItemIcon() const {
-            return QIcon(QString::fromStdString(projectItemIconPath_));
-        }
+        void appendFolder(
+            QStandardItem *parent,
+            const dp::NodeContainer<dp::DiagramMetadata> *folder,
+            TreeItemTypes::TreeItemType type
+        );
 
-        [[nodiscard]] QIcon buildIcon() const {
-            return QIcon(QString::fromStdString(projectItemIconPath_));
-        }
+        static QIcon getIconForType(TreeItemTypes::TreeItemType type);
+
+        static QVariant stdStringToVariant(const std::string &str);
     };
 }

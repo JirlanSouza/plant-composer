@@ -45,6 +45,7 @@ namespace ui::main_window {
         AppMainWindow(
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings,
+            domain::IDFactory *idFactory,
             dd::ComponentInstanceFactory *componentInstanceFactory,
             QWidget *parent
         );

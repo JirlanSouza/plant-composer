@@ -45,5 +45,9 @@ namespace ui::project {
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
         NewDiagramDialog *newDiagramDialog_;
+
+        void onTreeViewDoubleClicked(const QModelIndex &index) const;
+
+        void onTreeViewContextMenuRequested(const QPoint &pos) const;
     };
 }

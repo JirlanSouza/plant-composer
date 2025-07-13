@@ -18,29 +18,27 @@
 
 #include "project_view_manager.h"
 
+#include <QMenu>
+
 namespace ui::project {
     ProjectViewManager::ProjectViewManager(ProjectViewModel *projectViewModel, QWidget *parent): QObject(parent),
         projectViewModel_(projectViewModel) {
-        projectTreeModel_ = new ProjectTreeModel(projectViewModel_, "", this);
-        projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
+        projectTreeModel_ = new ProjectTreeModel(projectViewModel, this);
+        projectTreeView_ = new ProjectTreeView(projectTreeModel_, projectViewModel, parent);
         newDiagramDialog_ = new NewDiagramDialog(projectTreeView_);
 
+        connect(projectTreeView_, &ProjectTreeView::doubleClicked, this, &ProjectViewManager::onTreeViewDoubleClicked);
         connect(
             projectTreeView_,
-            &ProjectTreeView::doubleClicked,
+            &ProjectTreeView::customContextMenuRequested,
             this,
-            [this](const QModelIndex &index) {
-                if (index.isValid() && projectTreeModel_->isAddDiagramItem(index)) {
-                    newDiagramDialog_->exec();
-                }
-            }
+            &ProjectViewManager::onTreeViewContextMenuRequested
         );
-
         connect(
             newDiagramDialog_,
             &NewDiagramDialog::diagramNameEntered,
             projectViewModel_,
-            &ProjectViewModel::addDiagram
+            &ProjectViewModel::addNewDiagram
         );
     }
 
@@ -48,5 +46,87 @@ namespace ui::project {
 
     QWidget *ProjectViewManager::getView() const {
         return projectTreeView_;
+    }
+
+    void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) const {
+        if (!index.isValid()) {
+            return;
+        }
+
+        const auto item = projectTreeModel_->itemFromIndex(index);
+        const auto typeData = item->data(ProjectTreeRole::ITEM_TYPE_ROLE);
+
+        if (!typeData.isValid()) {
+            return;
+        }
+
+        switch (typeData.value<TreeItemTypes::TreeItemType>()) {
+            case TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM: {
+                const auto parent = item->parent();
+                if (!parent) {
+                    return;
+                }
+
+                newDiagramDialog_->execFor("", "");
+            }
+            default: ;
+        }
+    }
+
+    void ProjectViewManager::onTreeViewContextMenuRequested(const QPoint &pos) const {
+        const auto index = projectTreeView_->indexAt(pos);
+        if (!index.isValid()) {
+            return;
+        }
+
+        const auto item = projectTreeModel_->itemFromIndex(index);
+        const auto typeData = item->data(ProjectTreeRole::ITEM_TYPE_ROLE);
+        qDebug() << "ProjectViewManager::onTreeViewContextMenuRequested with type: "
+                << static_cast<int>(typeData.value<TreeItemTypes::TreeItemType>());
+
+        if (!typeData.isValid()) {
+            return;
+        }
+
+        switch (typeData.value<TreeItemTypes::TreeItemType>()) {
+            case TreeItemTypes::DIAGRAM_ROOT_FOLDER:
+            case TreeItemTypes::DIAGRAM_FOLDER: {
+                const auto folderIdData = item->data(ProjectTreeRole::ITEM_ID_ROLE);
+
+                if (!folderIdData.isValid()) {
+                    return;
+                }
+
+                const auto folderId = folderIdData.toString().toStdString();
+
+
+                QMenu menu;
+                auto addDiagramAction = menu.addAction(tr("Add Diagram"));
+                auto addSubfolderAction = menu.addAction(tr("Add folder"));
+
+                connect(
+                    addDiagramAction,
+                    &QAction::triggered,
+                    this,
+                    [this, folderId]() {
+                        newDiagramDialog_->execFor(folderId, "");
+                    }
+                );
+
+                connect(
+                    addSubfolderAction,
+                    &QAction::triggered,
+                    [this, folderId]() {
+                        projectViewModel_->addNewDiagramFolder(folderId, "New Folder " + this->projectTreeModel_->rowCount());
+                    }
+                );
+
+                menu.exec(projectTreeView_->viewport()->mapToGlobal(pos));
+            }
+            default: {
+                qDebug() << "ProjectViewManager::onTreeViewContextMenuRequested with type: " << static_cast<int>(
+                    typeData.value<TreeItemTypes::TreeItemType>());
+            };
+        }
     }
 }

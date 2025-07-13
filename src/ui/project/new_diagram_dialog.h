@@ -30,14 +30,15 @@ namespace ui::project {
 
         ~NewDiagramDialog() override;
 
-        int execForName(const std::string& diagramName);
+        int execFor(const std::string &folderId, const std::string &diagramName);
 
         void reject() override;
 
     signals:
-        void diagramNameEntered(const std::string &diagramName);
+        void diagramNameEntered(const std::string &folderId, const std::string &diagramName);
 
     private:
         QLineEdit *namelineEdit_;
+        std::string folderId_;
     };
 }

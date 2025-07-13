@@ -16,29 +16,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "project_tree_view.h"
+#pragma once
+
+#include <QObject>
 
 namespace ui::project {
-    ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, ProjectViewModel *viewModel, QWidget *parent): QTreeView(parent),
-        model_(model), viewModel_(viewModel) {
-        QTreeView::setModel(model_);
-        setHeaderHidden(true);
-        setExpandsOnDoubleClick(true);
-        setSelectionMode(SingleSelection);
-        setLayoutDirection(Qt::LeftToRight);
-        setContextMenuPolicy(Qt::CustomContextMenu);
+    class TreeItemTypes : public QObject {
+        Q_OBJECT
 
-        setDragEnabled(true);
-        setDragDropMode(QAbstractItemView::DragOnly);
-        setDefaultDropAction(Qt::CopyAction);
+    public:
+        enum TreeItemType {
+            PROJECT_ROOT,
+            DIAGRAM_ROOT_FOLDER,
+            DIAGRAM_FOLDER,
+            DIAGRAM_FILE,
+            ADD_DIAGRAM_ACTION_ITEM,
+        };
 
-        setupContextMenu();
-
-        setRootIsDecorated(false);
-        expandAll();
-    }
-
-    void ProjectTreeView::setupContextMenu() {
-
-    }
+        Q_ENUM(TreeItemType)
+    };
 }

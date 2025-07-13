@@ -21,7 +21,9 @@
 #include <QObject>
 
 #include "domain/project/model/project.h"
+#include "domain/shared/id_factory.h"
 
+using domain::IDFactory;
 namespace dp = domain::project;
 
 namespace ui::project {
@@ -29,19 +31,25 @@ namespace ui::project {
         Q_OBJECT
 
     public:
-        explicit ProjectViewModel(dp::Project *project, QObject *parent = nullptr);
+        explicit ProjectViewModel(IDFactory *idFactory, dp::Project *project, QObject *parent = nullptr);
 
         [[nodiscard]] dp::Project *getProject() const;
 
-        [[nodiscard]] dp::DiagramMetadata getDiagramMetadata(const std::string &diagramId) const;
-
     public slots:
-        void addDiagram(const std::string &name);
+        void addNewDiagram(const std::string &parentFolderId, const std::string &name);
+
+        void addNewDiagramFolder(const std::string &parentFolderId, const std::string &name);
+
 
     signals:
-        void diagramAdded(const domain::project::DiagramMetadata &metadata);
+        void diagramAdded(const domain::project::DiagramMetadata *diagram);
+
+        void diagramFolderAdded(const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder);
+
+        void openDiagram(const domain::project::DiagramMetadata *diagram);
 
     private:
+        IDFactory *idFactory_;
         dp::Project *project_;
     };
 }

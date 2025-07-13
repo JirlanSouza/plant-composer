@@ -16,28 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+//
+// Created by Jirlan Souza on 13/07/25.
+//
 
-#include <QMimeData>
-#include <QTreeView>
-
-#include "project_tree_model.h"
-#include "../project_view_model.h"
+#include "project_tree_item_type.h"
 
 namespace ui::project {
-    class ProjectTreeView final : public QTreeView {
-        Q_OBJECT
-
-    public:
-        explicit ProjectTreeView(ProjectTreeModel *model, ProjectViewModel *viewModel, QWidget *parent = nullptr);
-
-    signals:
-        void componentPropertiesViewRequested(int libraryId, int componentId);
-
-    private:
-        ProjectTreeModel *model_;
-        ProjectViewModel *viewModel_;
-
-        void setupContextMenu();
-    };
 }

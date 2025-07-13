@@ -19,100 +19,141 @@
 
 #include "project_tree_model.h"
 
-#include <qiodevice.h>
 #include <QMimeData>
 
-#include "mime_types.h"
+#include "project_tree_item_type.h"
 
 namespace ui::project {
     ProjectTreeModel::ProjectTreeModel(
         ProjectViewModel *projectViewModel,
-        const std::string &projectItemIconPath,
         QObject *parent
-    ) : QStandardItemModel(parent), projectViewModel_(projectViewModel), projectItemIconPath_(projectItemIconPath) {
-        buildProjectRootModel();
-        addDiagramFolder();
-
+    ) : QStandardItemModel(parent), projectViewModel_(projectViewModel) {
+        buildModel();
         connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onDiagramAdded);
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::diagramFolderAdded,
+            this,
+            &ProjectTreeModel::onDiagramFolderAdded
+        );
     }
 
-    void ProjectTreeModel::buildProjectRootModel() {
+    void ProjectTreeModel::buildModel() {
+        clear();
+        itemMap_.clear();
         setColumnCount(1);
-        projectTreeRootItem_ = new QStandardItem(
-            QIcon(":/icons/project.svg"),
+
+        auto *rootItem = new QStandardItem(
+            getIconForType(TreeItemTypes::TreeItemType::PROJECT_ROOT),
             tr("Project: %1").arg(QString::fromStdString(projectViewModel_->getProject()->getName()))
         );
-        projectTreeRootItem_->setFlags(Qt::ItemIsEnabled);
-        appendRow(projectTreeRootItem_);
-    }
+        rootItem->setFlags(Qt::ItemIsEnabled);
+        rootItem->setData(TreeItemTypes::TreeItemType::PROJECT_ROOT, ProjectTreeRole::ITEM_TYPE_ROLE);
+        appendRow(rootItem);
 
-
-    void ProjectTreeModel::addDiagramFolder() {
-        if (!projectTreeRootItem_) {
-            return;
-        }
-
-        setColumnCount(1);
-        diagramsFolderItem_ = new QStandardItem(QIcon(":/icons/folder.svg"), tr("Diagrams"));
-        diagramsFolderItem_->setFlags(Qt::ItemIsEnabled);
-        projectTreeRootItem_->appendRow({diagramsFolderItem_});
-
-        addDiagramItem_ = new QStandardItem(
-            QIcon(":/icons/diagram_file_add.svg"),
-            tr("Add Diagram")
+        const auto *diagramsRoot = projectViewModel_->getProject()->diagrams();
+        auto *diagramsRootItem = new QStandardItem(
+            getIconForType(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER),
+            QString::fromStdString(diagramsRoot->getName())
         );
-        addDiagramItem_->setFlags(Qt::ItemIsEnabled);
-        diagramsFolderItem_->appendRow({addDiagramItem_});
+        diagramsRootItem->setFlags(Qt::ItemIsEnabled);
+        diagramsRootItem->setData(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER, ProjectTreeRole::ITEM_TYPE_ROLE);
+        diagramsRootItem->setData(stdStringToVariant(diagramsRoot->getId()), ProjectTreeRole::ITEM_ID_ROLE);
+        rootItem->appendRow(diagramsRootItem);
+        itemMap_[diagramsRoot->getId()] = diagramsRootItem;
 
-        const auto diagramsMetadata = projectViewModel_->getProject()->getDiagramsMetadata();
-        for (const auto &diagramMetadata: diagramsMetadata) {
-            appendDiagram(diagramMetadata);
+        auto *addNewDiagramItem = new QStandardItem(
+            getIconForType(TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM),
+            tr("Add New Diagram")
+        );
+        addNewDiagramItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        addNewDiagramItem->setData(
+            TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM,
+            ProjectTreeRole::ITEM_TYPE_ROLE
+        );
+        diagramsRootItem->appendRow(addNewDiagramItem);
+        itemMap_["add_new_diagram"] = addNewDiagramItem;
+
+        populateFolder(diagramsRootItem, diagramsRoot, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
+    }
+
+    void ProjectTreeModel::populateFolder(
+        QStandardItem *parentItem,
+        const dp::NodeContainer<dp::DiagramMetadata> *folder,
+        const TreeItemTypes::TreeItemType type
+    ) {
+        for (const auto *item: folder->getChildren()) {
+            if (item->isFile()) {
+                appendItem(parentItem, dynamic_cast<const dp::DiagramMetadata *>(item), type);
+            } else if (item->isFolder()) {
+                appendFolder(parentItem, dynamic_cast<const dp::NodeContainer<dp::DiagramMetadata> *>(item), type);
+            }
         }
     }
 
-    void ProjectTreeModel::appendDiagram(const dp::DiagramMetadata &metadata) const {
+    void ProjectTreeModel::appendItem(
+        QStandardItem *parent,
+        const dp::DiagramMetadata *diagram,
+        const TreeItemTypes::TreeItemType type
+    ) {
         auto *diagramItem = new QStandardItem(
-            QIcon(":/icons/diagram_file.svg"),
-            QString::fromStdString(metadata.name)
+            getIconForType(type),
+            QString::fromStdString(diagram->getName())
         );
-        diagramItem->setFlags(
-            Qt::ItemIsSelectable |
-            Qt::ItemIsEnabled |
-            Qt::ItemIsDragEnabled
-        );
-        diagramItem->setData(QVariant::fromValue(QString::fromStdString(metadata.id)), Qt::UserRole);
-        diagramsFolderItem_->appendRow({diagramItem});
+        diagramItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
+        diagramItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
+        diagramItem->setData(stdStringToVariant(diagram->getId()), ProjectTreeRole::ITEM_ID_ROLE);
+        parent->appendRow(diagramItem);
+        itemMap_[diagram->getId()] = diagramItem;
     }
 
-    void ProjectTreeModel::onDiagramAdded(const dp::DiagramMetadata &metadata) const {
-        appendDiagram(metadata);
+    void ProjectTreeModel::appendFolder(
+        QStandardItem *parent,
+        const dp::NodeContainer<dp::DiagramMetadata> *folder,
+        const TreeItemTypes::TreeItemType type
+    ) {
+        qDebug() << "ProjectTreeModel::appendFolder with type: " << static_cast<int>(type);
+        auto *folderItem = new QStandardItem(getIconForType(type), QString::fromStdString(folder->getName()));
+        folderItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
+        folderItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
+        folderItem->setData(stdStringToVariant(folder->getId()), ProjectTreeRole::ITEM_ID_ROLE);
+        parent->appendRow(folderItem);
+        itemMap_[folder->getId()] = folderItem;
+        populateFolder(folderItem, folder, type);
     }
 
-    QStringList ProjectTreeModel::mimeTypes() const {
-        return QStringList() << MIME_TYPE_DIAGRAM;
-    }
+    void ProjectTreeModel::onDiagramAdded(const dp::DiagramMetadata *diagram) {
+        std::string parentId = diagram->getParent() ? diagram->getParent()->getId() : "";
 
-    QMimeData *ProjectTreeModel::mimeData(const QModelIndexList &indexes) const {
-        if (indexes.isEmpty()) return nullptr;
-
-        const QModelIndex &index = indexes.first();
-        if (!index.isValid() || isAddDiagramItem(index) || !index.parent().isValid() || index.parent() !=
-            diagramsFolderItem_->index()) {
-            return nullptr;
+        if (itemMap_.contains(parentId)) {
+            appendItem(itemMap_[parentId], diagram, TreeItemTypes::TreeItemType::DIAGRAM_FILE);
         }
-
-        const auto diagramId = index.data(Qt::UserRole).toString();
-
-        QByteArray encodedData;
-        QDataStream stream(&encodedData, QIODevice::WriteOnly);
-        stream << diagramId;
-
-        auto *mimeData = new QMimeData();
-        mimeData->setData(MIME_TYPE_DIAGRAM, encodedData);
-        return mimeData;
     }
 
-    bool ProjectTreeModel::isAddDiagramItem(const QModelIndex &index) const {
-        return index.isValid() && index == addDiagramItem_->index();
+    void ProjectTreeModel::onDiagramFolderAdded(const dp::NodeContainer<dp::DiagramMetadata> *folder) {
+        std::string parentId = folder->getParent() ? folder->getParent()->getId() : "";
+
+        if (itemMap_.contains(parentId)) {
+            appendFolder(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
+        }
+    }
+
+    QIcon ProjectTreeModel::getIconForType(const TreeItemTypes::TreeItemType type) {
+        switch (type) {
+            case TreeItemTypes::TreeItemType::PROJECT_ROOT:
+                return QIcon(":/icons/project.svg");
+            case TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER: case TreeItemTypes::TreeItemType::DIAGRAM_FOLDER:
+                return QIcon(":/icons/folder.svg");
+            case TreeItemTypes::TreeItemType::DIAGRAM_FILE:
+                return QIcon(":/icons/diagram_file.svg");
+            case TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM:
+                return QIcon(":/icons/diagram_file_add.svg");
+            default:
+                return {};
+        }
+    }
+
+    QVariant ProjectTreeModel::stdStringToVariant(const std::string &str) {
+        return QVariant::fromValue(QString::fromStdString(str));
     }
 }

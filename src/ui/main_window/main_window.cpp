@@ -26,6 +26,7 @@ namespace ui::main_window {
     AppMainWindow::AppMainWindow(
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings,
+        domain::IDFactory *idFactory,
         dd::ComponentInstanceFactory *componentInstanceFactory,
         QWidget *parent
     ) : QMainWindow(parent),
@@ -41,7 +42,7 @@ namespace ui::main_window {
             "/test_project.fbs"
         );
 
-        projectViewModel_ = new uip::ProjectViewModel(project, this);
+        projectViewModel_ = new uip::ProjectViewModel(idFactory, project, this);
         diagramManager_ = new ui::diagram_editor::DiagramManager(
             libraries,
             appSettings_,

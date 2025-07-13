@@ -62,7 +62,8 @@ namespace ui::project {
             this,
             [this]() {
                 accept();
-                emit diagramNameEntered(namelineEdit_->text().toStdString());
+                emit diagramNameEntered(folderId_, namelineEdit_->text().toStdString());
+                folderId_ = "";
                 namelineEdit_->clear();
             }
         );
@@ -71,12 +72,14 @@ namespace ui::project {
 
     NewDiagramDialog::~NewDiagramDialog() = default;
 
-    int NewDiagramDialog::execForName(const std::string &diagramName) {
+    int NewDiagramDialog::execFor(const std::string& folderId, const std::string &diagramName) {
+        folderId_ = folderId;
         namelineEdit_->setText(QString::fromStdString(diagramName));
         return QDialog::exec();
     }
 
     void NewDiagramDialog::reject() {
+        folderId_ = "";
         namelineEdit_->clear();
         QDialog::reject();
     }
