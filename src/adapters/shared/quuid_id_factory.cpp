@@ -22,6 +22,6 @@
 
 namespace adapters {
     std::string QUuidIdFactory::newId() {
-        return QUuid().toString().toStdString();
+        return QUuid::createUuidV7().toString().toStdString();
     }
 }
