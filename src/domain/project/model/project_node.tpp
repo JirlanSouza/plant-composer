@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+#pragma once
 
 #include "project_node.h"
 
@@ -52,10 +53,11 @@ namespace domain::project {
     }
 
     template<typename T>
-    void NodeContainer<T>::addChild(std::unique_ptr<ProjectNode<T>> item) {
+    void NodeContainer<T>::addChild(std::unique_ptr<ProjectNode<T> > item) {
         if (item == nullptr || item->getParent() != this) {
             return;
         }
+
         children_[item->getId()] = std::move(item);
     }
 
@@ -67,8 +69,8 @@ namespace domain::project {
     template<typename T>
     std::vector<ProjectNode<T> *> NodeContainer<T>::getChildren() const {
         std::vector<ProjectNode<T> *> items;
-        for (const auto &val : children_ | std::views::values) {
-            items.push_back(val.get());
+        for (const auto &child: children_ | std::views::values) {
+            items.push_back(child.get());
         }
         return items;
     }
@@ -85,10 +87,29 @@ namespace domain::project {
 
     template<typename T>
     std::optional<NodeContainer<T> *> NodeContainer<T>::getFolder(const std::string &folderId) {
-        if (!children_.contains(folderId) || !children_.at(folderId)->isFolder()) {
-            return std::nullopt;
+        if (children_.contains(folderId) && children_.at(folderId)->isFolder()) {
+            return static_cast<NodeContainer<T> *>(children_.at(folderId).get());
         }
-        return static_cast<NodeContainer<T> *>(children_.at(folderId).get());
+
+        for (const std::unique_ptr<ProjectNode<T> > &child: children_ | std::views::values) {
+            if (child->isFile()) {
+                continue;
+            }
+
+            auto folderOpt = child->getAsFolder();
+
+            if (!folderOpt.has_value()) {
+                continue;
+            }
+
+            const auto folder = folderOpt.value()->getFolder(folderId);
+
+            if (folder.has_value()) {
+                return folder;
+            }
+        }
+
+        return std::nullopt;
     }
 
     template<typename T>

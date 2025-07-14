@@ -67,9 +67,18 @@ namespace ui::project {
                     return;
                 }
 
-                newDiagramDialog_->execFor("", "");
+                const auto folderIdData = parent->data(ProjectTreeRole::ITEM_ID_ROLE);
+
+                if (!folderIdData.isValid()) {
+                    return;
+                }
+
+                const auto folderId = folderIdData.toString().toStdString();
+
+                newDiagramDialog_->execFor(folderId, "");
             }
-            default: ;
+            default: {
+            };
         }
     }
 
@@ -81,8 +90,6 @@ namespace ui::project {
 
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto typeData = item->data(ProjectTreeRole::ITEM_TYPE_ROLE);
-        qDebug() << "ProjectViewManager::onTreeViewContextMenuRequested with type: "
-                << static_cast<int>(typeData.value<TreeItemTypes::TreeItemType>());
 
         if (!typeData.isValid()) {
             return;
@@ -117,15 +124,16 @@ namespace ui::project {
                     addSubfolderAction,
                     &QAction::triggered,
                     [this, folderId]() {
-                        projectViewModel_->addNewDiagramFolder(folderId, "New Folder " + this->projectTreeModel_->rowCount());
+                        projectViewModel_->addNewDiagramFolder(
+                            folderId,
+                            "New Folder " + this->projectTreeModel_->rowCount()
+                        );
                     }
                 );
 
                 menu.exec(projectTreeView_->viewport()->mapToGlobal(pos));
             }
             default: {
-                qDebug() << "ProjectViewManager::onTreeViewContextMenuRequested with type: " << static_cast<int>(
-                    typeData.value<TreeItemTypes::TreeItemType>());
             };
         }
     }
