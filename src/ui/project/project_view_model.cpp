@@ -78,4 +78,14 @@ namespace ui::project {
         emit diagramFolderAdded(newFolder.get());
         parentFolder->addChild(std::move(newFolder));
     }
+
+    void ProjectViewModel::openDiagramRequested(const std::string &diagramId) {
+        const auto diagramOpt = project_->diagrams()->getFile(diagramId);
+
+        if (!diagramOpt.has_value()) {
+            return;
+        }
+
+        emit openDiagram(diagramOpt.value());
+    }
 }

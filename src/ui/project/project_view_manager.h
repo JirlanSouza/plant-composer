@@ -17,12 +17,13 @@
  */
 
 #pragma once
+
 #include <QObject>
 
 #include "project_tree/project_tree_model.h"
 #include "project_tree/project_tree_view.h"
 #include "project_view_model.h"
-#include "new_diagram_dialog.h"
+#include "project_tree/project_tree_item_type.h"
 
 namespace dp = domain::project;
 
@@ -40,14 +41,15 @@ namespace ui::project {
 
         [[nodiscard]] QWidget *getView() const;
 
+    private slots:
+        void onTreeViewDoubleClicked(const QModelIndex &index) const;
+        void onTreeViewContextMenuRequested(const QPoint &pos) const;
+        void onAddNewDiagramTriggered(const std::string &parentId) const;
+        void onAddNewFolderTriggered(const std::string &parentId) const;
+
     private:
         ProjectViewModel *projectViewModel_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
-        NewDiagramDialog *newDiagramDialog_;
-
-        void onTreeViewDoubleClicked(const QModelIndex &index) const;
-
-        void onTreeViewContextMenuRequested(const QPoint &pos) const;
     };
 }

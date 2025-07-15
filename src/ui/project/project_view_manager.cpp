@@ -19,26 +19,20 @@
 #include "project_view_manager.h"
 
 #include <QMenu>
+#include <QInputDialog>
 
 namespace ui::project {
     ProjectViewManager::ProjectViewManager(ProjectViewModel *projectViewModel, QWidget *parent): QObject(parent),
         projectViewModel_(projectViewModel) {
         projectTreeModel_ = new ProjectTreeModel(projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, projectViewModel, parent);
-        newDiagramDialog_ = new NewDiagramDialog(projectTreeView_);
 
-        connect(projectTreeView_, &ProjectTreeView::doubleClicked, this, &ProjectViewManager::onTreeViewDoubleClicked);
+        connect(projectTreeView_, &ProjectTreeView::activated, this, &ProjectViewManager::onTreeViewDoubleClicked);
         connect(
             projectTreeView_,
             &ProjectTreeView::customContextMenuRequested,
             this,
             &ProjectViewManager::onTreeViewContextMenuRequested
-        );
-        connect(
-            newDiagramDialog_,
-            &NewDiagramDialog::diagramNameEntered,
-            projectViewModel_,
-            &ProjectViewModel::addNewDiagram
         );
     }
 
@@ -54,31 +48,20 @@ namespace ui::project {
         }
 
         const auto item = projectTreeModel_->itemFromIndex(index);
-        const auto typeData = item->data(ProjectTreeRole::ITEM_TYPE_ROLE);
+        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
 
-        if (!typeData.isValid()) {
-            return;
-        }
-
-        switch (typeData.value<TreeItemTypes::TreeItemType>()) {
-            case TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM: {
-                const auto parent = item->parent();
-                if (!parent) {
-                    return;
-                }
-
-                const auto folderIdData = parent->data(ProjectTreeRole::ITEM_ID_ROLE);
-
-                if (!folderIdData.isValid()) {
-                    return;
-                }
-
-                const auto folderId = folderIdData.toString().toStdString();
-
-                newDiagramDialog_->execFor(folderId, "");
+        if (type == TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM) {
+            const auto parent = item->parent();
+            if (parent) {
+                const auto parentId = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+                onAddNewDiagramTriggered(parentId);
             }
-            default: {
-            };
+        } else if (type == TreeItemTypes::DIAGRAM_FILE) {
+            const auto itemId = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+            projectViewModel_->openDiagramRequested(itemId);
+        } else if (type == TreeItemTypes::DIAGRAM_FOLDER || type == TreeItemTypes::DIAGRAM_ROOT_FOLDER) {
+            bool expanded = projectTreeView_->isExpanded(index);
+            projectTreeView_->setExpanded(index, !expanded);
         }
     }
 
@@ -89,52 +72,49 @@ namespace ui::project {
         }
 
         const auto item = projectTreeModel_->itemFromIndex(index);
-        const auto typeData = item->data(ProjectTreeRole::ITEM_TYPE_ROLE);
+        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+        const auto itemId = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
 
-        if (!typeData.isValid()) {
-            return;
+        QMenu menu;
+        if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER || type == TreeItemTypes::DIAGRAM_FOLDER) {
+            menu.addAction(tr("Add Diagram"), this, [this, itemId]() { onAddNewDiagramTriggered(itemId); });
+            menu.addAction(tr("Add folder"), this, [this, itemId]() { onAddNewFolderTriggered(itemId); });
+        } else if (type == TreeItemTypes::DIAGRAM_FILE) {
+            // ... (diagram-specific actions)
         }
 
-        switch (typeData.value<TreeItemTypes::TreeItemType>()) {
-            case TreeItemTypes::DIAGRAM_ROOT_FOLDER:
-            case TreeItemTypes::DIAGRAM_FOLDER: {
-                const auto folderIdData = item->data(ProjectTreeRole::ITEM_ID_ROLE);
+        if (!menu.isEmpty()) {
+            menu.exec(projectTreeView_->viewport()->mapToGlobal(pos));
+        }
+    }
 
-                if (!folderIdData.isValid()) {
-                    return;
-                }
+    void ProjectViewManager::onAddNewDiagramTriggered(const std::string &parentId) const {
+        bool ok;
+        const QString name = QInputDialog::getText(
+            projectTreeView_,
+            tr("Add Diagram"),
+            tr("Diagram name:"),
+            QLineEdit::Normal,
+            "",
+            &ok
+        );
+        if (ok && !name.isEmpty()) {
+            projectViewModel_->addNewDiagram(parentId, name.toStdString());
+        }
+    }
 
-                const auto folderId = folderIdData.toString().toStdString();
-
-
-                QMenu menu;
-                auto addDiagramAction = menu.addAction(tr("Add Diagram"));
-                auto addSubfolderAction = menu.addAction(tr("Add folder"));
-
-                connect(
-                    addDiagramAction,
-                    &QAction::triggered,
-                    this,
-                    [this, folderId]() {
-                        newDiagramDialog_->execFor(folderId, "");
-                    }
-                );
-
-                connect(
-                    addSubfolderAction,
-                    &QAction::triggered,
-                    [this, folderId]() {
-                        projectViewModel_->addNewDiagramFolder(
-                            folderId,
-                            "New Folder " + this->projectTreeModel_->rowCount()
-                        );
-                    }
-                );
-
-                menu.exec(projectTreeView_->viewport()->mapToGlobal(pos));
-            }
-            default: {
-            };
+    void ProjectViewManager::onAddNewFolderTriggered(const std::string &parentId) const {
+        bool ok;
+        const QString name = QInputDialog::getText(
+            projectTreeView_,
+            tr("Add Folder"),
+            tr("Folder name:"),
+            QLineEdit::Normal,
+            "",
+            &ok
+        );
+        if (ok && !name.isEmpty()) {
+            projectViewModel_->addNewDiagramFolder(parentId, name.toStdString());
         }
     }
 }

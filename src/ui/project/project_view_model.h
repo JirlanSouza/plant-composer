@@ -40,6 +40,8 @@ namespace ui::project {
 
         void addNewDiagramFolder(const std::string &parentFolderId, const std::string &name);
 
+        void openDiagramRequested(const std::string &diagramId);
+
 
     signals:
         void diagramAdded(const domain::project::DiagramMetadata *diagram);

@@ -19,7 +19,9 @@
 #include "project_tree_view.h"
 
 namespace ui::project {
-    ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, ProjectViewModel *viewModel, QWidget *parent): QTreeView(parent),
+    ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, ProjectViewModel *viewModel, QWidget *parent): QTreeView(
+            parent
+        ),
         model_(model), viewModel_(viewModel) {
         QTreeView::setModel(model_);
         setHeaderHidden(true);
@@ -39,6 +41,16 @@ namespace ui::project {
     }
 
     void ProjectTreeView::setupContextMenu() {
+    }
 
+    void ProjectTreeView::keyPressEvent(QKeyEvent *event) {
+        if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
+            QModelIndex index = currentIndex();
+            if (index.isValid()) {
+                emit activated(index);
+            }
+        } else {
+            QTreeView::keyPressEvent(event);
+        }
     }
 }

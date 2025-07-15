@@ -56,7 +56,7 @@ namespace ui::project {
             getIconForType(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER),
             QString::fromStdString(diagramsRoot->getName())
         );
-        diagramsRootItem->setFlags(Qt::ItemIsEnabled);
+        diagramsRootItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         diagramsRootItem->setData(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER, ProjectTreeRole::ITEM_TYPE_ROLE);
         diagramsRootItem->setData(stdStringToVariant(diagramsRoot->getId()), ProjectTreeRole::ITEM_ID_ROLE);
         rootItem->appendRow(diagramsRootItem);
@@ -112,7 +112,6 @@ namespace ui::project {
         const dp::NodeContainer<dp::DiagramMetadata> *folder,
         const TreeItemTypes::TreeItemType type
     ) {
-        qDebug() << "ProjectTreeModel::appendFolder with type: " << static_cast<int>(type);
         auto *folderItem = new QStandardItem(getIconForType(type), QString::fromStdString(folder->getName()));
         folderItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
         folderItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
@@ -142,7 +141,8 @@ namespace ui::project {
         switch (type) {
             case TreeItemTypes::TreeItemType::PROJECT_ROOT:
                 return QIcon(":/icons/project.svg");
-            case TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER: case TreeItemTypes::TreeItemType::DIAGRAM_FOLDER:
+            case TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER:
+            case TreeItemTypes::TreeItemType::DIAGRAM_FOLDER:
                 return QIcon(":/icons/folder.svg");
             case TreeItemTypes::TreeItemType::DIAGRAM_FILE:
                 return QIcon(":/icons/diagram_file.svg");

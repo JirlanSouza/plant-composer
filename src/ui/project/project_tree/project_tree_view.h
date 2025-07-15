@@ -20,6 +20,7 @@
 
 #include <QMimeData>
 #include <QTreeView>
+#include <QKeyEvent>
 
 #include "project_tree_model.h"
 #include "../project_view_model.h"
@@ -39,5 +40,8 @@ namespace ui::project {
         ProjectViewModel *viewModel_;
 
         void setupContextMenu();
+
+    protected:
+        void keyPressEvent(QKeyEvent *event) override;
     };
 }
