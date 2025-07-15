@@ -23,23 +23,18 @@
 #include <QKeyEvent>
 
 #include "project_tree_model.h"
-#include "../project_view_model.h"
 
 namespace ui::project {
     class ProjectTreeView final : public QTreeView {
         Q_OBJECT
 
     public:
-        explicit ProjectTreeView(ProjectTreeModel *model, ProjectViewModel *viewModel, QWidget *parent = nullptr);
+        explicit ProjectTreeView(ProjectTreeModel *model, QWidget *parent = nullptr);
+
+        void toggleExpanded(const QModelIndex &index);
 
     signals:
         void componentPropertiesViewRequested(int libraryId, int componentId);
-
-    private:
-        ProjectTreeModel *model_;
-        ProjectViewModel *viewModel_;
-
-        void setupContextMenu();
 
     protected:
         void keyPressEvent(QKeyEvent *event) override;

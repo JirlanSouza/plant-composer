@@ -19,6 +19,7 @@
 #pragma once
 
 #include <QObject>
+#include <QAction>
 
 #include "project_tree/project_tree_model.h"
 #include "project_tree/project_tree_view.h"
@@ -42,14 +43,36 @@ namespace ui::project {
         [[nodiscard]] QWidget *getView() const;
 
     private slots:
-        void onTreeViewDoubleClicked(const QModelIndex &index) const;
-        void onTreeViewContextMenuRequested(const QPoint &pos) const;
-        void onAddNewDiagramTriggered(const std::string &parentId) const;
-        void onAddNewFolderTriggered(const std::string &parentId) const;
+        void onTreeViewDoubleClicked(const QModelIndex &index);
+
+        void onTreeViewContextMenuRequested(const QPoint &pos);
+
+        // Action Handlers
+        void onAddNewDiagramTriggered();
+
+        void onAddNewFolderTriggered();
+
+        void onOpenTriggered();
+
+        void onRenameTriggered();
+
+        void onDeleteTriggered();
 
     private:
         ProjectViewModel *projectViewModel_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
+
+        // Reusable Actions
+        QAction *openAction_;
+        QAction *renameAction_;
+        QAction *deleteAction_;
+        QAction *addDiagramAction_;
+        QAction *addFolderAction_;
+
+        // Context for actions
+        std::string currentItemId_;
+
+        void createActions();
     };
 }

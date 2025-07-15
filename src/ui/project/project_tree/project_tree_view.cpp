@@ -19,11 +19,8 @@
 #include "project_tree_view.h"
 
 namespace ui::project {
-    ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, ProjectViewModel *viewModel, QWidget *parent): QTreeView(
-            parent
-        ),
-        model_(model), viewModel_(viewModel) {
-        QTreeView::setModel(model_);
+    ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, QWidget *parent): QTreeView(parent) {
+        QTreeView::setModel(model);
         setHeaderHidden(true);
         setExpandsOnDoubleClick(true);
         setSelectionMode(SingleSelection);
@@ -34,13 +31,15 @@ namespace ui::project {
         setDragDropMode(QAbstractItemView::DragOnly);
         setDefaultDropAction(Qt::CopyAction);
 
-        setupContextMenu();
-
         setRootIsDecorated(false);
         expandAll();
     }
 
-    void ProjectTreeView::setupContextMenu() {
+    void ProjectTreeView::toggleExpanded(const QModelIndex &index) {
+        if (index.isValid()) {
+            const bool expanded = isExpanded(index);
+            setExpanded(index, !expanded);
+        }
     }
 
     void ProjectTreeView::keyPressEvent(QKeyEvent *event) {

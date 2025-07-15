@@ -25,7 +25,9 @@ namespace ui::project {
     ProjectViewManager::ProjectViewManager(ProjectViewModel *projectViewModel, QWidget *parent): QObject(parent),
         projectViewModel_(projectViewModel) {
         projectTreeModel_ = new ProjectTreeModel(projectViewModel, this);
-        projectTreeView_ = new ProjectTreeView(projectTreeModel_, projectViewModel, parent);
+        projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
+
+        createActions();
 
         connect(projectTreeView_, &ProjectTreeView::activated, this, &ProjectViewManager::onTreeViewDoubleClicked);
         connect(
@@ -42,45 +44,60 @@ namespace ui::project {
         return projectTreeView_;
     }
 
-    void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) const {
-        if (!index.isValid()) {
-            return;
-        }
+    void ProjectViewManager::createActions() {
+        addDiagramAction_ = new QAction(tr("Add Diagram"), this);
+        addFolderAction_ = new QAction(tr("Add Folder"), this);
+        openAction_ = new QAction(tr("Open"), this);
+        renameAction_ = new QAction(tr("Rename"), this);
+        deleteAction_ = new QAction(tr("Delete"), this);
+
+        connect(addDiagramAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewDiagramTriggered);
+        connect(addFolderAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewFolderTriggered);
+        connect(openAction_, &QAction::triggered, this, &ProjectViewManager::onOpenTriggered);
+        connect(renameAction_, &QAction::triggered, this, &ProjectViewManager::onRenameTriggered);
+        connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteTriggered);
+    }
+
+    void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) {
+        if (!index.isValid()) return;
 
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+        currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
 
         if (type == TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM) {
             const auto parent = item->parent();
             if (parent) {
-                const auto parentId = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-                onAddNewDiagramTriggered(parentId);
+                currentItemId_ = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+                onAddNewDiagramTriggered();
             }
         } else if (type == TreeItemTypes::DIAGRAM_FILE) {
-            const auto itemId = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-            projectViewModel_->openDiagramRequested(itemId);
+            projectViewModel_->openDiagramRequested(currentItemId_);
         } else if (type == TreeItemTypes::DIAGRAM_FOLDER || type == TreeItemTypes::DIAGRAM_ROOT_FOLDER) {
-            bool expanded = projectTreeView_->isExpanded(index);
-            projectTreeView_->setExpanded(index, !expanded);
+            projectTreeView_->toggleExpanded(index);
         }
     }
 
-    void ProjectViewManager::onTreeViewContextMenuRequested(const QPoint &pos) const {
+    void ProjectViewManager::onTreeViewContextMenuRequested(const QPoint &pos) {
         const auto index = projectTreeView_->indexAt(pos);
-        if (!index.isValid()) {
-            return;
-        }
+        if (!index.isValid()) return;
 
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-        const auto itemId = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
 
         QMenu menu;
         if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER || type == TreeItemTypes::DIAGRAM_FOLDER) {
-            menu.addAction(tr("Add Diagram"), this, [this, itemId]() { onAddNewDiagramTriggered(itemId); });
-            menu.addAction(tr("Add folder"), this, [this, itemId]() { onAddNewFolderTriggered(itemId); });
+            menu.addAction(addDiagramAction_);
+            menu.addAction(addFolderAction_);
+            menu.addSeparator();
+            menu.addAction(renameAction_);
+            menu.addAction(deleteAction_);
         } else if (type == TreeItemTypes::DIAGRAM_FILE) {
-            // ... (diagram-specific actions)
+            menu.addAction(openAction_);
+            menu.addSeparator();
+            menu.addAction(renameAction_);
+            menu.addAction(deleteAction_);
         }
 
         if (!menu.isEmpty()) {
@@ -88,9 +105,9 @@ namespace ui::project {
         }
     }
 
-    void ProjectViewManager::onAddNewDiagramTriggered(const std::string &parentId) const {
+    void ProjectViewManager::onAddNewDiagramTriggered() {
         bool ok;
-        const QString name = QInputDialog::getText(
+        QString name = QInputDialog::getText(
             projectTreeView_,
             tr("Add Diagram"),
             tr("Diagram name:"),
@@ -99,13 +116,13 @@ namespace ui::project {
             &ok
         );
         if (ok && !name.isEmpty()) {
-            projectViewModel_->addNewDiagram(parentId, name.toStdString());
+            projectViewModel_->addNewDiagram(currentItemId_, name.toStdString());
         }
     }
 
-    void ProjectViewManager::onAddNewFolderTriggered(const std::string &parentId) const {
+    void ProjectViewManager::onAddNewFolderTriggered() {
         bool ok;
-        const QString name = QInputDialog::getText(
+        QString name = QInputDialog::getText(
             projectTreeView_,
             tr("Add Folder"),
             tr("Folder name:"),
@@ -114,7 +131,19 @@ namespace ui::project {
             &ok
         );
         if (ok && !name.isEmpty()) {
-            projectViewModel_->addNewDiagramFolder(parentId, name.toStdString());
+            projectViewModel_->addNewDiagramFolder(currentItemId_, name.toStdString());
         }
+    }
+
+    void ProjectViewManager::onOpenTriggered() {
+        projectViewModel_->openDiagramRequested(currentItemId_);
+    }
+
+    void ProjectViewManager::onRenameTriggered() {
+        // TODO: Implement rename logic using currentItemId_
+    }
+
+    void ProjectViewManager::onDeleteTriggered() {
+        // TODO: Implement delete logic using currentItemId_
     }
 }
