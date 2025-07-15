@@ -36,17 +36,23 @@ namespace domain::project {
     class ProjectNode {
     public:
         ProjectNode(NodeType type, std::string id, std::string name, NodeContainer<T> *parent);
+
         virtual ~ProjectNode() = default;
 
         [[nodiscard]] NodeType getType() const;
+
         [[nodiscard]] const std::string &getId() const;
+
         [[nodiscard]] const std::string &getName() const;
+
         [[nodiscard]] NodeContainer<T> *getParent() const;
 
         [[nodiscard]] bool isFolder() const;
+
         [[nodiscard]] bool isFile() const;
 
         virtual std::optional<NodeContainer<T> *> getAsFolder() = 0;
+
         virtual std::optional<T *> getAsFile() = 0;
 
     private:
@@ -64,19 +70,24 @@ namespace domain::project {
     public:
         explicit NodeContainer(std::string id, NodeContainer<T> *parent, std::string name);
 
-        void addChild(std::unique_ptr<ProjectNode<T>> item);
+        void addChild(std::unique_ptr<ProjectNode<T> > item);
+
         void removeChild(const std::string &id);
 
         [[nodiscard]] std::vector<ProjectNode<T> *> getChildren() const;
 
         std::optional<NodeContainer<T> *> getFolder(const std::string &folderId);
+
         std::optional<T *> getFile(const std::string &fileId);
 
         std::optional<NodeContainer<T> *> getAsFolder() override;
+
         std::optional<T *> getAsFile() override;
 
+    protected:
+
     private:
-        std::unordered_map<std::string, std::unique_ptr<ProjectNode<T>>> children_{};
+        std::unordered_map<std::string, std::unique_ptr<ProjectNode<T> > > children_{};
     };
 
     template<typename T>

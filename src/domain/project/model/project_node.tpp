@@ -114,10 +114,29 @@ namespace domain::project {
 
     template<typename T>
     std::optional<T *> NodeContainer<T>::getFile(const std::string &fileId) {
-        if (!children_.contains(fileId) || !children_.at(fileId)->isFile()) {
-            return std::nullopt;
+        if (children_.contains(fileId) && children_.at(fileId)->isFile()) {
+            return static_cast<T *>(children_.at(fileId).get());
         }
-        return static_cast<T *>(children_.at(fileId).get());
+
+        for (const std::unique_ptr<ProjectNode<T> > &child: children_ | std::views::values) {
+            if (child->isFile()) {
+                continue;
+            }
+
+            auto folderOpt = child->getAsFolder();
+
+            if (!folderOpt.has_value()) {
+                continue;
+            }
+
+            const auto file = folderOpt.value()->getFile(fileId);
+
+            if (file.has_value()) {
+                return file;
+            }
+        }
+
+        return std::nullopt;
     }
 
 
