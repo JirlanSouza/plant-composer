@@ -45,6 +45,8 @@ namespace domain::project {
 
         [[nodiscard]] const std::string &getName() const;
 
+        void rename(std::string newName);
+
         [[nodiscard]] NodeContainer<T> *getParent() const;
 
         [[nodiscard]] bool isFolder() const;

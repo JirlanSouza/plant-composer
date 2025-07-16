@@ -38,6 +38,14 @@ namespace domain::project {
     const std::string &ProjectNode<T>::getName() const { return name_; }
 
     template<typename T>
+    void ProjectNode<T>::rename(std::string newName) {
+        if (newName.empty()) {
+            return;
+        }
+        name_ = std::move(newName);
+    }
+
+    template<typename T>
     NodeContainer<T> *ProjectNode<T>::getParent() const { return parent_; }
 
     template<typename T>
