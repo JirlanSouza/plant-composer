@@ -24,6 +24,6 @@ namespace domain {
     public:
         virtual ~IDFactory() = default;
 
-        virtual std::string newId() = 0;
+        virtual std::string create() = 0;
     };
 }

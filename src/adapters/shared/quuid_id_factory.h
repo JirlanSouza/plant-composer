@@ -24,6 +24,6 @@ using domain::IDFactory;
 namespace adapters {
     class QUuidIdFactory : public IDFactory {
     public:
-        std::string newId() override;
+        std::string create() override;
     };
 }

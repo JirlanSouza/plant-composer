@@ -41,7 +41,7 @@ namespace domain::diagram {
             throw std::runtime_error("Component definition not found.");
         }
 
-        const auto id = idFactory_->newId();
+        const auto id = idFactory_->create();
         const std::string name = componentDefinition->name + "_" + id;
         const std::string assetsDir = appSettings_->getComponentsLibraryDir();
 
