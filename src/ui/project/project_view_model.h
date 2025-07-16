@@ -42,6 +42,14 @@ namespace ui::project {
 
         void openDiagramRequested(const std::string &diagramId);
 
+        void removeDiagram(const std::string &diagramId);
+
+        void removeDiagramFolder(const std::string &folderId);
+
+        void renameDiagram(const std::string &diagramId, const std::string &newName);
+
+        void renameDiagramFolder(const std::string &folderId, const std::string &newName);
+
 
     signals:
         void diagramAdded(const domain::project::DiagramMetadata *diagram);
@@ -49,6 +57,14 @@ namespace ui::project {
         void diagramFolderAdded(const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder);
 
         void openDiagram(const domain::project::DiagramMetadata *diagram);
+
+        void diagramRemoved(const std::string &diagramId);
+
+        void diagramFolderRemoved(const std::string &folderId);
+
+        void diagramRenamed(const std::string &diagramId, const std::string &newName);
+
+        void diagramFolderRenamed(const std::string &folderId, const std::string &newName);
 
     private:
         IDFactory *idFactory_;

@@ -48,15 +48,15 @@ namespace ui::project {
         void onTreeViewContextMenuRequested(const QPoint &pos);
 
         // Action Handlers
-        void onAddNewDiagramTriggered();
+        void onAddNewDiagramTriggered() const;
 
-        void onAddNewFolderTriggered();
+        void onAddNewFolderTriggered() const;
 
         void onOpenTriggered();
 
-        void onRenameTriggered();
+        void onRenameTriggered() const;
 
-        void onDeleteTriggered();
+        void onDeleteTriggered() const;
 
     private:
         ProjectViewModel *projectViewModel_;
@@ -72,6 +72,7 @@ namespace ui::project {
 
         // Context for actions
         std::string currentItemId_;
+        TreeItemTypes::TreeItemType currentItemType_;
 
         void createActions();
     };

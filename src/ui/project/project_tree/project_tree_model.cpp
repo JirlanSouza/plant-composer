@@ -36,6 +36,25 @@ namespace ui::project {
             this,
             &ProjectTreeModel::onDiagramFolderAdded
         );
+        connect(projectViewModel_, &ProjectViewModel::diagramRemoved, this, &ProjectTreeModel::onDiagramRemoved);
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::diagramFolderRemoved,
+            this,
+            &ProjectTreeModel::onDiagramFolderRemoved
+        );
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::diagramRenamed,
+            this,
+            &ProjectTreeModel::onDiagramRenamed
+        );
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::diagramFolderRenamed,
+            this,
+            &ProjectTreeModel::onDiagramFolderRenamed
+        );
     }
 
     void ProjectTreeModel::buildModel() {
@@ -135,6 +154,41 @@ namespace ui::project {
         if (itemMap_.contains(parentId)) {
             appendFolder(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
         }
+    }
+
+    void ProjectTreeModel::onDiagramRemoved(const std::string &diagramId) {
+        qDebug() << "Diagram removed: " << diagramId;
+        if (!itemMap_.contains(diagramId)) return;
+
+        const auto *diagramItem = itemMap_[diagramId];
+        diagramItem->parent()->removeRow(diagramItem->row());
+    }
+
+    void ProjectTreeModel::onDiagramFolderRemoved(const std::string &folderId) {
+        if (!itemMap_.contains(folderId)) return;
+
+        const auto *folderItem = itemMap_[folderId];
+        folderItem->parent()->removeRow(folderItem->row());
+    }
+
+    void ProjectTreeModel::onDiagramRenamed(
+        const std::string &diagramId,
+        const std::string &newName
+    ) {
+        if (!itemMap_.contains(diagramId)) return;
+
+        auto *diagramItem = itemMap_[diagramId];
+        diagramItem->setText(QString::fromStdString(newName));
+    }
+
+    void ProjectTreeModel::onDiagramFolderRenamed(
+        const std::string &folderId,
+        const std::string &newName
+    ) {
+        if (!itemMap_.contains(folderId)) return;
+
+        auto *folderItem = itemMap_[folderId];
+        folderItem->setText(QString::fromStdString(newName));
     }
 
     QIcon ProjectTreeModel::getIconForType(const TreeItemTypes::TreeItemType type) {

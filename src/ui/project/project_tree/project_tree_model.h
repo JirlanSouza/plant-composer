@@ -48,6 +48,20 @@ namespace ui::project {
             const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder
         );
 
+        void onDiagramRemoved(const std::string &diagramId);
+
+        void onDiagramFolderRemoved(const std::string &folderId);
+
+        void onDiagramRenamed(
+            const std::string &diagramId,
+            const std::string &newName
+        );
+
+        void onDiagramFolderRenamed(
+            const std::string &folderId,
+            const std::string &newName
+        );
+
     private:
         ProjectViewModel *projectViewModel_;
         std::unordered_map<std::string, QStandardItem *> itemMap_;

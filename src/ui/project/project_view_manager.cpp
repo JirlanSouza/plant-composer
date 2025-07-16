@@ -85,8 +85,10 @@ namespace ui::project {
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
         currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        currentItemType_ = type;
 
         QMenu menu;
+        menu.setMinimumWidth(220);
         if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER || type == TreeItemTypes::DIAGRAM_FOLDER) {
             menu.addAction(addDiagramAction_);
             menu.addAction(addFolderAction_);
@@ -105,9 +107,9 @@ namespace ui::project {
         }
     }
 
-    void ProjectViewManager::onAddNewDiagramTriggered() {
+    void ProjectViewManager::onAddNewDiagramTriggered() const {
         bool ok;
-        QString name = QInputDialog::getText(
+        const QString name = QInputDialog::getText(
             projectTreeView_,
             tr("Add Diagram"),
             tr("Diagram name:"),
@@ -120,9 +122,9 @@ namespace ui::project {
         }
     }
 
-    void ProjectViewManager::onAddNewFolderTriggered() {
+    void ProjectViewManager::onAddNewFolderTriggered() const {
         bool ok;
-        QString name = QInputDialog::getText(
+        const QString name = QInputDialog::getText(
             projectTreeView_,
             tr("Add Folder"),
             tr("Folder name:"),
@@ -139,11 +141,41 @@ namespace ui::project {
         projectViewModel_->openDiagramRequested(currentItemId_);
     }
 
-    void ProjectViewManager::onRenameTriggered() {
-        // TODO: Implement rename logic using currentItemId_
+    void ProjectViewManager::onRenameTriggered() const {
+        if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE) {
+            bool ok;
+            const QString newName = QInputDialog::getText(
+                projectTreeView_,
+                tr("Rename Diagram"),
+                tr("New name:"),
+                QLineEdit::Normal,
+                "",
+                &ok
+            );
+            if (ok && !newName.isEmpty()) {
+                projectViewModel_->renameDiagram(currentItemId_, newName.toStdString());
+            }
+        } else if (currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
+            bool ok;
+            const QString newName = QInputDialog::getText(
+                projectTreeView_,
+                tr("Rename Folder"),
+                tr("New name:"),
+                QLineEdit::Normal,
+                "",
+                &ok
+            );
+            if (ok && !newName.isEmpty()) {
+                projectViewModel_->renameDiagramFolder(currentItemId_, newName.toStdString());
+            }
+        }
     }
 
-    void ProjectViewManager::onDeleteTriggered() {
-        // TODO: Implement delete logic using currentItemId_
+    void ProjectViewManager::onDeleteTriggered() const {
+        if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE) {
+            projectViewModel_->removeDiagram(currentItemId_);
+        } else if (currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
+            projectViewModel_->removeDiagramFolder(currentItemId_);
+        }
     }
 }

@@ -18,8 +18,6 @@
 
 #include "project_view_model.h"
 
-#include <iostream>
-
 namespace ui::project {
     ProjectViewModel::ProjectViewModel(IDFactory *idFactory, dp::Project *project, QObject *parent)
         : QObject(parent), idFactory_(idFactory), project_(project) {
@@ -36,9 +34,7 @@ namespace ui::project {
             parentFolder = project_->diagrams();
         } else {
             auto parentFolderOpt = project_->diagrams()->getFolder(parentFolderId);
-            if (!parentFolderOpt.has_value()) {
-                return;
-            }
+            if (!parentFolderOpt.has_value()) return;
 
             parentFolder = parentFolderOpt.value();
         }
@@ -62,9 +58,7 @@ namespace ui::project {
             parentFolder = project_->diagrams();
         } else {
             auto parentFolderOpt = project_->diagrams()->getFolder(parentFolderId);
-            if (!parentFolderOpt.has_value()) {
-                return;
-            }
+            if (!parentFolderOpt.has_value()) return;
 
             parentFolder = parentFolderOpt.value();
         }
@@ -81,11 +75,40 @@ namespace ui::project {
 
     void ProjectViewModel::openDiagramRequested(const std::string &diagramId) {
         const auto diagramOpt = project_->diagrams()->getFile(diagramId);
-
-        if (!diagramOpt.has_value()) {
-            return;
-        }
+        if (!diagramOpt.has_value()) return;
 
         emit openDiagram(diagramOpt.value());
+    }
+
+    void ProjectViewModel::removeDiagram(const std::string &diagramId) {
+        const auto diagramOpt = project_->diagrams()->getFile(diagramId);
+        if (!diagramOpt.has_value()) return;
+
+        diagramOpt.value()->getParent()->removeChild(diagramId);
+        emit diagramRemoved(diagramId);
+    }
+
+    void ProjectViewModel::removeDiagramFolder(const std::string &folderId) {
+        const auto folderOpt = project_->diagrams()->getFolder(folderId);
+        if (!folderOpt.has_value()) return;
+
+        folderOpt.value()->getParent()->removeChild(folderId);
+        emit diagramFolderRemoved(folderId);
+    }
+
+    void ProjectViewModel::renameDiagram(const std::string &diagramId, const std::string &newName) {
+        const auto diagramOpt = project_->diagrams()->getFile(diagramId);
+        if (!diagramOpt.has_value()) return;
+
+        diagramOpt.value()->rename(newName);
+        emit diagramRenamed(diagramId, newName);
+    }
+
+    void ProjectViewModel::renameDiagramFolder(const std::string &folderId, const std::string &newName) {
+        const auto folderOpt = project_->diagrams()->getFolder(folderId);
+        if (!folderOpt.has_value()) return;
+
+        folderOpt.value()->rename(newName);
+        emit diagramFolderRenamed(folderId, newName);
     }
 }
