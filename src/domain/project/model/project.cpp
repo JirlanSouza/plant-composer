@@ -34,6 +34,8 @@ namespace domain::project {
         version_(version),
         path_(path) {
         diagrams_ = std::make_unique<ProjectCategory<DiagramMetadata>>("diagrams_root", "Diagrams");
+        // scripts_ = std::make_unique<ProjectCategory<ScriptMetadata>>("scripts_root", "Scripts");
+        // drivers_ = std::make_unique<ProjectCategory<DriverMetadata>>("drivers_root", "Drivers");
     }
 
     Project::~Project() = default;

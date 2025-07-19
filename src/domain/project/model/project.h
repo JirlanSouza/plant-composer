@@ -41,6 +41,8 @@ namespace domain::project {
         std::string filePath_;
     };
 
+    // TODO: Define ScriptMetadata, DriverMetadata, etc.
+
     class Project {
     public:
         Project(
@@ -68,6 +70,9 @@ namespace domain::project {
 
         [[nodiscard]] ProjectCategory<DiagramMetadata> *diagrams() const;
 
+        // [[nodiscard]] ProjectCategory<ScriptMetadata> *scripts() const;
+        // [[nodiscard]] ProjectCategory<DriverMetadata> *drivers() const;
+
     private:
         std::string id_;
         std::string name_;
@@ -76,5 +81,7 @@ namespace domain::project {
         std::string version_;
         std::string path_;
         std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams_;
+        // std::unique_ptr<ProjectCategory<ScriptMetadata>> scripts_;
+        // std::unique_ptr<ProjectCategory<DriverMetadata>> drivers_;
     };
 }
