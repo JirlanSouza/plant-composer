@@ -54,6 +54,18 @@ namespace domain::project {
     template<typename T>
     bool ProjectNode<T>::isFile() const { return type_ == NodeType::FILE; }
 
+    template<typename T>
+    bool ProjectNode<T>::canBeCopied() const { return true; }
+
+    template<typename T>
+    bool ProjectNode<T>::canBeMoved() const { return true; }
+
+    template<typename T>
+    bool ProjectNode<T>::canBeRemoved() const { return true; }
+
+    template<typename T>
+    bool ProjectNode<T>::canBeRenamed() const { return true; }
+
 
     template<typename T>
     NodeContainer<T>::NodeContainer(std::string id, NodeContainer<T> *parent, std::string name)
@@ -152,4 +164,16 @@ namespace domain::project {
     ProjectCategory<T>::ProjectCategory(std::string id, std::string name)
         : NodeContainer<T>(std::move(id), nullptr, std::move(name)) {
     }
+
+    template<typename T>
+    bool ProjectCategory<T>::canBeCopied() const { return false; }
+
+    template<typename T>
+    bool ProjectCategory<T>::canBeMoved() const { return false; }
+
+    template<typename T>
+    bool ProjectCategory<T>::canBeRemoved() const { return false; }
+
+    template<typename T>
+    bool ProjectCategory<T>::canBeRenamed() const { return false; }
 }

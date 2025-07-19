@@ -53,6 +53,14 @@ namespace domain::project {
 
         [[nodiscard]] bool isFile() const;
 
+        [[nodiscard]] virtual bool canBeCopied() const;
+
+        [[nodiscard]] virtual bool canBeMoved() const;
+
+        [[nodiscard]] virtual bool canBeRemoved() const;
+
+        [[nodiscard]] virtual bool canBeRenamed() const;
+
         virtual std::optional<NodeContainer<T> *> getAsFolder() = 0;
 
         virtual std::optional<T *> getAsFile() = 0;
@@ -86,8 +94,6 @@ namespace domain::project {
 
         std::optional<T *> getAsFile() override;
 
-    protected:
-
     private:
         std::unordered_map<std::string, std::unique_ptr<ProjectNode<T> > > children_{};
     };
@@ -96,6 +102,14 @@ namespace domain::project {
     class ProjectCategory : public NodeContainer<T> {
     public:
         ProjectCategory<T>(std::string id, std::string name);
+
+        [[nodiscard]] bool canBeCopied() const override;
+
+        [[nodiscard]] bool canBeMoved() const override;
+
+        [[nodiscard]] bool canBeRemoved() const override;
+
+        [[nodiscard]] bool canBeRenamed() const override;
     };
 }
 
