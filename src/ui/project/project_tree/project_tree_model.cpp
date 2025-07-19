@@ -57,6 +57,24 @@ namespace ui::project {
         );
     }
 
+    bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+        if (role != Qt::EditRole) {
+            return QStandardItemModel::setData(index, value, role);
+        }
+
+        const auto type = index.data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+        const auto itemId = index.data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto newName = value.toString().toStdString();
+
+        if (type == TreeItemTypes::DIAGRAM_FILE) {
+            projectViewModel_->renameDiagram(itemId, newName);
+        } else if (type == TreeItemTypes::DIAGRAM_FOLDER) {
+            projectViewModel_->renameDiagramFolder(itemId, newName);
+        }
+
+        return false;
+    }
+
     void ProjectTreeModel::buildModel() {
         clear();
         itemMap_.clear();
@@ -121,6 +139,7 @@ namespace ui::project {
         );
         diagramItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
         diagramItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
+        diagramItem->setEditable(diagram->canBeRenamed());
         diagramItem->setData(stdStringToVariant(diagram->getId()), ProjectTreeRole::ITEM_ID_ROLE);
         parent->appendRow(diagramItem);
         itemMap_[diagram->getId()] = diagramItem;
@@ -133,6 +152,7 @@ namespace ui::project {
     ) {
         auto *folderItem = new QStandardItem(getIconForType(type), QString::fromStdString(folder->getName()));
         folderItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
+        folderItem->setEditable(folder->canBeRenamed());
         folderItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
         folderItem->setData(stdStringToVariant(folder->getId()), ProjectTreeRole::ITEM_ID_ROLE);
         parent->appendRow(folderItem);
@@ -141,23 +161,22 @@ namespace ui::project {
     }
 
     void ProjectTreeModel::onDiagramAdded(const dp::DiagramMetadata *diagram) {
-        std::string parentId = diagram->getParent() ? diagram->getParent()->getId() : "";
-
+        auto parentId = diagram->getParent()->getId();
         if (itemMap_.contains(parentId)) {
             appendItem(itemMap_[parentId], diagram, TreeItemTypes::TreeItemType::DIAGRAM_FILE);
+            emit itemReadyForEditing(itemMap_[diagram->getId()]->index());
         }
     }
 
     void ProjectTreeModel::onDiagramFolderAdded(const dp::NodeContainer<dp::DiagramMetadata> *folder) {
-        std::string parentId = folder->getParent() ? folder->getParent()->getId() : "";
-
+        auto parentId = folder->getParent()->getId();
         if (itemMap_.contains(parentId)) {
             appendFolder(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
+            emit itemReadyForEditing(itemMap_[folder->getId()]->index());
         }
     }
 
     void ProjectTreeModel::onDiagramRemoved(const std::string &diagramId) {
-        qDebug() << "Diagram removed: " << diagramId;
         if (!itemMap_.contains(diagramId)) return;
 
         const auto *diagramItem = itemMap_[diagramId];

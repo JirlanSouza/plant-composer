@@ -26,6 +26,7 @@ namespace ui::project {
         setSelectionMode(SingleSelection);
         setLayoutDirection(Qt::LeftToRight);
         setContextMenuPolicy(Qt::CustomContextMenu);
+        setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         setDragEnabled(true);
         setDragDropMode(QAbstractItemView::DragOnly);

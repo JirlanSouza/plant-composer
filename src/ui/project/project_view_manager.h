@@ -47,30 +47,30 @@ namespace ui::project {
 
         void onTreeViewContextMenuRequested(const QPoint &pos);
 
-        // Action Handlers
         void onAddNewDiagramTriggered() const;
 
         void onAddNewFolderTriggered() const;
 
-        void onOpenTriggered();
+        void onOpenTriggered() const;
 
         void onRenameTriggered() const;
 
         void onDeleteTriggered() const;
+
+        void onItemReadyForEditing(const QModelIndex &index) const;
 
     private:
         ProjectViewModel *projectViewModel_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
 
-        // Reusable Actions
         QAction *openAction_;
         QAction *renameAction_;
         QAction *deleteAction_;
         QAction *addDiagramAction_;
         QAction *addFolderAction_;
 
-        // Context for actions
+        QModelIndex currentItemIndex_;
         std::string currentItemId_;
         TreeItemTypes::TreeItemType currentItemType_;
 

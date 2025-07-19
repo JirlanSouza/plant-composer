@@ -41,7 +41,7 @@ namespace ui::project {
 
 
         auto diagram = std::make_unique<dp::DiagramMetadata>(
-            idFactory_->newId(),
+            idFactory_->create(),
             parentFolder,
             name,
             "diagrams/" + name + ".fbs"
@@ -64,7 +64,7 @@ namespace ui::project {
         }
 
         auto newFolder = std::make_unique<dp::NodeContainer<dp::DiagramMetadata> >(
-            idFactory_->newId(),
+            idFactory_->create(),
             parentFolder,
             name
         );

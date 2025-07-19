@@ -41,6 +41,11 @@ namespace ui::project {
             QObject *parent = nullptr
         );
 
+        bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+
+    signals:
+        void itemReadyForEditing(const QModelIndex &index);
+
     private slots:
         void onDiagramAdded(const domain::project::DiagramMetadata *diagram);
 
