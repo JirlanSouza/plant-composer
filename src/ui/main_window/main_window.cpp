@@ -18,7 +18,6 @@
 
 #include "main_window.h"
 
-#include <iostream>
 #include <qboxlayout.h>
 #include <QMdiSubWindow>
 
@@ -30,10 +29,11 @@ namespace ui::main_window {
         dd::ComponentInstanceFactory *componentInstanceFactory,
         QWidget *parent
     ) : QMainWindow(parent),
-        appSettings_(appSettings), appLayoutManager_(new uil::AppLayoutManager(this)),
+        appSettings_(appSettings),
+        actionsManager_(new uam::ActionsManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
-
+        appLayoutManager_ = new uil::AppLayoutManager(this, actionsManager_);
         projectViewModel_ = new uip::ProjectViewModel(idFactory, this);
         diagramManager_ = new ui::diagram_editor::DiagramManager(
             libraries,
@@ -43,8 +43,12 @@ namespace ui::main_window {
             this
         );
 
-        projectViewManager_ = new uip::ProjectViewManager(projectViewModel_, this);
+        projectViewManager_ = new uip::ProjectViewManager(projectViewModel_, actionsManager_, this);
         diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_, projectViewModel_, this);
+
+        appLayoutManager_->setupManuBar();
+        appLayoutManager_->setupMainToolBar();
+
         appLayoutManager_->addSideBarView(tr("Project"), projectViewManager_->getView(), uil::LEFT);
         appLayoutManager_->addSideBarView(tr("Libraries"), librariesViewManager_->getView(), uil::RIGHT);
         appLayoutManager_->setCentralWidget(diagramEditorManager_->getView());

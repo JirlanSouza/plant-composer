@@ -19,13 +19,17 @@
 #include "project_view_manager.h"
 
 #include <QMenu>
-#include <QInputDialog>
 
 #include "new_project_dialog.h"
 
 namespace ui::project {
-    ProjectViewManager::ProjectViewManager(ProjectViewModel *projectViewModel, QWidget *parent): QObject(parent),
-        projectViewModel_(projectViewModel) {
+    ProjectViewManager::ProjectViewManager(
+        ProjectViewModel *projectViewModel,
+        uam::ActionsManager *actionsManager,
+        QWidget *parent
+    ): QObject(parent),
+        projectViewModel_(projectViewModel),
+        actionsManager_(actionsManager) {
         projectTreeModel_ = new ProjectTreeModel(projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
 
@@ -53,20 +57,33 @@ namespace ui::project {
     }
 
     void ProjectViewManager::createActions() {
-        addDiagramAction_ = new QAction(tr("Add Diagram"), this);
-        addFolderAction_ = new QAction(tr("Add Folder"), this);
-        openAction_ = new QAction(tr("Open"), this);
-        renameAction_ = new QAction(tr("Rename"), this);
-        deleteAction_ = new QAction(tr("Delete"), this);
+        newProjectAction_ = new QAction(QIcon::fromTheme("document-new"), tr("New Project"), this);
+        connect(newProjectAction_, &QAction::triggered, this, &ProjectViewManager::onCreateNewProjectTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::File, newProjectAction_);
+        actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, newProjectAction_);
 
+        addDiagramAction_ = new QAction(tr("Add Diagram"), this);
         connect(addDiagramAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewDiagramTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::Edit, addDiagramAction_);
+
+        addFolderAction_ = new QAction(tr("Add Folder"), this);
         connect(addFolderAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewFolderTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::Edit, addFolderAction_);
+
+        openAction_ = new QAction(tr("Open"), this);
         connect(openAction_, &QAction::triggered, this, &ProjectViewManager::onOpenTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::File, openAction_);
+
+        renameAction_ = new QAction(tr("Rename"), this);
         connect(renameAction_, &QAction::triggered, this, &ProjectViewManager::onRenameTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::Edit, renameAction_);
+
+        deleteAction_ = new QAction(tr("Delete"), this);
         connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::Edit, deleteAction_);
     }
 
-    void ProjectViewManager::onCreateNewProjectRequested() {
+    void ProjectViewManager::onCreateNewProjectTriggered() {
         const auto newProjectDialog = new NewProjectDialog(this->getView());
         connect(
             newProjectDialog,

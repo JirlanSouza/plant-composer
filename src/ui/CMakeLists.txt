@@ -7,6 +7,9 @@ target_sources(ui
         main_window/main_window.cpp
         main_window/app_layout_manager.h
         main_window/app_layout_manager.cpp
+
+        actions_manager/actions_manager.h
+        actions_manager/actions_manager.cpp
         main_window/sidebar/side_bar.h
         main_window/sidebar/side_bar.cpp
         main_window/sidebar/side_bar_tabs.h

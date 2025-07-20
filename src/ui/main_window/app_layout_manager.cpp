@@ -24,12 +24,14 @@
 #include <QToolBar>
 
 namespace ui::layout {
-    AppLayoutManager::AppLayoutManager(QMainWindow *mainWindow): QObject(mainWindow), mainWindow_(mainWindow) {
+    AppLayoutManager::AppLayoutManager(QMainWindow *mainWindow, uam::ActionsManager *actionsManager): QObject(
+            mainWindow
+        ),
+        mainWindow_(mainWindow),
+        actionsManager_(actionsManager) {
         menuBar_ = new QMenuBar(mainWindow_);
         mainToolBar_ = new QToolBar(mainWindow_);
         statusBar_ = new QStatusBar(mainWindow_);
-        setupManuBar();
-        setupMainToolBar();
         setupStatusBar();
 
         leftTabBar_ = new SideBarTabs(32, mainWindow_);
@@ -62,67 +64,40 @@ namespace ui::layout {
         mainWindow_->setCentralWidget(widget);
     }
 
-    void AppLayoutManager::setupManuBar() {
+    void AppLayoutManager::setupManuBar() const {
         mainWindow_->setMenuBar(menuBar_);
 
         const auto menuFile = menuBar_->addMenu(tr("File"));
-        actionNewPlant_ = new QAction(QIcon::fromTheme("document-new"), tr("New plant"), this);
-        actionOpenPlant_ = new QAction(QIcon::fromTheme("document-open"), tr("Open plant"), this);
-        actionSavePlant_ = new QAction(QIcon::fromTheme("document-save"), tr("Save"), this);
-        actionSaveAs_ = new QAction(QIcon::fromTheme("document-save-as"), tr("Save as"), this);
-        menuFile->addActions({actionNewPlant_, actionOpenPlant_, actionSavePlant_, actionSaveAs_});
+        menuFile->addActions(actionsManager_->getActions(uam::ActionGroupType::File));
 
-        // Edit Menu
         const auto menuEdit = menuBar_->addMenu(tr("Edit"));
-        actionUndo_ = new QAction(QIcon::fromTheme("edit-undo"), tr("Undo"), this);
-        actionRedo_ = new QAction(QIcon::fromTheme("edit-redo"), tr("Redo"), this);
-        menuEdit->addActions({actionUndo_, actionRedo_});
+        menuEdit->addActions(actionsManager_->getActions(uam::ActionGroupType::Edit));
 
-        // View Menu
         const auto menuView = menuBar_->addMenu(tr("View"));
-        actionShowLibrary_ = new QAction(tr("Show library"), this);
-        menuView->addAction(actionShowLibrary_);
+        menuView->addActions(actionsManager_->getActions(uam::ActionGroupType::View));
 
-        // Simulation Menu
         const auto menuSimulation = menuBar_->addMenu(tr("Simulation"));
-        actionStart_ = new QAction(tr("Start"), this);
-        actionStop_ = new QAction(tr("Stop"), this);
-        menuSimulation->addActions({actionStart_, actionStop_});
+        menuSimulation->addActions(actionsManager_->getActions(uam::ActionGroupType::Simulation));
 
-        // Options Menu
         const auto menuOptions = menuBar_->addMenu(tr("Options"));
-        actionSettings_ = new QAction(tr("Settings"), this);
-        menuOptions->addAction(actionSettings_);
+        menuOptions->addActions(actionsManager_->getActions(uam::ActionGroupType::Options));
 
-        // Window Menu
         const auto menuWindow = menuBar_->addMenu(tr("Window"));
-        actionArrange_ = new QAction(tr("Arange"), this);
-        menuWindow->addAction(actionArrange_);
+        menuWindow->addActions(actionsManager_->getActions(uam::ActionGroupType::Window));
     }
 
-    void AppLayoutManager::setupMainToolBar() {
+    void AppLayoutManager::setupMainToolBar() const {
         mainWindow_->addToolBar(mainToolBar_);
         mainToolBar_->setIconSize(QSize(22, 22));
         mainToolBar_->setFloatable(false);
+        mainToolBar_->setMovable(false);
         mainToolBar_->setToolButtonStyle(Qt::ToolButtonIconOnly);
         mainToolBar_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         mainToolBar_->setMaximumHeight(32);
 
-        mainToolBar_->addActions(
-            {
-                actionNewPlant_,
-                actionOpenPlant_,
-                actionSavePlant_,
-                actionSaveAs_
-            }
-        );
+        mainToolBar_->addActions(actionsManager_->getActions(uam::ActionGroupType::ToolbarFile));
         mainToolBar_->addSeparator();
-        mainToolBar_->addActions(
-            {
-                actionUndo_,
-                actionRedo_
-            }
-        );
+        mainToolBar_->addActions(actionsManager_->getActions(uam::ActionGroupType::ToolbarEdit));
     }
 
     void AppLayoutManager::setupStatusBar() const {

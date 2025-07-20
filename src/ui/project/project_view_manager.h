@@ -25,8 +25,10 @@
 #include "project_tree/project_tree_view.h"
 #include "project_view_model.h"
 #include "project_tree/project_tree_item_type.h"
+#include "ui/actions_manager/actions_manager.h"
 
 namespace dp = domain::project;
+namespace uam = ui::actions_manager;
 
 namespace ui::project {
     class ProjectViewManager : public QObject {
@@ -35,6 +37,7 @@ namespace ui::project {
     public:
         explicit ProjectViewManager(
             ProjectViewModel *projectViewModel,
+            uam::ActionsManager *actionsManager,
             QWidget *parent = nullptr
         );
 
@@ -43,7 +46,7 @@ namespace ui::project {
         [[nodiscard]] QWidget *getView() const;
 
     private slots:
-        void onCreateNewProjectRequested();
+        void onCreateNewProjectTriggered();
 
         void onTreeViewDoubleClicked(const QModelIndex &index);
 
@@ -63,14 +66,16 @@ namespace ui::project {
 
     private:
         ProjectViewModel *projectViewModel_;
+        uam::ActionsManager *actionsManager_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
 
+        QAction *newProjectAction_;
+        QAction *addDiagramAction_;
+        QAction *addFolderAction_;
         QAction *openAction_;
         QAction *renameAction_;
         QAction *deleteAction_;
-        QAction *addDiagramAction_;
-        QAction *addFolderAction_;
 
         QModelIndex currentItemIndex_;
         std::string currentItemId_;

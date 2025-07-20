@@ -19,8 +19,10 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QAction>
 
 #include "app_layout_manager.h"
+#include "ui/actions_manager/actions_manager.h"
 #include "ui/project/project_view_manager.h"
 #include "ui/project/project_view_model.h"
 #include "components_library/libraries_view_manager.h"
@@ -29,6 +31,7 @@
 #include "domain/project/model/project.h"
 
 namespace uil = ui::layout;
+namespace uam = ui::actions_manager;
 namespace uip = ui::project;
 namespace ucl = ui::components_library;
 namespace ude = ui::diagram_editor;
@@ -55,6 +58,7 @@ namespace ui::main_window {
     private:
         dst::AppSettings *appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
+        uam::ActionsManager *actionsManager_;
         uip::ProjectViewManager *projectViewManager_;
         uip::ProjectViewModel *projectViewModel_;
         ucl::LibrariesViewManager *librariesViewManager_;

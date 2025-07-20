@@ -17,17 +17,21 @@
  */
 
 #pragma once
+
 #include <QMainWindow>
 
 #include "sidebar/side_bar.h"
 #include "sidebar/side_bar_tabs.h"
+#include "ui/actions_manager/actions_manager.h"
+
+namespace uam = ui::actions_manager;
 
 namespace ui::layout {
     class AppLayoutManager : public QObject {
         Q_OBJECT
 
     public:
-        AppLayoutManager(QMainWindow *mainWindow);
+        AppLayoutManager(QMainWindow *mainWindow, uam::ActionsManager *actionsManager);
 
         ~AppLayoutManager() override;
 
@@ -35,8 +39,15 @@ namespace ui::layout {
 
         void setCentralWidget(QWidget *widget) const;
 
+        void setupManuBar() const;
+
+        void setupMainToolBar() const;
+
+        void setupStatusBar() const;
+
     private:
-        QMainWindow *mainWindow_{};
+        QMainWindow *mainWindow_;
+        uam::ActionsManager *actionsManager_;
         QMenuBar *menuBar_;
         QToolBar *mainToolBar_;
         QStatusBar *statusBar_;
@@ -44,23 +55,5 @@ namespace ui::layout {
         SideBarTabs *rightTabBar_;
         SideBar *leftSideBar_;
         SideBar *rightSideBar_;
-
-        QAction *actionNewPlant_{};
-        QAction *actionOpenPlant_{};
-        QAction *actionSavePlant_{};
-        QAction *actionSaveAs_{};
-        QAction *actionUndo_{};
-        QAction *actionRedo_{};
-        QAction *actionShowLibrary_{};
-        QAction *actionStart_{};
-        QAction *actionStop_{};
-        QAction *actionSettings_{};
-        QAction *actionArrange_{};
-
-        void setupManuBar();
-
-        void setupMainToolBar();
-
-        void setupStatusBar() const;
     };
 }
