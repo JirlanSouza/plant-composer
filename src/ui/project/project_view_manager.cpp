@@ -21,6 +21,8 @@
 #include <QMenu>
 #include <QInputDialog>
 
+#include "new_project_dialog.h"
+
 namespace ui::project {
     ProjectViewManager::ProjectViewManager(ProjectViewModel *projectViewModel, QWidget *parent): QObject(parent),
         projectViewModel_(projectViewModel) {
@@ -63,6 +65,30 @@ namespace ui::project {
         connect(renameAction_, &QAction::triggered, this, &ProjectViewManager::onRenameTriggered);
         connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteTriggered);
     }
+
+    void ProjectViewManager::onCreateNewProjectRequested() {
+        const auto newProjectDialog = new NewProjectDialog(this->getView());
+        connect(
+            newProjectDialog,
+            &NewProjectDialog::accepted,
+            [this, newProjectDialog]() {
+                const auto name = newProjectDialog->getProjectName();
+                const auto description = newProjectDialog->getProjectDescription();
+                const auto author = newProjectDialog->getProjectAuthor();
+                const auto path = newProjectDialog->getProjectPath();
+
+                projectViewModel_->createNewProject(
+                    name.toStdString(),
+                    description.toStdString(),
+                    author.toStdString(),
+                    path.toStdString()
+                );
+            }
+        );
+        newProjectDialog->exec();
+        newProjectDialog->deleteLater();
+    }
+
 
     void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) {
         if (!index.isValid()) return;

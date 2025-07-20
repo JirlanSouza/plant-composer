@@ -43,6 +43,8 @@ namespace ui::project {
         [[nodiscard]] QWidget *getView() const;
 
     private slots:
+        void onCreateNewProjectRequested();
+
         void onTreeViewDoubleClicked(const QModelIndex &index);
 
         void onTreeViewContextMenuRequested(const QPoint &pos);

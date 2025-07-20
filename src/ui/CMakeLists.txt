@@ -24,6 +24,8 @@ target_sources(ui
         project/project_tree/project_tree_model.cpp
         project/project_tree/project_tree_view.h
         project/project_tree/project_tree_view.cpp
+        project/new_project_dialog.h
+        project/new_project_dialog.cpp
 
         components_library/libraries_view_manager.h
         components_library/libraries_view_manager.cpp
