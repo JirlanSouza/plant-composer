@@ -33,16 +33,8 @@ namespace ui::main_window {
         appSettings_(appSettings), appLayoutManager_(new uil::AppLayoutManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
-        auto project = new domain::project::Project(
-            "proj1",
-            "Test Project",
-            "This is a test project.",
-            "Test Author",
-            "1.0.0",
-            "/test_project.fbs"
-        );
 
-        projectViewModel_ = new uip::ProjectViewModel(idFactory, project, this);
+        projectViewModel_ = new uip::ProjectViewModel(idFactory, this);
         diagramManager_ = new ui::diagram_editor::DiagramManager(
             libraries,
             appSettings_,

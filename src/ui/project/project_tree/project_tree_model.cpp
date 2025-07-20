@@ -28,7 +28,6 @@ namespace ui::project {
         ProjectViewModel *projectViewModel,
         QObject *parent
     ) : QStandardItemModel(parent), projectViewModel_(projectViewModel) {
-        buildModel();
         connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onDiagramAdded);
         connect(
             projectViewModel_,
@@ -55,6 +54,7 @@ namespace ui::project {
             this,
             &ProjectTreeModel::onDiagramFolderRenamed
         );
+        connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectTreeModel::buildModel);
     }
 
     bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {

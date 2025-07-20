@@ -31,9 +31,11 @@ namespace ui::project {
         Q_OBJECT
 
     public:
-        explicit ProjectViewModel(IDFactory *idFactory, dp::Project *project, QObject *parent = nullptr);
+        explicit ProjectViewModel(IDFactory *idFactory, QObject *parent = nullptr);
 
         [[nodiscard]] dp::Project *getProject() const;
+
+        [[nodiscard]] bool hasOpenedProject() const;
 
     public slots:
         void addNewDiagram(const std::string &parentFolderId, const std::string &name);
@@ -52,6 +54,8 @@ namespace ui::project {
 
 
     signals:
+        void projectOpened();
+
         void diagramAdded(const domain::project::DiagramMetadata *diagram);
 
         void diagramFolderAdded(const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder);
@@ -68,6 +72,6 @@ namespace ui::project {
 
     private:
         IDFactory *idFactory_;
-        dp::Project *project_;
+        dp::Project *project_{nullptr};
     };
 }

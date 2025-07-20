@@ -19,12 +19,16 @@
 #include "project_view_model.h"
 
 namespace ui::project {
-    ProjectViewModel::ProjectViewModel(IDFactory *idFactory, dp::Project *project, QObject *parent)
-        : QObject(parent), idFactory_(idFactory), project_(project) {
+    ProjectViewModel::ProjectViewModel(IDFactory *idFactory, QObject *parent)
+        : QObject(parent), idFactory_(idFactory) {
     }
 
     dp::Project *ProjectViewModel::getProject() const {
         return project_;
+    }
+
+    bool ProjectViewModel::hasOpenedProject() const {
+        return project_ != nullptr;
     }
 
     void ProjectViewModel::addNewDiagram(const std::string &parentFolderId, const std::string &name) {
