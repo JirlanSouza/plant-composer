@@ -25,7 +25,8 @@ namespace domain::project {
         const std::string &description,
         const std::string &author,
         const std::string &version,
-        const std::string &path
+        const std::string &path,
+        std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams
     )
         : id_(id),
         name_(name),
@@ -33,7 +34,7 @@ namespace domain::project {
         author_(author),
         version_(version),
         path_(path) {
-        diagrams_ = std::make_unique<ProjectCategory<DiagramMetadata>>("diagrams_root", "Diagrams");
+        diagrams_ = std::move(diagrams);
         // scripts_ = std::make_unique<ProjectCategory<ScriptMetadata>>("scripts_root", "Scripts");
         // drivers_ = std::make_unique<ProjectCategory<DriverMetadata>>("drivers_root", "Drivers");
     }
@@ -56,15 +57,6 @@ namespace domain::project {
         NodeContainer<DiagramMetadata> *parent,
         const std::string &name,
         const std::string &filePath
-    ): ProjectNode<DiagramMetadata>(NodeType::FILE, id, name, parent),
-        filePath_(filePath) {
-    }
-
-    std::optional<NodeContainer<DiagramMetadata> *> DiagramMetadata::getAsFolder() {
-        return std::nullopt;
-    }
-
-    std::optional<DiagramMetadata *> DiagramMetadata::getAsFile() {
-        return this;
+    ): FileNode<DiagramMetadata>(id, parent, name, filePath) {
     }
 }

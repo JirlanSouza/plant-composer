@@ -24,7 +24,7 @@
 #include "project_node.h"
 
 namespace domain::project {
-    class DiagramMetadata : public ProjectNode<DiagramMetadata> {
+    class DiagramMetadata : public FileNode<DiagramMetadata> {
     public:
         DiagramMetadata(
             const std::string &id,
@@ -32,16 +32,7 @@ namespace domain::project {
             const std::string &name,
             const std::string &filePath
         );
-
-        std::optional<NodeContainer<DiagramMetadata> *> getAsFolder() override;
-
-        std::optional<DiagramMetadata *> getAsFile() override;
-
-    private:
-        std::string filePath_;
     };
-
-    // TODO: Define ScriptMetadata, DriverMetadata, etc.
 
     class Project {
     public:
@@ -51,7 +42,8 @@ namespace domain::project {
             const std::string &description,
             const std::string &author,
             const std::string &version,
-            const std::string &path
+            const std::string &path,
+            std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams
         );
 
         ~Project();

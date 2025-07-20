@@ -73,6 +73,21 @@ namespace domain::project {
     };
 
     template<typename T>
+    class FileNode : public ProjectNode<T> {
+    public:
+        FileNode(std::string id, NodeContainer<T> *parent, std::string name, std::string filePath);
+
+        [[nodiscard]] const std::string &getFilePath() const;
+
+        std::optional<NodeContainer<T> *> getAsFolder() override;
+
+        std::optional<T *> getAsFile() override;
+
+    private:
+        std::string filePath_;
+    };
+
+    template<typename T>
     concept DerivedFromProjectNode = std::is_base_of_v<ProjectNode<T>, T>;
 
     template<typename T>
@@ -101,7 +116,9 @@ namespace domain::project {
     template<typename T>
     class ProjectCategory : public NodeContainer<T> {
     public:
-        ProjectCategory<T>(std::string id, std::string name);
+        ProjectCategory<T>(std::string id, std::string name, std::string folderName);
+
+        [[nodiscard]] const std::string &getFolderName() const;
 
         [[nodiscard]] bool canBeCopied() const override;
 
@@ -110,6 +127,9 @@ namespace domain::project {
         [[nodiscard]] bool canBeRemoved() const override;
 
         [[nodiscard]] bool canBeRenamed() const override;
+
+    private:
+        std::string folderName_;;
     };
 }
 

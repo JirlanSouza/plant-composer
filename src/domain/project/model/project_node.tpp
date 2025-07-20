@@ -1,22 +1,3 @@
-/*
- * plant-composer
- * Copyright (c) 2025 jirlansouza
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-#pragma once
-
 #include "project_node.h"
 
 #include <ranges>
@@ -65,6 +46,28 @@ namespace domain::project {
 
     template<typename T>
     bool ProjectNode<T>::canBeRenamed() const { return true; }
+
+
+    template<typename T>
+    FileNode<T>::FileNode(std::string id, NodeContainer<T> *parent, std::string name, std::string filePath)
+        : ProjectNode<T>(NodeType::FILE, std::move(id), std::move(name), parent),
+        filePath_(std::move(filePath)) {
+    }
+
+    template<typename T>
+    const std::string &FileNode<T>::getFilePath() const {
+        return filePath_;
+    }
+
+    template<typename T>
+    std::optional<NodeContainer<T> *> FileNode<T>::getAsFolder() {
+        return std::nullopt;
+    }
+
+    template<typename T>
+    std::optional<T *> FileNode<T>::getAsFile() {
+        return static_cast<T *>(this);
+    }
 
 
     template<typename T>
@@ -161,8 +164,13 @@ namespace domain::project {
 
 
     template<typename T>
-    ProjectCategory<T>::ProjectCategory(std::string id, std::string name)
-        : NodeContainer<T>(std::move(id), nullptr, std::move(name)) {
+    ProjectCategory<T>::ProjectCategory(std::string id, std::string name, std::string folderName)
+        : NodeContainer<T>(std::move(id), nullptr, std::move(name)), folderName_(std::move(folderName)) {
+    }
+
+    template<typename T>
+    const std::string &ProjectCategory<T>::getFolderName() const {
+        return folderName_;
     }
 
     template<typename T>

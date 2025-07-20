@@ -37,6 +37,6 @@ namespace domain::project {
 
         virtual std::unique_ptr<dd::Diagram> loadDiagram(const DiagramMetadata &metadata) = 0;
 
-        virtual void saveDiagram(const dd::Diagram &diagram) = 0;
+        virtual void saveDiagram(DiagramMetadata metadata, const dd::Diagram &diagram) = 0;
     };
 }
