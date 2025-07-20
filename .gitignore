@@ -86,8 +86,5 @@ CMakeLists.txt.user*
 /suport
 /assets/libraries/svgs/
 /.gemini/
-.idea/
 /GEMINI.md
-
-# IDE specific files
-.idea/
+/.idea/
