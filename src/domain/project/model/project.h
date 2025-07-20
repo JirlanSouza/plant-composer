@@ -46,6 +46,14 @@ namespace domain::project {
             std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams
         );
 
+        Project(
+            const std::string &id,
+            const std::string &name,
+            const std::string &description,
+            const std::string &author,
+            const std::string &path
+        );
+
         ~Project();
 
         [[nodiscard]] std::string getId() const;
@@ -62,10 +70,12 @@ namespace domain::project {
 
         [[nodiscard]] ProjectCategory<DiagramMetadata> *diagrams() const;
 
-        // [[nodiscard]] ProjectCategory<ScriptMetadata> *scripts() const;
-        // [[nodiscard]] ProjectCategory<DriverMetadata> *drivers() const;
-
     private:
+        static const std::string PROJECT_START_VERSION;
+        static const std::string DIAGRAMS_ROOT_ID;
+        static const std::string DIAGRAMS_ROOT_NAME;
+        static const std::string DIAGRAMS_FOLDER_NAME;
+
         std::string id_;
         std::string name_;
         std::string description_;
@@ -73,7 +83,5 @@ namespace domain::project {
         std::string version_;
         std::string path_;
         std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams_;
-        // std::unique_ptr<ProjectCategory<ScriptMetadata>> scripts_;
-        // std::unique_ptr<ProjectCategory<DriverMetadata>> drivers_;
     };
 }

@@ -38,6 +38,13 @@ namespace ui::project {
         [[nodiscard]] bool hasOpenedProject() const;
 
     public slots:
+        void createNewProject(
+            const std::string &name,
+            const std::string &description,
+            const std::string &author,
+            const std::string &path
+        );
+
         void addNewDiagram(const std::string &parentFolderId, const std::string &name);
 
         void addNewDiagramFolder(const std::string &parentFolderId, const std::string &name);

@@ -19,6 +19,11 @@
 #include "project.h"
 
 namespace domain::project {
+    const std::string Project::PROJECT_START_VERSION = "1.0.0";
+    const std::string Project::DIAGRAMS_ROOT_ID = "diagrams_root";
+    const std::string Project::DIAGRAMS_ROOT_NAME = "Diagrams";
+    const std::string Project::DIAGRAMS_FOLDER_NAME = "diagrams";
+
     Project::Project(
         const std::string &id,
         const std::string &name,
@@ -35,8 +40,26 @@ namespace domain::project {
         version_(version),
         path_(path) {
         diagrams_ = std::move(diagrams);
-        // scripts_ = std::make_unique<ProjectCategory<ScriptMetadata>>("scripts_root", "Scripts");
-        // drivers_ = std::make_unique<ProjectCategory<DriverMetadata>>("drivers_root", "Drivers");
+    }
+
+    Project::Project(
+        const std::string &id,
+        const std::string &name,
+        const std::string &description,
+        const std::string &author,
+        const std::string &path
+    )
+        : id_(id),
+        name_(name),
+        description_(description),
+        author_(author),
+        version_(PROJECT_START_VERSION),
+        path_(path) {
+        diagrams_ = std::make_unique<ProjectCategory<DiagramMetadata> >(
+            DIAGRAMS_ROOT_ID,
+            DIAGRAMS_ROOT_NAME,
+            DIAGRAMS_FOLDER_NAME
+        );
     }
 
     Project::~Project() = default;

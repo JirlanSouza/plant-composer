@@ -31,6 +31,23 @@ namespace ui::project {
         return project_ != nullptr;
     }
 
+    void ProjectViewModel::createNewProject(
+        const std::string &name,
+        const std::string &description,
+        const std::string &author,
+        const std::string &path
+    ) {
+        project_ = new dp::Project(
+            idFactory_->create(),
+            name,
+            description,
+            author,
+            path
+        );
+
+        emit projectOpened();
+    }
+
     void ProjectViewModel::addNewDiagram(const std::string &parentFolderId, const std::string &name) {
         dp::NodeContainer<dp::DiagramMetadata> *parentFolder;
 
