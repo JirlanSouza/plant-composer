@@ -88,3 +88,6 @@ CMakeLists.txt.user*
 /.gemini/
 .idea/
 /GEMINI.md
+
+# IDE specific files
+.idea/
