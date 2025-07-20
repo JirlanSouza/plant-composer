@@ -1,24 +1,38 @@
-// project.fbs
-
 namespace plant_composer.fbs;
 
-// Table for storing metadata about a diagram in the main project file
-table DiagramMetadata {
-    id: string (required);
-    name: string;
-    file_path: string (required); // Relative path to the diagram file
+table FileNode {
+  id:string (required);
+  name:string (required);
+  file_path:string (required);
 }
 
-// Table representing the entire project
-// This will be the root_type for the main project file (e.g., project.fbs)
-table ProjectTable {
-    id: string (required);
-    name: string;
-    description: string;
-    author: string;
-    version: string;
-    diagrams_metadata: [DiagramMetadata];
+union ProjectNode {
+  FileNode,
+  FolderNode
 }
 
-// Define the root type for our project file
-root_type ProjectTable;
+table FolderNode {
+  id:string (required);
+  parent_id:string;
+  name:string (required);
+  children:[ProjectNode] (required);
+}
+
+table ProjectCategory {
+  id:string (required);
+  name:string (required);
+  folder_name:string (required);
+  children:[ProjectNode] (required);
+}
+
+table Project {
+  id:string (required);
+  name:string;
+  description:string;
+  author:string;
+  version:string;
+  diagrams:ProjectCategory (required);
+}
+
+root_type Project;
+

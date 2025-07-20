@@ -1,44 +1,35 @@
-// diagram.fbs
-
 namespace plant_composer.fbs;
 
-// Enum for the type of connection
 enum ConnectionType : byte { Port, Signal }
 
-// Struct for the position and rotation of a node
 struct NodeTransform {
     x: float;
     y: float;
     rotation: float;
 }
 
-// Table for storing key-value pairs, used for component constants
 table KeyValue {
     key: string;
     value: string;
 }
 
-// Table representing a component instance on a diagram
 table ComponentInstance {
     id: string (required);
     name: string;
-    component_type_id: string (required); // Links to the ComponentType definition in a library
+    component_type_id: string (required);
     transform: NodeTransform;
-    constants: [KeyValue]; // Overridden constant values for this instance
+    constants: [KeyValue];
 }
 
-// Table representing a connection between two component instances
 table Connection {
     id: string (required);
     type: ConnectionType = Port;
     source_component_id: string (required);
-    source_io_id: string (required); // The name of the source port or signal
+    source_io_id: string (required);
     target_component_id: string (required);
-    target_io_id: string (required); // The name of the target port or signal
+    target_io_id: string (required);
 }
 
-// Table representing a single diagram
-// This will be the root_type for individual diagram files (e.g., diagram_1_id.fbs)
 table DiagramTable {
     id: string (required);
     name: string;
@@ -48,5 +39,4 @@ table DiagramTable {
     connections: [Connection];
 }
 
-// Define the root type for our diagram file
 root_type DiagramTable;

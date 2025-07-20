@@ -27,9 +27,13 @@ namespace adapters::project {
     class FlatBufferProjectLoader : public dp::IProjectLoader {
     public:
         std::unique_ptr<dp::Project> loadProject(const std::string &path) override;
+
         void saveProject(const dp::Project &project) override;
 
-        std::unique_ptr<dd::Diagram> loadDiagram(const dp::Project::DiagramMetadata &metadata) override;
-        void saveDiagram(const dd::Diagram &diagram) override;
+        std::unique_ptr<dd::Diagram> loadDiagram(const dp::DiagramMetadata &metadata) override;
+
+        void saveDiagram(dp::DiagramMetadata &metadata, const dd::Diagram &diagram) override;
     };
 }
+
+#include "flat_buffer_project_loader.tpp"

@@ -255,7 +255,7 @@ namespace adapters::project {
         return diagram;
     }
 
-    void FlatBufferProjectLoader::saveDiagram(const dp::DiagramMetadata metadata, const dd::Diagram &diagram) {
+    void FlatBufferProjectLoader::saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) {
         flatbuffers::FlatBufferBuilder builder;
 
         auto id = builder.CreateString(diagram.getId());
