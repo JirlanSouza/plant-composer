@@ -13,58 +13,150 @@
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https:
  */
 
 #include "new_project_dialog.h"
+
+#include <QFormLayout>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QDir>
+#include <QPalette>
 
 namespace ui::project {
     NewProjectDialog::NewProjectDialog(QWidget *parent) : QDialog(parent) {
         setWindowTitle(tr("Create New Project"));
         setMinimumSize(400, 300);
+
+        projectNameLineEdit_ = new QLineEdit();
+        projectDescriptionTextEdit_ = new QTextEdit();
+        projectAuthorLineEdit_ = new QLineEdit();
+        projectPathLineEdit_ = new QLineEdit();
+
+        invalidPalette_ = projectNameLineEdit_->palette();
+        invalidPalette_.setColor(QPalette::Text, Qt::red);
+        invalidPalette_.setColor(QPalette::Base, QColor(255, 220, 220));
+        projectNameErrorMessage_ = "";
+        projectPathErrorMessage_ = "";
+
         setupUi();
         setupConnections();
     }
 
     void NewProjectDialog::setupUi() {
         auto *mainLayout = new QVBoxLayout(this);
+        auto *formLayout = new QFormLayout();
 
-        auto *projectNameLayout = new QHBoxLayout();
-        projectNameLayout->addWidget(new QLabel(tr("Project Name:")));
+        formLayout->setVerticalSpacing(2);
+        formLayout->setLabelAlignment(Qt::AlignJustify);
+        formLayout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
         projectNameLineEdit_ = new QLineEdit();
-        projectNameLayout->addWidget(projectNameLineEdit_);
-        mainLayout->addLayout(projectNameLayout);
+        formLayout->addRow(tr("Project Name:"), projectNameLineEdit_);
 
-        auto *projectDescriptionLayout = new QVBoxLayout();
-        projectDescriptionLayout->addWidget(new QLabel(tr("Description:")));
         projectDescriptionTextEdit_ = new QTextEdit();
-        projectDescriptionLayout->addWidget(projectDescriptionTextEdit_);
-        mainLayout->addLayout(projectDescriptionLayout);
+        formLayout->addRow(tr("Description:"), projectDescriptionTextEdit_);
+        projectDescriptionTextEdit_->setMaximumHeight(50);
 
-        auto *projectAuthorLayout = new QHBoxLayout();
-        projectAuthorLayout->addWidget(new QLabel(tr("Author:")));
         projectAuthorLineEdit_ = new QLineEdit();
-        projectAuthorLayout->addWidget(projectAuthorLineEdit_);
-        mainLayout->addLayout(projectAuthorLayout);
+        projectAuthorLineEdit_->setText(QDir::home().dirName());
+        formLayout->addRow(tr("Author:"), projectAuthorLineEdit_);
 
-        auto *projectPathLayout = new QHBoxLayout();
-        projectPathLayout->addWidget(new QLabel(tr("Path:")));
         projectPathLineEdit_ = new QLineEdit();
-        projectPathLayout->addWidget(projectPathLineEdit_);
-        mainLayout->addLayout(projectPathLayout);
+        browsePathButton_ = new QPushButton(tr("Browse..."));
+        auto *pathLayout = new QHBoxLayout();
+        pathLayout->addWidget(projectPathLineEdit_);
+        pathLayout->addWidget(browsePathButton_);
+        formLayout->addRow(tr("Path:"), pathLayout);
+
+        mainLayout->addLayout(formLayout);
+
+        errorMessageLabel_ = new QLabel(this);
+        errorMessageLabel_->setStyleSheet("color: red;");
+        errorMessageLabel_->setWordWrap(true);
+        mainLayout->addWidget(errorMessageLabel_);
 
         auto *buttonLayout = new QHBoxLayout();
-        createButton_ = new QPushButton(tr("Create"));
         cancelButton_ = new QPushButton(tr("Cancel"));
+        createButton_ = new QPushButton(tr("Create"));
+        createButton_->setDefault(true);
+        createButton_->setEnabled(false);
         buttonLayout->addStretch();
-        buttonLayout->addWidget(createButton_);
         buttonLayout->addWidget(cancelButton_);
+        buttonLayout->addWidget(createButton_);
         mainLayout->addLayout(buttonLayout);
     }
 
     void NewProjectDialog::setupConnections() {
         connect(createButton_, &QPushButton::clicked, this, &NewProjectDialog::accept);
         connect(cancelButton_, &QPushButton::clicked, this, &NewProjectDialog::reject);
+        connect(browsePathButton_, &QPushButton::clicked, this, &NewProjectDialog::onBrowsePathClicked);
+
+        connect(projectNameLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectNameInput);
+        connect(projectPathLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectPathInput);
+    }
+
+    void NewProjectDialog::validateProjectNameInput() {
+        isProjectNameValid_ = projectNameLineEdit_->text().length() >= 3;
+        projectNameErrorMessage_.clear();
+
+        if (!isProjectNameValid_ && projectNameIsDirty_) {
+            projectNameErrorMessage_ = tr("Project Name must be at least 3 characters long.\n");
+            projectNameLineEdit_->setPalette(invalidPalette_);
+        } else {
+            projectNameLineEdit_->setPalette(inputPalette_);
+        }
+
+        errorMessageLabel_->setText(projectNameErrorMessage_ + projectPathErrorMessage_);
+        createButton_->setEnabled(isProjectNameValid_ && isProjectPathValid_);
+        projectNameIsDirty_ = true;
+    }
+
+    void NewProjectDialog::validateProjectPathInput() {
+        const QString path = projectPathLineEdit_->text();
+        const QFileInfo pathInfo(path);
+        isProjectPathValid_ = false;
+        projectPathErrorMessage_.clear();
+
+        if (path.isEmpty()) {
+            projectPathErrorMessage_ += tr("Project Path cannot be empty.\n");
+        } else if (!pathInfo.exists()) {
+            projectPathErrorMessage_ += tr("Project Path does not exist.\n");
+        } else if (!pathInfo.isDir()) {
+            projectPathErrorMessage_ += tr("Project Path is not a directory.\n");
+        } else if (!pathInfo.isWritable()) {
+            projectPathErrorMessage_ += tr("Project Path is not writable.\n");
+        } else {
+            isProjectPathValid_ = true;
+        }
+
+        if (!isProjectPathValid_ && projectPathIsDirty_) {
+            projectPathLineEdit_->setPalette(invalidPalette_);
+        } else {
+            projectPathLineEdit_->setPalette(inputPalette_);
+        }
+
+        errorMessageLabel_->setText(projectNameErrorMessage_ + projectPathErrorMessage_);
+        createButton_->setEnabled(isProjectNameValid_ && isProjectPathValid_);
+        projectPathIsDirty_ = true;
+    }
+
+
+    void NewProjectDialog::onBrowsePathClicked() {
+        QString initialPath = projectPathLineEdit_->text();
+        if (initialPath.isEmpty() || !QFileInfo(initialPath).isDir()) {
+            initialPath = QDir::homePath();
+        }
+
+        const QString directory = QFileDialog::getExistingDirectory(
+            this,
+            tr("Select Project Directory"),
+            initialPath,
+            QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
+        );
+        if (!directory.isEmpty()) {
+            projectPathLineEdit_->setText(directory);
+        }
     }
 
     QString NewProjectDialog::getProjectName() const {

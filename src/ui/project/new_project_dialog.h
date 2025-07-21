@@ -24,6 +24,7 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QPushButton>
+#include <QFileDialog>
 
 namespace ui::project {
     class NewProjectDialog : public QDialog {
@@ -49,9 +50,25 @@ namespace ui::project {
         QLineEdit *projectPathLineEdit_;
         QPushButton *createButton_;
         QPushButton *cancelButton_;
+        QPushButton *browsePathButton_;
+        QLabel *errorMessageLabel_;
+        QPalette inputPalette_;
+        QPalette invalidPalette_;
+        bool isProjectNameValid_;
+        bool projectNameIsDirty_;
+        bool isProjectPathValid_;
+        bool projectPathIsDirty_;
+        QString projectNameErrorMessage_;
+        QString projectPathErrorMessage_;
 
         void setupUi();
 
         void setupConnections();
+
+    private slots:
+        void onBrowsePathClicked();
+
+        void validateProjectNameInput();
+        void validateProjectPathInput();
     };
 }
