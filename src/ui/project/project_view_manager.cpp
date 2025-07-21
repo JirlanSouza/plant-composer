@@ -19,6 +19,7 @@
 #include "project_view_manager.h"
 
 #include <QMenu>
+#include <QDir>
 
 #include "new_project_dialog.h"
 
@@ -92,13 +93,14 @@ namespace ui::project {
                 const auto name = newProjectDialog->getProjectName();
                 const auto description = newProjectDialog->getProjectDescription();
                 const auto author = newProjectDialog->getProjectAuthor();
-                const auto path = newProjectDialog->getProjectPath();
+                const auto parentPath = newProjectDialog->getProjectPath();
+                const QString fullProjectPath = QDir::cleanPath(QDir(parentPath).filePath(name));
 
                 projectViewModel_->createNewProject(
                     name.toStdString(),
                     description.toStdString(),
                     author.toStdString(),
-                    path.toStdString()
+                    fullProjectPath.toStdString()
                 );
             }
         );
