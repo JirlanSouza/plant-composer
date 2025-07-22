@@ -29,13 +29,12 @@ namespace domain::project {
         FOLDER, FILE
     };
 
-    template<typename T>
     class NodeContainer;
+    class FileNode;
 
-    template<typename T>
     class ProjectNode {
     public:
-        ProjectNode(NodeType type, std::string id, std::string name, NodeContainer<T> *parent);
+        ProjectNode(NodeType type, std::string id, std::string name, NodeContainer *parent);
 
         virtual ~ProjectNode() = default;
 
@@ -47,7 +46,7 @@ namespace domain::project {
 
         void rename(std::string newName);
 
-        [[nodiscard]] NodeContainer<T> *getParent() const;
+        [[nodiscard]] NodeContainer *getParent() const;
 
         [[nodiscard]] bool isFolder() const;
 
@@ -61,62 +60,56 @@ namespace domain::project {
 
         [[nodiscard]] virtual bool canBeRenamed() const;
 
-        virtual std::optional<NodeContainer<T> *> getAsFolder() = 0;
+        virtual std::optional<NodeContainer *> getAsFolder() = 0;
 
-        virtual std::optional<T *> getAsFile() = 0;
+        virtual std::optional<FileNode *> getAsFile() = 0;
 
     private:
         NodeType type_;
         std::string id_;
         std::string name_;
-        NodeContainer<T> *parent_;
+        NodeContainer *parent_;
     };
 
-    template<typename T>
-    class FileNode : public ProjectNode<T> {
+    class FileNode : public ProjectNode {
     public:
-        FileNode(std::string id, NodeContainer<T> *parent, std::string name, std::string filePath);
+        FileNode(std::string id, NodeContainer *parent, std::string name, std::string filePath);
 
         [[nodiscard]] const std::string &getFilePath() const;
 
-        std::optional<NodeContainer<T> *> getAsFolder() override;
+        std::optional<NodeContainer *> getAsFolder() override;
 
-        std::optional<T *> getAsFile() override;
+        std::optional<FileNode *> getAsFile() override;
 
     private:
         std::string filePath_;
     };
 
-    template<typename T>
-    concept DerivedFromProjectNode = std::is_base_of_v<ProjectNode<T>, T>;
-
-    template<typename T>
-    class NodeContainer : public ProjectNode<T> {
+    class NodeContainer : public ProjectNode {
     public:
-        explicit NodeContainer(std::string id, NodeContainer<T> *parent, std::string name);
+        explicit NodeContainer(std::string id, NodeContainer *parent, std::string name);
 
-        void addChild(std::unique_ptr<ProjectNode<T> > item);
+        void addChild(std::unique_ptr<ProjectNode> item);
 
         void removeChild(const std::string &id);
 
-        [[nodiscard]] std::vector<ProjectNode<T> *> getChildren() const;
+        [[nodiscard]] std::vector<ProjectNode *> getChildren() const;
 
-        std::optional<NodeContainer<T> *> getFolder(const std::string &folderId);
+        std::optional<NodeContainer *> getFolder(const std::string &folderId);
 
-        std::optional<T *> getFile(const std::string &fileId);
+        std::optional<FileNode *> getFile(const std::string &fileId);
 
-        std::optional<NodeContainer<T> *> getAsFolder() override;
+        std::optional<NodeContainer *> getAsFolder() override;
 
-        std::optional<T *> getAsFile() override;
+        std::optional<FileNode *> getAsFile() override;
 
     private:
-        std::unordered_map<std::string, std::unique_ptr<ProjectNode<T> > > children_{};
+        std::unordered_map<std::string, std::unique_ptr<ProjectNode> > children_{};
     };
 
-    template<typename T>
-    class ProjectCategory : public NodeContainer<T> {
+    class ProjectCategory : public NodeContainer {
     public:
-        ProjectCategory<T>(std::string id, std::string name, std::string folderName);
+        ProjectCategory(std::string id, std::string name, std::string folderName);
 
         [[nodiscard]] const std::string &getFolderName() const;
 
@@ -132,5 +125,3 @@ namespace domain::project {
         std::string folderName_;;
     };
 }
-
-#include "project_node.tpp"

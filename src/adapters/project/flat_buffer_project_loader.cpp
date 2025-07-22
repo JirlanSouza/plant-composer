@@ -12,10 +12,9 @@ namespace adapters::project {
         plant_composer::fbs::ProjectNode type;
     };
 
-    template<typename T>
     FbProjectNode CreateFlatBufferProjectNode(
         flatbuffers::FlatBufferBuilder &builder,
-        dp::ProjectNode<T> *domainNode
+        dp::ProjectNode *domainNode
     ) {
         FbProjectNode fbProjectNode{0, plant_composer::fbs::ProjectNode_NONE};
 
@@ -38,7 +37,7 @@ namespace adapters::project {
             std::vector<plant_composer::fbs::ProjectNode> fbTypes;
 
             for (const auto *child: folderNode->getChildren()) {
-                auto fbChild = CreateFlatBufferProjectNode<T>(builder, child);
+                auto fbChild = CreateFlatBufferProjectNode(builder, child);
                 fbChildren.push_back(fbChild.nodeOffset);
                 fbTypes.push_back(fbChild.type);
             }
@@ -67,13 +66,12 @@ namespace adapters::project {
         return fbProjectNode;
     }
 
-    template<typename T>
     void ParserFlatBufferProjectNodes(
         const flatbuffers::Vector<flatbuffers::Offset<void> > *nodes,
         const flatbuffers::Vector<u_int8_t> *types,
-        dp::NodeContainer<T> *parent
+        dp::NodeContainer *parent
     ) {
-        std::vector<dp::ProjectNode<T> > projectNodes;
+        std::vector<dp::ProjectNode > projectNodes;
 
         if (!nodes || !types || nodes->size() != types->size()) {
             return;
@@ -85,7 +83,7 @@ namespace adapters::project {
 
             if (fbType == plant_composer::fbs::ProjectNode_FileNode) {
                 const auto file = static_cast<const plant_composer::fbs::FileNode *>(fbNode);
-                auto domainFileNode = std::make_unique<dp::FileNode<T>>(
+                auto domainFileNode = std::make_unique<dp::FileNode >(
                     file->id()->str(),
                     parent,
                     file->name()->str(),
@@ -94,13 +92,13 @@ namespace adapters::project {
                 parent->addChild(domainFileNode);
             } else if (fbType == plant_composer::fbs::ProjectNode_FolderNode) {
                 const auto folder = static_cast<const plant_composer::fbs::FolderNode *>(fbNode);
-                auto domainFolder = std::make_unique<dp::NodeContainer<T> >(
+                auto domainFolder = std::make_unique<dp::NodeContainer >(
                     folder->id()->str(),
                     parent,
                     folder->name()->str()
                 );
                 parent->addChild(domainFolder);
-                ParserFlatBufferProjectNodes<T>(
+                ParserFlatBufferProjectNodes(
                     folder->children(),
                     folder->children_type(),
                     domainFolder.get()
@@ -109,10 +107,9 @@ namespace adapters::project {
         }
     }
 
-    template<typename T>
     flatbuffers::Offset<plant_composer::fbs::ProjectCategory> CreateFlatBufferProjectCategory(
         flatbuffers::FlatBufferBuilder &builder,
-        const dp::ProjectCategory<T> *category
+        const dp::ProjectCategory *category
     ) {
         std::vector<flatbuffers::Offset<void> > fbChildren;
         std::vector<plant_composer::fbs::ProjectNode> fbTypes;
@@ -129,7 +126,7 @@ namespace adapters::project {
                 fbChildren.push_back(fbFileNode.Union());
                 fbTypes.push_back(plant_composer::fbs::ProjectNode_FileNode);
             } else if (child->isFolder()) {
-                auto fbProjectNode = CreateFlatBufferProjectNode<T>(builder, child->getAsFolder().value());
+                auto fbProjectNode = CreateFlatBufferProjectNode(builder, child->getAsFolder().value());
                 fbChildren.push_back(fbProjectNode.nodeOffset);
                 fbTypes.push_back(fbProjectNode.type);
             }
@@ -165,18 +162,17 @@ namespace adapters::project {
         );
     }
 
-    template<typename T>
-    std::unique_ptr<dp::ProjectCategory<T> > ParserFlatBufferProjectCategory(
+    std::unique_ptr<dp::ProjectCategory > ParserFlatBufferProjectCategory(
         const plant_composer::fbs::ProjectCategory *fbProjectCategory
     ) {
-        auto category = std::make_unique<dp::ProjectCategory<T> >(
+        auto category = std::make_unique<dp::ProjectCategory >(
             fbProjectCategory->id()->str(),
             fbProjectCategory->name()->str(),
             fbProjectCategory->folder_name()->str()
         );
 
         for (size_t i = 0; i < fbProjectCategory->children()->size(); ++i) {
-            ParserFlatBufferProjectNodes<T>(
+            ParserFlatBufferProjectNodes(
                 fbProjectCategory->children(),
                 fbProjectCategory->children_type(),
                 category.get()
@@ -187,7 +183,7 @@ namespace adapters::project {
     }
 
 
-    std::unique_ptr<dp::Project> FlatBufferProjectLoader::loadProject(const std::string &path) {
+    inline std::unique_ptr<dp::Project> FlatBufferProjectLoader::loadProject(const std::string &path) {
         std::ifstream infile(path, std::ios::binary);
         if (!infile) {
             return nullptr;
@@ -208,7 +204,7 @@ namespace adapters::project {
         return project;
     }
 
-    void FlatBufferProjectLoader::saveProject(const dp::Project &project) {
+    inline void FlatBufferProjectLoader::saveProject(const dp::Project &project) {
         flatbuffers::FlatBufferBuilder builder;
 
         const auto id = builder.CreateString(project.getId());
@@ -234,9 +230,7 @@ namespace adapters::project {
         outfile.write(reinterpret_cast<const char *>(builder.GetBufferPointer()), builder.GetSize());
     }
 
-    std::unique_ptr<dd::Diagram> FlatBufferProjectLoader::loadDiagram(
-        const dp::DiagramMetadata &metadata
-    ) {
+    inline std::unique_ptr<dd::Diagram> FlatBufferProjectLoader::loadDiagram(const dp::DiagramMetadata &metadata) {
         std::ifstream infile(metadata.getFilePath(), std::ios::binary);
         if (!infile) {
             return nullptr;
@@ -255,7 +249,7 @@ namespace adapters::project {
         return diagram;
     }
 
-    void FlatBufferProjectLoader::saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) {
+    inline void FlatBufferProjectLoader::saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) {
         flatbuffers::FlatBufferBuilder builder;
 
         auto id = builder.CreateString(diagram.getId());

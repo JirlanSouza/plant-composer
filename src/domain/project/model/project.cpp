@@ -31,7 +31,7 @@ namespace domain::project {
         const std::string &author,
         const std::string &version,
         const std::string &path,
-        std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams
+        std::unique_ptr<ProjectCategory> diagrams
     )
         : id_(id),
         name_(name),
@@ -55,7 +55,7 @@ namespace domain::project {
         author_(author),
         version_(PROJECT_START_VERSION),
         path_(path) {
-        diagrams_ = std::make_unique<ProjectCategory<DiagramMetadata> >(
+        diagrams_ = std::make_unique<ProjectCategory>(
             DIAGRAMS_ROOT_ID,
             DIAGRAMS_ROOT_NAME,
             DIAGRAMS_FOLDER_NAME
@@ -71,15 +71,15 @@ namespace domain::project {
     std::string Project::getVersion() const { return version_; }
     std::string Project::getPath() const { return path_; }
 
-    ProjectCategory<DiagramMetadata> *Project::diagrams() const {
+    ProjectCategory *Project::diagrams() const {
         return diagrams_.get();
     }
 
     DiagramMetadata::DiagramMetadata(
         const std::string &id,
-        NodeContainer<DiagramMetadata> *parent,
+        NodeContainer *parent,
         const std::string &name,
         const std::string &filePath
-    ): FileNode<DiagramMetadata>(id, parent, name, filePath) {
+    ): FileNode(id, parent, name, filePath) {
     }
 }

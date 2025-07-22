@@ -24,11 +24,11 @@
 #include "project_node.h"
 
 namespace domain::project {
-    class DiagramMetadata : public FileNode<DiagramMetadata> {
+    class DiagramMetadata : public FileNode {
     public:
         DiagramMetadata(
             const std::string &id,
-            NodeContainer<DiagramMetadata> *parent,
+            NodeContainer *parent,
             const std::string &name,
             const std::string &filePath
         );
@@ -43,7 +43,7 @@ namespace domain::project {
             const std::string &author,
             const std::string &version,
             const std::string &path,
-            std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams
+            std::unique_ptr<ProjectCategory> diagrams
         );
 
         Project(
@@ -68,7 +68,7 @@ namespace domain::project {
 
         [[nodiscard]] std::string getPath() const;
 
-        [[nodiscard]] ProjectCategory<DiagramMetadata> *diagrams() const;
+        [[nodiscard]] ProjectCategory *diagrams() const;
 
     private:
         static const std::string PROJECT_START_VERSION;
@@ -82,6 +82,6 @@ namespace domain::project {
         std::string author_;
         std::string version_;
         std::string path_;
-        std::unique_ptr<ProjectCategory<DiagramMetadata> > diagrams_;
+        std::unique_ptr<ProjectCategory> diagrams_;
     };
 }
