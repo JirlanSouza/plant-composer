@@ -28,6 +28,7 @@ PlantComposerApplication::PlantComposerApplication() {
     appSettings_ = std::make_unique<QtAppSettings>(new QSettings(ORGANIZATION_NAME, APPLICATION_NAME));
     appSettings_->setAssetsDir(getAssetsDir());
     librariesLoader_ = std::make_unique<JsonComponentsLibraryLoader>(appSettings_->getComponentsLibraryDir());
+    projectLoader_ = std::make_unique<FlatBufferProjectLoader>();
     idFactory_ = std::make_unique<adapters::QUuidIdFactory>();
     componentInstanceFactory_ = std::make_unique<ComponentInstanceFactory>(
         idFactory_.get(),
@@ -47,6 +48,7 @@ void PlantComposerApplication::initialize(int argc, char *argv[]) {
         appMainWindow_ = std::make_unique<AppMainWindow>(
             &libraries_,
             appSettings_.get(),
+            projectLoader_.get(),
             idFactory_.get(),
             componentInstanceFactory_.get(),
             nullptr
