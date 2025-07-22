@@ -32,8 +32,6 @@ namespace adapters::project {
 
         std::unique_ptr<dd::Diagram> loadDiagram(const dp::DiagramMetadata &metadata) override;
 
-        void saveDiagram(dp::DiagramMetadata &metadata, const dd::Diagram &diagram) override;
+        void saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) override;
     };
 }
-
-#include "flat_buffer_project_loader.tpp"
