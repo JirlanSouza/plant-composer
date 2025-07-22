@@ -25,16 +25,18 @@ namespace ui::main_window {
     AppMainWindow::AppMainWindow(
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings,
+        dp::IProjectLoader *projectLoader,
         domain::IDFactory *idFactory,
         dd::ComponentInstanceFactory *componentInstanceFactory,
         QWidget *parent
     ) : QMainWindow(parent),
         appSettings_(appSettings),
+        projectLoader_(projectLoader),
         actionsManager_(new uam::ActionsManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
         appLayoutManager_ = new uil::AppLayoutManager(this, actionsManager_);
-        projectViewModel_ = new uip::ProjectViewModel(idFactory, this);
+        projectViewModel_ = new uip::ProjectViewModel(idFactory, projectLoader_, this);
         diagramManager_ = new ui::diagram_editor::DiagramManager(
             libraries,
             appSettings_,

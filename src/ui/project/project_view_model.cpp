@@ -18,13 +18,19 @@
 
 #include "project_view_model.h"
 
+#include "domain/project/project_loader.h"
+
 namespace ui::project {
-    ProjectViewModel::ProjectViewModel(IDFactory *idFactory, QObject *parent)
-        : QObject(parent), idFactory_(idFactory) {
+    ProjectViewModel::ProjectViewModel(
+        IDFactory *idFactory,
+        domain::project::IProjectLoader *projectLoader,
+        QObject *parent
+    )
+        : QObject(parent), idFactory_(idFactory), projectLoader_(projectLoader) {
     }
 
     dp::Project *ProjectViewModel::getProject() const {
-        return project_;
+        return project_.get();
     }
 
     bool ProjectViewModel::hasOpenedProject() const {
@@ -37,7 +43,7 @@ namespace ui::project {
         const std::string &author,
         const std::string &path
     ) {
-        project_ = new dp::Project(
+        project_ = std::make_unique<dp::Project>(
             idFactory_->create(),
             name,
             description,
@@ -45,11 +51,17 @@ namespace ui::project {
             path
         );
 
+        projectLoader_->saveProject(*project_.get());
+        emit projectOpened();
+    }
+
+    void ProjectViewModel::openProject(const std::string &path) {
+        project_ = projectLoader_->loadProject(path);
         emit projectOpened();
     }
 
     void ProjectViewModel::addNewDiagram(const std::string &parentFolderId, const std::string &name) {
-        dp::NodeContainer<dp::DiagramMetadata> *parentFolder;
+        dp::NodeContainer *parentFolder;
 
         if (parentFolderId == project_->diagrams()->getId()) {
             parentFolder = project_->diagrams();
@@ -73,7 +85,7 @@ namespace ui::project {
     }
 
     void ProjectViewModel::addNewDiagramFolder(const std::string &parentFolderId, const std::string &name) {
-        dp::NodeContainer<dp::DiagramMetadata> *parentFolder;
+        dp::NodeContainer *parentFolder;
 
         if (parentFolderId == project_->diagrams()->getId()) {
             parentFolder = project_->diagrams();
@@ -84,7 +96,7 @@ namespace ui::project {
             parentFolder = parentFolderOpt.value();
         }
 
-        auto newFolder = std::make_unique<dp::NodeContainer<dp::DiagramMetadata> >(
+        auto newFolder = std::make_unique<dp::NodeContainer>(
             idFactory_->create(),
             parentFolder,
             name
@@ -98,7 +110,7 @@ namespace ui::project {
         const auto diagramOpt = project_->diagrams()->getFile(diagramId);
         if (!diagramOpt.has_value()) return;
 
-        emit openDiagram(diagramOpt.value());
+        emit openDiagram(dynamic_cast<const dp::DiagramMetadata *>(diagramOpt.value()));
     }
 
     void ProjectViewModel::removeDiagram(const std::string &diagramId) {

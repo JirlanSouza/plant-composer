@@ -20,6 +20,7 @@
 
 #include <QObject>
 
+#include "domain/project/project_loader.h"
 #include "domain/project/model/project.h"
 #include "domain/shared/id_factory.h"
 
@@ -31,7 +32,7 @@ namespace ui::project {
         Q_OBJECT
 
     public:
-        explicit ProjectViewModel(IDFactory *idFactory, QObject *parent = nullptr);
+        explicit ProjectViewModel(IDFactory *idFactory, dp::IProjectLoader *projectLoader, QObject *parent = nullptr);
 
         [[nodiscard]] dp::Project *getProject() const;
 
@@ -44,6 +45,8 @@ namespace ui::project {
             const std::string &author,
             const std::string &path
         );
+
+        void openProject(const std::string &path);
 
         void addNewDiagram(const std::string &parentFolderId, const std::string &name);
 
@@ -65,7 +68,7 @@ namespace ui::project {
 
         void diagramAdded(const domain::project::DiagramMetadata *diagram);
 
-        void diagramFolderAdded(const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder);
+        void diagramFolderAdded(const domain::project::NodeContainer *folder);
 
         void openDiagram(const domain::project::DiagramMetadata *diagram);
 
@@ -79,6 +82,7 @@ namespace ui::project {
 
     private:
         IDFactory *idFactory_;
-        dp::Project *project_{nullptr};
+        dp::IProjectLoader *projectLoader_;
+        std::unique_ptr<dp::Project> project_{nullptr};
     };
 }

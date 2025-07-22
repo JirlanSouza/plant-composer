@@ -50,7 +50,7 @@ namespace ui::project {
         void onDiagramAdded(const domain::project::DiagramMetadata *diagram);
 
         void onDiagramFolderAdded(
-            const domain::project::NodeContainer<domain::project::DiagramMetadata> *folder
+            const domain::project::NodeContainer *folder
         );
 
         void onDiagramRemoved(const std::string &diagramId);
@@ -75,7 +75,7 @@ namespace ui::project {
 
         void populateFolder(
             QStandardItem *parentItem,
-            const dp::NodeContainer<dp::DiagramMetadata> *folder,
+            const dp::NodeContainer *folder,
             TreeItemTypes::TreeItemType type
         );
 
@@ -87,7 +87,7 @@ namespace ui::project {
 
         void appendFolder(
             QStandardItem *parent,
-            const dp::NodeContainer<dp::DiagramMetadata> *folder,
+            const dp::NodeContainer *folder,
             TreeItemTypes::TreeItemType type
         );
 

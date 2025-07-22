@@ -48,6 +48,8 @@ namespace ui::project {
     private slots:
         void onCreateNewProjectTriggered();
 
+        void onOpenProjectTriggered() const;
+
         void onTreeViewDoubleClicked(const QModelIndex &index);
 
         void onTreeViewContextMenuRequested(const QPoint &pos);
@@ -71,6 +73,7 @@ namespace ui::project {
         ProjectTreeView *projectTreeView_;
 
         QAction *newProjectAction_;
+        QAction *openProjectAction_;
         QAction *addDiagramAction_;
         QAction *addFolderAction_;
         QAction *openAction_;

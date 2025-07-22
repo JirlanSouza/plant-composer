@@ -63,6 +63,11 @@ namespace ui::project {
         actionsManager_->addAction(uam::ActionGroupType::File, newProjectAction_);
         actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, newProjectAction_);
 
+        openProjectAction_ = new QAction(QIcon::fromTheme("document-open"), tr("Open Project"), this);
+        connect(openProjectAction_, &QAction::triggered, this, &ProjectViewManager::onOpenProjectTriggered);
+        actionsManager_->addAction(uam::ActionGroupType::File, openProjectAction_);
+        actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, openProjectAction_);
+
         addDiagramAction_ = new QAction(tr("Add Diagram"), this);
         connect(addDiagramAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewDiagramTriggered);
         actionsManager_->addAction(uam::ActionGroupType::Edit, addDiagramAction_);
@@ -108,6 +113,17 @@ namespace ui::project {
         newProjectDialog->deleteLater();
     }
 
+    void ProjectViewManager::onOpenProjectTriggered() const {
+        const QString projectPath = QFileDialog::getOpenFileName(
+            this->getView(),
+            tr("Open Project"),
+            QDir::homePath()
+        );
+
+        if (!projectPath.isEmpty()) {
+            projectViewModel_->openProject(projectPath.toStdString());
+        }
+    }
 
     void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) {
         if (!index.isValid()) return;

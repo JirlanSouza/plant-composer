@@ -116,14 +116,14 @@ namespace ui::project {
 
     void ProjectTreeModel::populateFolder(
         QStandardItem *parentItem,
-        const dp::NodeContainer<dp::DiagramMetadata> *folder,
+        const dp::NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
     ) {
         for (const auto *item: folder->getChildren()) {
             if (item->isFile()) {
                 appendItem(parentItem, dynamic_cast<const dp::DiagramMetadata *>(item), type);
             } else if (item->isFolder()) {
-                appendFolder(parentItem, dynamic_cast<const dp::NodeContainer<dp::DiagramMetadata> *>(item), type);
+                appendFolder(parentItem, dynamic_cast<const dp::NodeContainer *>(item), type);
             }
         }
     }
@@ -147,7 +147,7 @@ namespace ui::project {
 
     void ProjectTreeModel::appendFolder(
         QStandardItem *parent,
-        const dp::NodeContainer<dp::DiagramMetadata> *folder,
+        const dp::NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
     ) {
         auto *folderItem = new QStandardItem(getIconForType(type), QString::fromStdString(folder->getName()));
@@ -168,7 +168,7 @@ namespace ui::project {
         }
     }
 
-    void ProjectTreeModel::onDiagramFolderAdded(const dp::NodeContainer<dp::DiagramMetadata> *folder) {
+    void ProjectTreeModel::onDiagramFolderAdded(const dp::NodeContainer *folder) {
         auto parentId = folder->getParent()->getId();
         if (itemMap_.contains(parentId)) {
             appendFolder(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);

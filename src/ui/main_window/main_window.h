@@ -48,6 +48,7 @@ namespace ui::main_window {
         AppMainWindow(
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings,
+            dp::IProjectLoader *projectLoader,
             domain::IDFactory *idFactory,
             dd::ComponentInstanceFactory *componentInstanceFactory,
             QWidget *parent
@@ -59,6 +60,7 @@ namespace ui::main_window {
         dst::AppSettings *appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
         uam::ActionsManager *actionsManager_;
+        dp::IProjectLoader *projectLoader_;
         uip::ProjectViewManager *projectViewManager_;
         uip::ProjectViewModel *projectViewModel_;
         ucl::LibrariesViewManager *librariesViewManager_;
