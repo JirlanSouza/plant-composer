@@ -51,12 +51,19 @@ namespace ui::project {
             path
         );
 
-        projectLoader_->saveProject(*project_.get());
+        projectLoader_->saveProject(*project_);
         emit projectOpened();
     }
 
     void ProjectViewModel::openProject(const std::string &path) {
-        project_ = projectLoader_->loadProject(path);
+        auto projectOpt = projectLoader_->loadProject(path);
+
+        if (!projectOpt.has_value()) {
+            emit openProjectFailed(QString("Failed to open project from path: ").append(path));
+            return;
+        }
+
+        project_ = std::move(projectOpt.value());
         emit projectOpened();
     }
 

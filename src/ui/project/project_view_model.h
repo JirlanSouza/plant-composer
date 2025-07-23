@@ -46,6 +46,7 @@ namespace ui::project {
             const std::string &path
         );
 
+
         void openProject(const std::string &path);
 
         void addNewDiagram(const std::string &parentFolderId, const std::string &name);
@@ -65,6 +66,8 @@ namespace ui::project {
 
     signals:
         void projectOpened();
+
+        void openProjectFailed(const QString &string);
 
         void diagramAdded(const domain::project::DiagramMetadata *diagram);
 

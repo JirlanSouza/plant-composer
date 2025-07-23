@@ -50,6 +50,8 @@ namespace ui::project {
 
         void onOpenProjectTriggered() const;
 
+        void onOpenProjectFailed(const QString &errorMessage) const;
+
         void onTreeViewDoubleClicked(const QModelIndex &index);
 
         void onTreeViewContextMenuRequested(const QPoint &pos);

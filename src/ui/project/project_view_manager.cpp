@@ -19,7 +19,7 @@
 #include "project_view_manager.h"
 
 #include <QMenu>
-#include <QDir>
+#include <QMessageBox>
 
 #include "new_project_dialog.h"
 
@@ -36,6 +36,12 @@ namespace ui::project {
 
         createActions();
 
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::openProjectFailed,
+            this,
+            &ProjectViewManager::onOpenProjectFailed
+        );
         connect(projectTreeView_, &ProjectTreeView::activated, this, &ProjectViewManager::onTreeViewDoubleClicked);
         connect(
             projectTreeView_,
@@ -117,12 +123,25 @@ namespace ui::project {
         const QString projectPath = QFileDialog::getOpenFileName(
             this->getView(),
             tr("Open Project"),
-            QDir::homePath()
+            QDir::homePath(),
+            tr("Plant Composer Project Files (*.pcp);;All Files (*)")
         );
 
         if (!projectPath.isEmpty()) {
             projectViewModel_->openProject(projectPath.toStdString());
         }
+    }
+
+    void ProjectViewManager::onOpenProjectFailed(const QString &errorMessage) const {
+        const auto messageBox = new QMessageBox(
+            QMessageBox::Critical,
+            tr("Open Project Failed"),
+            errorMessage,
+            QMessageBox::Ok,
+            this->getView()
+        );
+        messageBox->exec();
+        messageBox->deleteLater();
     }
 
     void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) {
