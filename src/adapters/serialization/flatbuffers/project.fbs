@@ -35,4 +35,6 @@ table Project {
 }
 
 root_type Project;
+file_identifier "PCPJ";
+file_extension "pcp";
 

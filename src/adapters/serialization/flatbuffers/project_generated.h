@@ -542,26 +542,44 @@ inline const plant_composer::fbs::Project *GetSizePrefixedProject(const void *bu
   return ::flatbuffers::GetSizePrefixedRoot<plant_composer::fbs::Project>(buf);
 }
 
+inline const char *ProjectIdentifier() {
+  return "PCPJ";
+}
+
+inline bool ProjectBufferHasIdentifier(const void *buf) {
+  return ::flatbuffers::BufferHasIdentifier(
+      buf, ProjectIdentifier());
+}
+
+inline bool SizePrefixedProjectBufferHasIdentifier(const void *buf) {
+  return ::flatbuffers::BufferHasIdentifier(
+      buf, ProjectIdentifier(), true);
+}
+
 inline bool VerifyProjectBuffer(
     ::flatbuffers::Verifier &verifier) {
-  return verifier.VerifyBuffer<plant_composer::fbs::Project>(nullptr);
+  return verifier.VerifyBuffer<plant_composer::fbs::Project>(ProjectIdentifier());
 }
 
 inline bool VerifySizePrefixedProjectBuffer(
     ::flatbuffers::Verifier &verifier) {
-  return verifier.VerifySizePrefixedBuffer<plant_composer::fbs::Project>(nullptr);
+  return verifier.VerifySizePrefixedBuffer<plant_composer::fbs::Project>(ProjectIdentifier());
+}
+
+inline const char *ProjectExtension() {
+  return "pcp";
 }
 
 inline void FinishProjectBuffer(
     ::flatbuffers::FlatBufferBuilder &fbb,
     ::flatbuffers::Offset<plant_composer::fbs::Project> root) {
-  fbb.Finish(root);
+  fbb.Finish(root, ProjectIdentifier());
 }
 
 inline void FinishSizePrefixedProjectBuffer(
     ::flatbuffers::FlatBufferBuilder &fbb,
     ::flatbuffers::Offset<plant_composer::fbs::Project> root) {
-  fbb.FinishSizePrefixed(root);
+  fbb.FinishSizePrefixed(root, ProjectIdentifier());
 }
 
 }  // namespace fbs

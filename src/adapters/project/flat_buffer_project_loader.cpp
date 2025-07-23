@@ -201,13 +201,18 @@ namespace adapters::project {
     }
 
 
-    std::unique_ptr<dp::Project> FlatBufferProjectLoader::loadProject(const std::string &path) {
+    std::optional<std::unique_ptr<dp::Project> > FlatBufferProjectLoader::loadProject(const std::string &path) {
         std::ifstream infile(path, std::ios::binary);
         if (!infile) {
-            return nullptr;
+            return std::nullopt;
+        }
+        const std::vector<char> buffer((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+
+        if (buffer.empty() || !plant_composer::fbs::ProjectBufferHasIdentifier(buffer.data())) {
+            infile.close();
+            return std::nullopt;
         }
 
-        std::vector<char> buffer((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         auto *projectTable = flatbuffers::GetRoot<plant_composer::fbs::Project>(buffer.data());
 
         auto project = std::make_unique<dp::Project>(
@@ -248,13 +253,15 @@ namespace adapters::project {
         outfile.write(reinterpret_cast<const char *>(builder.GetBufferPointer()), builder.GetSize());
     }
 
-    std::unique_ptr<dd::Diagram> FlatBufferProjectLoader::loadDiagram(const dp::DiagramMetadata &metadata) {
+    std::optional<std::unique_ptr<dd::Diagram> > FlatBufferProjectLoader::loadDiagram(
+        const dp::DiagramMetadata &metadata
+    ) {
         std::ifstream infile(metadata.getFilePath(), std::ios::binary);
         if (!infile) {
             return nullptr;
         }
 
-        std::vector<char> buffer((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
+        const std::vector<char> buffer((std::istreambuf_iterator<char>(infile)), std::istreambuf_iterator<char>());
         auto *diagramTable = flatbuffers::GetRoot<plant_composer::fbs::DiagramTable>(buffer.data());
 
         auto diagram = std::make_unique<dd::Diagram>(

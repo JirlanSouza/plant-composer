@@ -26,11 +26,11 @@ namespace dd = domain::diagram;
 namespace adapters::project {
     class FlatBufferProjectLoader : public dp::IProjectLoader {
     public:
-        std::unique_ptr<dp::Project> loadProject(const std::string &path) override;
+        std::optional<std::unique_ptr<dp::Project> > loadProject(const std::string &path) override;
 
         void saveProject(const dp::Project &project) override;
 
-        std::unique_ptr<dd::Diagram> loadDiagram(const dp::DiagramMetadata &metadata) override;
+        std::optional<std::unique_ptr<dd::Diagram> > loadDiagram(const dp::DiagramMetadata &metadata) override;
 
         void saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) override;
     };
