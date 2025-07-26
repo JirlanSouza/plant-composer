@@ -19,6 +19,9 @@
 #pragma once
 
 #include "domain/project/project_loader.h"
+#include "flat_buffer_project_parser.h"
+#include "domain/shared/id_factory.h"
+#include "domain/shared/ilogger.h"
 
 namespace dp = domain::project;
 namespace dd = domain::diagram;
@@ -26,6 +29,15 @@ namespace dd = domain::diagram;
 namespace adapters::project {
     class FlatBufferProjectLoader : public dp::IProjectLoader {
     public:
+        FlatBufferProjectLoader(domain::Ilogger *logger, domain::IDFactory *idFactory);
+
+        std::optional<std::unique_ptr<dp::Project> > createNewProject(
+            const std::string &name,
+            const std::string &description,
+            const std::string &author,
+            const std::string &parentDirectory
+        ) override;
+
         std::optional<std::unique_ptr<dp::Project> > loadProject(const std::string &path) override;
 
         void saveProject(const dp::Project &project) override;
@@ -33,5 +45,10 @@ namespace adapters::project {
         std::optional<std::unique_ptr<dd::Diagram> > loadDiagram(const dp::DiagramMetadata &metadata) override;
 
         void saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) override;
+
+    private:
+        domain::Ilogger *logger_;
+        domain::IDFactory *idFactory_;
+        std::unique_ptr<FlatBufferProjectParser> parser_;
     };
 }
