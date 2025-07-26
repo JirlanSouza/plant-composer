@@ -22,11 +22,12 @@
 
 namespace ui::project {
     ProjectViewModel::ProjectViewModel(
+        domain::Ilogger *logger,
         IDFactory *idFactory,
         domain::project::IProjectLoader *projectLoader,
         QObject *parent
     )
-        : QObject(parent), idFactory_(idFactory), projectLoader_(projectLoader) {
+        : QObject(parent), logger_(logger), idFactory_(idFactory), projectLoader_(projectLoader) {
     }
 
     dp::Project *ProjectViewModel::getProject() const {
@@ -41,30 +42,47 @@ namespace ui::project {
         const std::string &name,
         const std::string &description,
         const std::string &author,
-        const std::string &path
+        const std::string &parentDirectory
     ) {
-        project_ = std::make_unique<dp::Project>(
-            idFactory_->create(),
-            name,
-            description,
-            author,
-            path
-        );
-
-        projectLoader_->saveProject(*project_);
-        emit projectOpened();
-    }
-
-    void ProjectViewModel::openProject(const std::string &path) {
-        auto projectOpt = projectLoader_->loadProject(path);
-
+        auto projectOpt = projectLoader_->createNewProject(name, description, author, parentDirectory);
         if (!projectOpt.has_value()) {
-            emit openProjectFailed(QString("Failed to open project from path: ").append(path));
+            emit openProjectFailed(QString("Failed to create project in path: ").append(parentDirectory));
             return;
         }
 
         project_ = std::move(projectOpt.value());
         emit projectOpened();
+    }
+
+    void ProjectViewModel::openProject(const std::string &path) {
+        if (hasOpenedProject()) {
+            closeProject();
+        }
+
+        auto projectOpt = projectLoader_->loadProject(path);
+
+        if (!projectOpt.has_value()) {
+            logger_->warn("Error loading project from path: {}", path);
+            emit openProjectFailed(QString("Failed to open project from path: ").append(path));
+            return;
+        }
+
+        project_ = std::move(projectOpt.value());
+        logger_->info("Project opened successfully from path: {}", path);
+        emit projectOpened();
+    }
+
+    void ProjectViewModel::saveProject() const {
+        if (!project_) return;
+
+        projectLoader_->saveProject(*project_);
+    }
+
+    void ProjectViewModel::closeProject() {
+        logger_->info("Closing projecct with ID: {}, name: {}", project_->getId(), project_->getName());
+        project_ = nullptr;
+        emit projectClosed();
+        logger_->info("Project closed successfully");
     }
 
     void ProjectViewModel::addNewDiagram(const std::string &parentFolderId, const std::string &name) {

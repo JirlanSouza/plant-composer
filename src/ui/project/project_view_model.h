@@ -23,6 +23,7 @@
 #include "domain/project/project_loader.h"
 #include "domain/project/model/project.h"
 #include "domain/shared/id_factory.h"
+#include "domain/shared/ilogger.h"
 
 using domain::IDFactory;
 namespace dp = domain::project;
@@ -32,7 +33,12 @@ namespace ui::project {
         Q_OBJECT
 
     public:
-        explicit ProjectViewModel(IDFactory *idFactory, dp::IProjectLoader *projectLoader, QObject *parent = nullptr);
+        explicit ProjectViewModel(
+            domain::Ilogger *logger,
+            IDFactory *idFactory,
+            dp::IProjectLoader *projectLoader,
+            QObject *parent = nullptr
+        );
 
         [[nodiscard]] dp::Project *getProject() const;
 
@@ -43,11 +49,14 @@ namespace ui::project {
             const std::string &name,
             const std::string &description,
             const std::string &author,
-            const std::string &path
+            const std::string &parentDirectory
         );
 
-
         void openProject(const std::string &path);
+
+        void saveProject() const;
+
+        void closeProject();
 
         void addNewDiagram(const std::string &parentFolderId, const std::string &name);
 
@@ -69,6 +78,8 @@ namespace ui::project {
 
         void openProjectFailed(const QString &string);
 
+        void projectClosed();
+
         void diagramAdded(const domain::project::DiagramMetadata *diagram);
 
         void diagramFolderAdded(const domain::project::NodeContainer *folder);
@@ -84,6 +95,7 @@ namespace ui::project {
         void diagramFolderRenamed(const std::string &folderId, const std::string &newName);
 
     private:
+        domain::Ilogger *logger_;
         IDFactory *idFactory_;
         dp::IProjectLoader *projectLoader_;
         std::unique_ptr<dp::Project> project_{nullptr};

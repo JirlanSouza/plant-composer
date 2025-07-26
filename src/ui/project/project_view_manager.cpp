@@ -25,17 +25,20 @@
 
 namespace ui::project {
     ProjectViewManager::ProjectViewManager(
+        domain::Ilogger *logger,
         ProjectViewModel *projectViewModel,
         uam::ActionsManager *actionsManager,
         QWidget *parent
     ): QObject(parent),
+        logger_(logger),
         projectViewModel_(projectViewModel),
         actionsManager_(actionsManager) {
-        projectTreeModel_ = new ProjectTreeModel(projectViewModel, this);
+        projectTreeModel_ = new ProjectTreeModel(logger_, projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
 
         createActions();
 
+        connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectViewManager::onProjectOpened);
         connect(
             projectViewModel_,
             &ProjectViewModel::openProjectFailed,
@@ -74,6 +77,17 @@ namespace ui::project {
         actionsManager_->addAction(uam::ActionGroupType::File, openProjectAction_);
         actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, openProjectAction_);
 
+        saveProjectAction_ = new QAction(QIcon::fromTheme("document-save"), tr("Save Project"), this);
+        saveProjectAction_->setEnabled(false);
+        connect(saveProjectAction_, &QAction::triggered, projectViewModel_, &ProjectViewModel::saveProject);
+        actionsManager_->addAction(uam::ActionGroupType::File, saveProjectAction_);
+        actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, saveProjectAction_);
+
+        closeProjectAction_ = new QAction(QIcon::fromTheme("document-close"), tr("Close Project"), this);
+        closeProjectAction_->setEnabled(false);
+        connect(closeProjectAction_, &QAction::triggered, projectViewModel_, &ProjectViewModel::closeProject);
+        actionsManager_->addAction(uam::ActionGroupType::File, closeProjectAction_);
+
         addDiagramAction_ = new QAction(tr("Add Diagram"), this);
         connect(addDiagramAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewDiagramTriggered);
         actionsManager_->addAction(uam::ActionGroupType::Edit, addDiagramAction_);
@@ -95,28 +109,16 @@ namespace ui::project {
         actionsManager_->addAction(uam::ActionGroupType::Edit, deleteAction_);
     }
 
-    void ProjectViewManager::onCreateNewProjectTriggered() {
-        const auto newProjectDialog = new NewProjectDialog(this->getView());
-        connect(
-            newProjectDialog,
-            &NewProjectDialog::accepted,
-            [this, newProjectDialog]() {
-                const auto name = newProjectDialog->getProjectName();
-                const auto description = newProjectDialog->getProjectDescription();
-                const auto author = newProjectDialog->getProjectAuthor();
-                const auto parentPath = newProjectDialog->getProjectPath();
-                const QString fullProjectPath = QDir::cleanPath(QDir(parentPath).filePath(name));
-
-                projectViewModel_->createNewProject(
-                    name.toStdString(),
-                    description.toStdString(),
-                    author.toStdString(),
-                    fullProjectPath.toStdString()
-                );
-            }
-        );
-        newProjectDialog->exec();
-        newProjectDialog->deleteLater();
+    void ProjectViewManager::onCreateNewProjectTriggered() const {
+        NewProjectDialog newProjectDialog(getView());
+        if (newProjectDialog.exec() == QDialog::Accepted) {
+            projectViewModel_->createNewProject(
+                newProjectDialog.getProjectName().toStdString(),
+                newProjectDialog.getProjectDescription().toStdString(),
+                newProjectDialog.getProjectAuthor().toStdString(),
+                newProjectDialog.getProjectParentDirectory().toStdString()
+            );
+        }
     }
 
     void ProjectViewManager::onOpenProjectTriggered() const {
@@ -130,6 +132,13 @@ namespace ui::project {
         if (!projectPath.isEmpty()) {
             projectViewModel_->openProject(projectPath.toStdString());
         }
+    }
+
+    void ProjectViewManager::onProjectOpened() const {
+        projectTreeView_->expandAll();
+        projectTreeView_->setFocus();
+        saveProjectAction_->setEnabled(true);
+        closeProjectAction_->setEnabled(true);
     }
 
     void ProjectViewManager::onOpenProjectFailed(const QString &errorMessage) const {

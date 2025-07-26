@@ -35,19 +35,19 @@ namespace ui::project {
 
         ~NewProjectDialog() override = default;
 
-        QString getProjectName() const;
+        [[nodiscard]] QString getProjectName() const;
 
-        QString getProjectDescription() const;
+        [[nodiscard]] QString getProjectDescription() const;
 
-        QString getProjectAuthor() const;
+        [[nodiscard]] QString getProjectAuthor() const;
 
-        QString getProjectPath() const;
+        [[nodiscard]] QString getProjectParentDirectory() const;
 
     private:
         QLineEdit *projectNameLineEdit_;
         QTextEdit *projectDescriptionTextEdit_;
         QLineEdit *projectAuthorLineEdit_;
-        QLineEdit *projectPathLineEdit_;
+        QLineEdit *projectParentDirectoryLineEdit_;
         QPushButton *createButton_;
         QPushButton *cancelButton_;
         QPushButton *browsePathButton_;
@@ -56,10 +56,10 @@ namespace ui::project {
         QPalette invalidPalette_;
         bool isProjectNameValid_;
         bool projectNameIsDirty_;
-        bool isProjectPathValid_;
-        bool projectPathIsDirty_;
+        bool isProjectParentDirectoryValid_;
+        bool projectParentDirectoryIsDirty_;
         QString projectNameErrorMessage_;
-        QString projectPathErrorMessage_;
+        QString projectParentDirectoryErrorMessage_;
 
         void setupUi();
 
@@ -69,6 +69,7 @@ namespace ui::project {
         void onBrowsePathClicked();
 
         void validateProjectNameInput();
-        void validateProjectPathInput();
+
+        void validateProjectParentDirectoryInput();
     };
 }

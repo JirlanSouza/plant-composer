@@ -36,6 +36,7 @@ namespace ui::project {
 
     public:
         explicit ProjectViewManager(
+            domain::Ilogger *logger,
             ProjectViewModel *projectViewModel,
             uam::ActionsManager *actionsManager,
             QWidget *parent = nullptr
@@ -46,9 +47,11 @@ namespace ui::project {
         [[nodiscard]] QWidget *getView() const;
 
     private slots:
-        void onCreateNewProjectTriggered();
+        void onCreateNewProjectTriggered() const;
 
         void onOpenProjectTriggered() const;
+
+        void onProjectOpened() const;
 
         void onOpenProjectFailed(const QString &errorMessage) const;
 
@@ -69,6 +72,7 @@ namespace ui::project {
         void onItemReadyForEditing(const QModelIndex &index) const;
 
     private:
+        domain::Ilogger *logger_;
         ProjectViewModel *projectViewModel_;
         uam::ActionsManager *actionsManager_;
         ProjectTreeModel *projectTreeModel_;
@@ -76,6 +80,8 @@ namespace ui::project {
 
         QAction *newProjectAction_;
         QAction *openProjectAction_;
+        QAction *saveProjectAction_;
+        QAction *closeProjectAction_;
         QAction *addDiagramAction_;
         QAction *addFolderAction_;
         QAction *openAction_;

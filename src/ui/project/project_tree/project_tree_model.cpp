@@ -25,9 +25,12 @@
 
 namespace ui::project {
     ProjectTreeModel::ProjectTreeModel(
+        domain::Ilogger *logger,
         ProjectViewModel *projectViewModel,
         QObject *parent
-    ) : QStandardItemModel(parent), projectViewModel_(projectViewModel) {
+    ) : QStandardItemModel(parent), logger_(logger), projectViewModel_(projectViewModel) {
+        connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectTreeModel::buildModel);
+        connect(projectViewModel_, &ProjectViewModel::projectClosed, this, &ProjectTreeModel::onProjectClosed);
         connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onDiagramAdded);
         connect(
             projectViewModel_,
@@ -54,7 +57,6 @@ namespace ui::project {
             this,
             &ProjectTreeModel::onDiagramFolderRenamed
         );
-        connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectTreeModel::buildModel);
     }
 
     bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
@@ -76,10 +78,12 @@ namespace ui::project {
     }
 
     void ProjectTreeModel::buildModel() {
-        clear();
-        itemMap_.clear();
+        logger_->info("Building project tree model");
+        logger_->info("Cleaning up previous model data");
+        clearModel();
         setColumnCount(1);
 
+        logger_->info("Creating project root item");
         auto *rootItem = new QStandardItem(
             getIconForType(TreeItemTypes::TreeItemType::PROJECT_ROOT),
             tr("Project: %1").arg(QString::fromStdString(projectViewModel_->getProject()->getName()))
@@ -88,6 +92,7 @@ namespace ui::project {
         rootItem->setData(TreeItemTypes::TreeItemType::PROJECT_ROOT, ProjectTreeRole::ITEM_TYPE_ROLE);
         appendRow(rootItem);
 
+        logger_->info("Building diagrams root item");
         const auto *diagramsRoot = projectViewModel_->getProject()->diagrams();
         auto *diagramsRootItem = new QStandardItem(
             getIconForType(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER),
@@ -99,6 +104,7 @@ namespace ui::project {
         rootItem->appendRow(diagramsRootItem);
         itemMap_[diagramsRoot->getId()] = diagramsRootItem;
 
+        logger_->info("Building addNewDiagram item");
         auto *addNewDiagramItem = new QStandardItem(
             getIconForType(TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM),
             tr("Add New Diagram")
@@ -114,35 +120,61 @@ namespace ui::project {
         populateFolder(diagramsRootItem, diagramsRoot, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
     }
 
+    void ProjectTreeModel::clearModel() {
+        logger_->info("Clearing project tree model");
+        clear();
+        itemMap_.clear();
+    }
+
     void ProjectTreeModel::populateFolder(
         QStandardItem *parentItem,
         const dp::NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
     ) {
+        logger_->info(
+            "Populating folder with ID: {}, name: {}, children: {}",
+            folder->getId(),
+            folder->getName(),
+            folder->getChildren().size()
+        );
         for (const auto *item: folder->getChildren()) {
+            logger_->info("Before");
             if (item->isFile()) {
-                appendItem(parentItem, dynamic_cast<const dp::DiagramMetadata *>(item), type);
+                logger_->info("Before 2");
+                appendItem(parentItem, dynamic_cast<const dp::FileNode *>(item), TreeItemTypes::DIAGRAM_FILE);
             } else if (item->isFolder()) {
                 appendFolder(parentItem, dynamic_cast<const dp::NodeContainer *>(item), type);
             }
         }
+        logger_->info(
+            "Seccess populating folder with ID: {}, name: {}, children: {}",
+            folder->getId(),
+            folder->getName(),
+            folder->getChildren().size()
+        );
     }
 
     void ProjectTreeModel::appendItem(
         QStandardItem *parent,
-        const dp::DiagramMetadata *diagram,
+        const dp::FileNode *file,
         const TreeItemTypes::TreeItemType type
     ) {
+        logger_->info("Appending project tree item with ID: {}, name: {}", file->getId(), file->getName());
         auto *diagramItem = new QStandardItem(
             getIconForType(type),
-            QString::fromStdString(diagram->getName())
+            QString::fromStdString(file->getName())
         );
         diagramItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
         diagramItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
-        diagramItem->setEditable(diagram->canBeRenamed());
-        diagramItem->setData(stdStringToVariant(diagram->getId()), ProjectTreeRole::ITEM_ID_ROLE);
+        diagramItem->setEditable(file->canBeRenamed());
+        diagramItem->setData(stdStringToVariant(file->getId()), ProjectTreeRole::ITEM_ID_ROLE);
         parent->appendRow(diagramItem);
-        itemMap_[diagram->getId()] = diagramItem;
+        itemMap_[file->getId()] = diagramItem;
+        logger_->info(
+            "Successfully appended project tree item with ID: {}, name: {}",
+            file->getId(),
+            file->getName()
+        );
     }
 
     void ProjectTreeModel::appendFolder(
@@ -150,6 +182,12 @@ namespace ui::project {
         const dp::NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
     ) {
+        logger_->info(
+            "Appeding project tree folder with ID: {}, name: {}, children: {}",
+            folder->getId(),
+            folder->getName(),
+            folder->getChildren().size()
+        );
         auto *folderItem = new QStandardItem(getIconForType(type), QString::fromStdString(folder->getName()));
         folderItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
         folderItem->setEditable(folder->canBeRenamed());
@@ -158,6 +196,17 @@ namespace ui::project {
         parent->appendRow(folderItem);
         itemMap_[folder->getId()] = folderItem;
         populateFolder(folderItem, folder, type);
+        logger_->info(
+            "Successfully appended project tree folder with ID: {}, name: {}, children: {}",
+            folder->getId(),
+            folder->getName(),
+            folder->getChildren().size()
+        );
+    }
+
+    void ProjectTreeModel::onProjectClosed() {
+        logger_->info("Project closed, clearing model");
+        clearModel();
     }
 
     void ProjectTreeModel::onDiagramAdded(const dp::DiagramMetadata *diagram) {

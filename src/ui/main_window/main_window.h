@@ -46,6 +46,7 @@ namespace ui::main_window {
 
     public:
         AppMainWindow(
+            domain::Ilogger *logger,
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings,
             dp::IProjectLoader *projectLoader,
@@ -57,6 +58,7 @@ namespace ui::main_window {
         ~AppMainWindow() override;
 
     private:
+        domain::Ilogger *logger_;
         dst::AppSettings *appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
         uam::ActionsManager *actionsManager_;

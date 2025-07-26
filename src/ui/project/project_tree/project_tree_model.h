@@ -37,6 +37,7 @@ namespace ui::project {
 
     public:
         explicit ProjectTreeModel(
+            domain::Ilogger *logger,
             ProjectViewModel *projectViewModel,
             QObject *parent = nullptr
         );
@@ -47,6 +48,8 @@ namespace ui::project {
         void itemReadyForEditing(const QModelIndex &index);
 
     private slots:
+        void onProjectClosed();
+
         void onDiagramAdded(const domain::project::DiagramMetadata *diagram);
 
         void onDiagramFolderAdded(
@@ -68,10 +71,13 @@ namespace ui::project {
         );
 
     private:
+        domain::Ilogger *logger_;
         ProjectViewModel *projectViewModel_;
         std::unordered_map<std::string, QStandardItem *> itemMap_;
 
         void buildModel();
+
+        void clearModel();
 
         void populateFolder(
             QStandardItem *parentItem,
@@ -81,7 +87,7 @@ namespace ui::project {
 
         void appendItem(
             QStandardItem *parent,
-            const dp::DiagramMetadata *diagram,
+            const dp::FileNode *file,
             TreeItemTypes::TreeItemType type
         );
 

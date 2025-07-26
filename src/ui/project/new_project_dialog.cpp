@@ -32,13 +32,13 @@ namespace ui::project {
         projectNameLineEdit_ = new QLineEdit();
         projectDescriptionTextEdit_ = new QTextEdit();
         projectAuthorLineEdit_ = new QLineEdit();
-        projectPathLineEdit_ = new QLineEdit();
+        projectParentDirectoryLineEdit_ = new QLineEdit();
 
         invalidPalette_ = projectNameLineEdit_->palette();
         invalidPalette_.setColor(QPalette::Text, Qt::red);
         invalidPalette_.setColor(QPalette::Base, QColor(255, 220, 220));
         projectNameErrorMessage_ = "";
-        projectPathErrorMessage_ = "";
+        projectParentDirectoryErrorMessage_ = "";
 
         setupUi();
         setupConnections();
@@ -62,10 +62,10 @@ namespace ui::project {
         projectAuthorLineEdit_->setText(QDir::home().dirName());
         formLayout->addRow(tr("Author:"), projectAuthorLineEdit_);
 
-        projectPathLineEdit_ = new QLineEdit();
+        projectParentDirectoryLineEdit_ = new QLineEdit();
         browsePathButton_ = new QPushButton(tr("Browse..."));
         auto *pathLayout = new QHBoxLayout();
-        pathLayout->addWidget(projectPathLineEdit_);
+        pathLayout->addWidget(projectParentDirectoryLineEdit_);
         pathLayout->addWidget(browsePathButton_);
         formLayout->addRow(tr("Path:"), pathLayout);
 
@@ -93,7 +93,7 @@ namespace ui::project {
         connect(browsePathButton_, &QPushButton::clicked, this, &NewProjectDialog::onBrowsePathClicked);
 
         connect(projectNameLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectNameInput);
-        connect(projectPathLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectPathInput);
+        connect(projectParentDirectoryLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectParentDirectoryInput);
     }
 
     void NewProjectDialog::validateProjectNameInput() {
@@ -107,43 +107,43 @@ namespace ui::project {
             projectNameLineEdit_->setPalette(inputPalette_);
         }
 
-        errorMessageLabel_->setText(projectNameErrorMessage_ + projectPathErrorMessage_);
-        createButton_->setEnabled(isProjectNameValid_ && isProjectPathValid_);
+        errorMessageLabel_->setText(projectNameErrorMessage_ + projectParentDirectoryErrorMessage_);
+        createButton_->setEnabled(isProjectNameValid_ && isProjectParentDirectoryValid_);
         projectNameIsDirty_ = true;
     }
 
-    void NewProjectDialog::validateProjectPathInput() {
-        const QString path = projectPathLineEdit_->text();
+    void NewProjectDialog::validateProjectParentDirectoryInput() {
+        const QString path = projectParentDirectoryLineEdit_->text();
         const QFileInfo pathInfo(path);
-        isProjectPathValid_ = false;
-        projectPathErrorMessage_.clear();
+        isProjectParentDirectoryValid_ = false;
+        projectParentDirectoryErrorMessage_.clear();
 
         if (path.isEmpty()) {
-            projectPathErrorMessage_ += tr("Project Path cannot be empty.\n");
+            projectParentDirectoryErrorMessage_ += tr("Project Path cannot be empty.\n");
         } else if (!pathInfo.exists()) {
-            projectPathErrorMessage_ += tr("Project Path does not exist.\n");
+            projectParentDirectoryErrorMessage_ += tr("Project Path does not exist.\n");
         } else if (!pathInfo.isDir()) {
-            projectPathErrorMessage_ += tr("Project Path is not a directory.\n");
+            projectParentDirectoryErrorMessage_ += tr("Project Path is not a directory.\n");
         } else if (!pathInfo.isWritable()) {
-            projectPathErrorMessage_ += tr("Project Path is not writable.\n");
+            projectParentDirectoryErrorMessage_ += tr("Project Path is not writable.\n");
         } else {
-            isProjectPathValid_ = true;
+            isProjectParentDirectoryValid_ = true;
         }
 
-        if (!isProjectPathValid_ && projectPathIsDirty_) {
-            projectPathLineEdit_->setPalette(invalidPalette_);
+        if (!isProjectParentDirectoryValid_ && projectParentDirectoryIsDirty_) {
+            projectParentDirectoryLineEdit_->setPalette(invalidPalette_);
         } else {
-            projectPathLineEdit_->setPalette(inputPalette_);
+            projectParentDirectoryLineEdit_->setPalette(inputPalette_);
         }
 
-        errorMessageLabel_->setText(projectNameErrorMessage_ + projectPathErrorMessage_);
-        createButton_->setEnabled(isProjectNameValid_ && isProjectPathValid_);
-        projectPathIsDirty_ = true;
+        errorMessageLabel_->setText(projectNameErrorMessage_ + projectParentDirectoryErrorMessage_);
+        createButton_->setEnabled(isProjectNameValid_ && isProjectParentDirectoryValid_);
+        projectParentDirectoryIsDirty_ = true;
     }
 
 
     void NewProjectDialog::onBrowsePathClicked() {
-        QString initialPath = projectPathLineEdit_->text();
+        QString initialPath = projectParentDirectoryLineEdit_->text();
         if (initialPath.isEmpty() || !QFileInfo(initialPath).isDir()) {
             initialPath = QDir::homePath();
         }
@@ -155,7 +155,7 @@ namespace ui::project {
             QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks
         );
         if (!directory.isEmpty()) {
-            projectPathLineEdit_->setText(directory);
+            projectParentDirectoryLineEdit_->setText(directory);
         }
     }
 
@@ -171,7 +171,7 @@ namespace ui::project {
         return projectAuthorLineEdit_->text();
     }
 
-    QString NewProjectDialog::getProjectPath() const {
-        return projectPathLineEdit_->text();
+    QString NewProjectDialog::getProjectParentDirectory() const {
+        return projectParentDirectoryLineEdit_->text();
     }
 }
