@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <optional>
 
 #include "model/project.h"
 #include "domain/diagram/model/diagram.h"
@@ -31,11 +32,18 @@ namespace domain::project {
     public:
         virtual ~IProjectLoader() = default;
 
-        virtual std::optional<std::unique_ptr<Project> > loadProject(const std::string &path) = 0;
+        virtual std::optional<std::unique_ptr<Project>> createNewProject(
+            const std::string &name,
+            const std::string &description,
+            const std::string &author,
+            const std::string &parentDirectory
+        ) = 0;
+
+        virtual std::optional<std::unique_ptr<Project>> loadProject(const std::string &path) = 0;
 
         virtual void saveProject(const Project &project) = 0;
 
-        virtual std::optional<std::unique_ptr<dd::Diagram> > loadDiagram(const DiagramMetadata &metadata) = 0;
+        virtual std::optional<std::unique_ptr<dd::Diagram>> loadDiagram(const DiagramMetadata &metadata) = 0;
 
         virtual void saveDiagram(const DiagramMetadata &metadata, const dd::Diagram &diagram) = 0;
     };
