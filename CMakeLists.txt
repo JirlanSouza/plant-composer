@@ -15,6 +15,10 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools SvgWidge
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools SvgWidgets)
 find_package(nlohmann_json 3.12.0 REQUIRED)
 
+if (NOT TARGET spdlog)
+    find_package(spdlog REQUIRED)
+endif ()
+
 set(TS_FILES
         translations/plant-composer_en_US.ts
         translations/plant-composer_pt_BR.ts

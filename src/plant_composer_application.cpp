@@ -24,12 +24,15 @@
 #include <QLocale>
 #include <QCoreApplication>
 
+#include "adapters/shared/spdlog_logger.h"
+
 PlantComposerApplication::PlantComposerApplication() {
+    logger_ = std::make_unique<adapters::SpdlogLogger>();
     appSettings_ = std::make_unique<QtAppSettings>(new QSettings(ORGANIZATION_NAME, APPLICATION_NAME));
     appSettings_->setAssetsDir(getAssetsDir());
     librariesLoader_ = std::make_unique<JsonComponentsLibraryLoader>(appSettings_->getComponentsLibraryDir());
-    projectLoader_ = std::make_unique<FlatBufferProjectLoader>();
     idFactory_ = std::make_unique<adapters::QUuidIdFactory>();
+    projectLoader_ = std::make_unique<FlatBufferProjectLoader>(logger_.get(), idFactory_.get());
     componentInstanceFactory_ = std::make_unique<ComponentInstanceFactory>(
         idFactory_.get(),
         &libraries_,
@@ -46,6 +49,7 @@ void PlantComposerApplication::initialize(int argc, char *argv[]) {
         setupTranslations();
         libraries_ = std::move(librariesLoader_->loadLibraries());
         appMainWindow_ = std::make_unique<AppMainWindow>(
+            logger_.get(),
             &libraries_,
             appSettings_.get(),
             projectLoader_.get(),

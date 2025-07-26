@@ -17,9 +17,11 @@
  */
 
 #pragma once
+
 #include <string>
 #include <memory>
 
+#include "domain/shared/ilogger.h"
 #include "domain/settings/app_settings.h"
 #include "domain/components_library/components_library_loader.h"
 #include "adapters/components_library/json_components_library_loader.h"
@@ -51,6 +53,7 @@ public:
     [[nodiscard]] AppMainWindow *getMainWindow() const;
 
 private:
+    std::unique_ptr<domain::Ilogger> logger_;
     std::unique_ptr<QtAppSettings> appSettings_;
     std::unique_ptr<JsonComponentsLibraryLoader> librariesLoader_;
     std::vector<Library> libraries_;
