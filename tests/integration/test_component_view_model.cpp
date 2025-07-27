@@ -25,9 +25,9 @@
 #include "domain/diagram/model/node_transform.h"
 #include "domain/components_library/model/component_type.h"
 
-namespace ui_de = ui::diagram_editor;
-namespace dd = domain::diagram;
-namespace dcl = domain::components_library;
+namespace diag = diagram;
+namespace diag = diagram;
+namespace dcl = components_library;
 
 class ComponentViewModelTest : public ::testing::Test {
 protected:
@@ -43,7 +43,7 @@ protected:
         };
 
         nodeTransform = {10, 20, 0};
-        componentInstance = std::make_unique<dd::ComponentInstance>(
+        componentInstance = std::make_unique<diag::ComponentInstance>(
             "comp1",
             "Instance1",
             "type1",
@@ -52,13 +52,13 @@ protected:
             "/assets"
         );
 
-        viewModel = std::make_unique<ui_de::ComponentViewModel>(componentInstance.get(), nullptr);
+        viewModel = std::make_unique<diag::ComponentViewModel>(componentInstance.get(), nullptr);
     }
 
     dcl::ComponentType componentType;
-    dd::NodeTransform nodeTransform;
-    std::unique_ptr<dd::ComponentInstance> componentInstance;
-    std::unique_ptr<ui_de::ComponentViewModel> viewModel;
+    diag::NodeTransform nodeTransform;
+    std::unique_ptr<diag::ComponentInstance> componentInstance;
+    std::unique_ptr<diag::ComponentViewModel> viewModel;
 };
 
 TEST_F(ComponentViewModelTest, Initialization) {
@@ -79,7 +79,7 @@ TEST_F(ComponentViewModelTest, NameChangedSignal) {
     bool signalEmitted = false;
     QObject::connect(
         viewModel.get(),
-        &ui_de::ComponentViewModel::nameChanged,
+        &diag::ComponentViewModel::nameChanged,
         [&]() {
             signalEmitted = true;
         }
@@ -101,7 +101,7 @@ TEST_F(ComponentViewModelTest, PositionChangedSignal) {
     bool signalEmitted = false;
     QObject::connect(
         viewModel.get(),
-        &ui_de::ComponentViewModel::positionChanged,
+        &diag::ComponentViewModel::positionChanged,
         [&]() {
             signalEmitted = true;
         }

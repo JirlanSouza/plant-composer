@@ -24,11 +24,11 @@
 #include "domain/diagram/model/node_transform.h"
 #include "domain/components_library/model/component_type.h"
 
-namespace dd = domain::diagram;
-namespace dcl = domain::components_library;
+namespace diag = diagram;
+namespace dcl = components_library;
 
 TEST(DiagramTest, DiagramCreation) {
-    dd::Diagram diagram("diag1", "My Diagram");
+    diag::Diagram diagram("diag1", "My Diagram");
 
     ASSERT_EQ(diagram.getId(), std::string("diag1"));
     ASSERT_EQ(diagram.getName(), std::string("My Diagram"));
@@ -37,7 +37,7 @@ TEST(DiagramTest, DiagramCreation) {
 }
 
 TEST(DiagramTest, AddComponent) {
-    dd::Diagram diagram("diag2", "Another Diagram");
+    diag::Diagram diagram("diag2", "Another Diagram");
 
     dcl::ComponentType componentType = {
         "type1",
@@ -48,8 +48,8 @@ TEST(DiagramTest, AddComponent) {
         {{}, {}},
         {{}, {}}
     };
-    dd::NodeTransform transform = {0, 0, 0};
-    dd::ComponentInstance componentInstance("comp1", "Valve 1", "type1", transform, &componentType, "");
+    diag::NodeTransform transform = {0, 0, 0};
+    diag::ComponentInstance componentInstance("comp1", "Valve 1", "type1", transform, &componentType, "");
 
     diagram.addComponent(componentInstance);
 
@@ -58,11 +58,11 @@ TEST(DiagramTest, AddComponent) {
 }
 
 TEST(DiagramTest, AddConnection) {
-    dd::Diagram diagram("diag3", "Diagram with Connections");
+    diag::Diagram diagram("diag3", "Diagram with Connections");
 
-    dd::Connection connection(
+    diag::Connection connection(
         "conn1",
-        dd::Connection::Type::Port,
+        diag::Connection::Type::Port,
         "compA",
         "portX",
         "compB",
@@ -76,7 +76,7 @@ TEST(DiagramTest, AddConnection) {
 }
 
 TEST(DiagramTest, AddMultipleComponentsAndConnections) {
-    dd::Diagram diagram("diag4", "Complex Diagram");
+    diag::Diagram diagram("diag4", "Complex Diagram");
 
     dcl::ComponentType componentType1 = {
         "typeA",
@@ -97,17 +97,17 @@ TEST(DiagramTest, AddMultipleComponentsAndConnections) {
         {{}, {}}
     };
 
-    dd::NodeTransform transform1 = {0, 0, 0};
-    dd::NodeTransform transform2 = {10, 20, 0};
+    diag::NodeTransform transform1 = {0, 0, 0};
+    diag::NodeTransform transform2 = {10, 20, 0};
 
-    dd::ComponentInstance comp1("compA", "Pump 1", "typeA", transform1, &componentType1, "");
-    dd::ComponentInstance comp2("compB", "Tank 1", "typeB", transform2, &componentType2, "");
+    diag::ComponentInstance comp1("compA", "Pump 1", "typeA", transform1, &componentType1, "");
+    diag::ComponentInstance comp2("compB", "Tank 1", "typeB", transform2, &componentType2, "");
 
     diagram.addComponent(comp1);
     diagram.addComponent(comp2);
 
-    dd::Connection conn1("connA", dd::Connection::Type::Port, "compA", "out", "compB", "in");
-    dd::Connection conn2("connB", dd::Connection::Type::Signal, "compA", "status", "compB", "control");
+    diag::Connection conn1("connA", diag::Connection::Type::Port, "compA", "out", "compB", "in");
+    diag::Connection conn2("connB", diag::Connection::Type::Signal, "compA", "status", "compB", "control");
 
     diagram.addConnection(conn1);
     diagram.addConnection(conn2);
@@ -119,5 +119,5 @@ TEST(DiagramTest, AddMultipleComponentsAndConnections) {
     ASSERT_EQ(diagram.getComponents()[1].getName(), std::string("Tank 1"));
 
     ASSERT_EQ(diagram.getConnections()[0].getSourceComponentId(), std::string("compA"));
-    ASSERT_EQ(diagram.getConnections()[1].getType(), dd::Connection::Type::Signal);
+    ASSERT_EQ(diagram.getConnections()[1].getType(), diag::Connection::Type::Signal);
 }

@@ -22,7 +22,7 @@
 #include "domain/components_library/model/data_type.h"
 #include "domain/components_library/model/library.h"
 
-namespace dcl = domain::components_library;
+namespace dcl = components_library;
 
 TEST(ComponentsLibraryTest, DataTypeToString) {
     ASSERT_EQ(dcl::dataTypeToString(dcl::DataType::REAL), std::string("REAL"));

@@ -26,19 +26,19 @@
 #include "domain/diagram/component_instance_factory.h"
 #include "domain/diagram/model/component_instance.h"
 #include "domain/components_library/model/component_type.h"
-#include "domain/shared/id_factory.h"
+#include "domain/common/id_factory.h"
 #include "domain/settings/app_settings.h"
 
 using ::testing::Return;
 using ::testing::An;
 
-class MockIDFactory : public domain::IDFactory {
+class MockIDFactory : public common::IDFactory {
 public:
     MOCK_METHOD(std::string, newId, (), (override));
 };
 
 
-class MockAppSettings : public domain::settings::AppSettings {
+class MockAppSettings : public settings::AppSettings {
 public:
     MOCK_METHOD(std::string, getAssetsDir, (), (override));
     MOCK_METHOD(void, setAssetsDir, (const std::string &assetsDir), (override));
@@ -46,9 +46,8 @@ public:
     MOCK_METHOD(std::string, getComponentIconPath, (), (override));
 };
 
-namespace ui_de = ui::diagram_editor;
-namespace dd = domain::diagram;
-namespace dcl = domain::components_library;
+namespace diag = diagram;
+namespace dcl = components_library;
 
 class DiagramViewModelTest : public ::testing::Test {
 protected:
@@ -78,34 +77,34 @@ protected:
         };
 
         dummyLibraries->push_back(dummyLibrary);
-        diagram = std::make_unique<dd::Diagram>("test_id", "Test Diagram");
-        componentInstanceFactory = std::make_unique<dd::ComponentInstanceFactory>(
+        diagram = std::make_unique<diag::Diagram>("test_id", "Test Diagram");
+        componentInstanceFactory = std::make_unique<diag::ComponentInstanceFactory>(
             mockIdFactory.get(),
             dummyLibraries.get(),
             mockAppSettings.get()
         );
 
-        dummyComponentInstance = std::make_unique<dd::ComponentInstance>(
+        dummyComponentInstance = std::make_unique<diag::ComponentInstance>(
             "dummy_instance_id",
             "Dummy Instance Name",
             "dummy_type",
-            dd::NodeTransform{0, 0, 0},
+            diag::NodeTransform{0, 0, 0},
             &dummyComponentTypeInLibrary,
             ""
         );
 
-        viewModel = std::make_unique<ui_de::DiagramViewModel>(diagram.get(), componentInstanceFactory.get(), nullptr);
+        viewModel = std::make_unique<diag::DiagramViewModel>(diagram.get(), componentInstanceFactory.get(), nullptr);
     }
 
     std::unique_ptr<MockIDFactory> mockIdFactory;
     std::unique_ptr<MockAppSettings> mockAppSettings;
     std::unique_ptr<std::vector<dcl::Library> > dummyLibraries;
 
-    std::unique_ptr<dd::Diagram> diagram;
-    std::unique_ptr<dd::ComponentInstanceFactory> componentInstanceFactory;
-    std::unique_ptr<ui_de::DiagramViewModel> viewModel;
+    std::unique_ptr<diag::Diagram> diagram;
+    std::unique_ptr<diag::ComponentInstanceFactory> componentInstanceFactory;
+    std::unique_ptr<diag::DiagramViewModel> viewModel;
 
-    std::unique_ptr<dd::ComponentInstance> dummyComponentInstance;
+    std::unique_ptr<diag::ComponentInstance> dummyComponentInstance;
 };
 
 TEST_F(DiagramViewModelTest, Initialization) {
@@ -124,8 +123,8 @@ TEST_F(DiagramViewModelTest, AddComponent) {
     bool componentAddedSignalEmitted = false;
     QObject::connect(
         viewModel.get(),
-        &ui_de::DiagramViewModel::componentAdded,
-        [&](ui_de::ComponentViewModel *vm) {
+        &diag::DiagramViewModel::componentAdded,
+        [&](diag::ComponentViewModel *vm) {
             componentAddedSignalEmitted = true;
         }
     );

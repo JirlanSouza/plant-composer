@@ -20,12 +20,12 @@
 
 #include "domain/diagram/model/connection.h"
 
-namespace dd = domain::diagram;
+namespace diag = diagram;
 
 TEST(ConnectionTest, ConnectionCreation) {
-    dd::Connection connection(
+    diag::Connection connection(
         "conn1",
-        dd::Connection::Type::Port,
+        diag::Connection::Type::Port,
         "comp1",
         "portA",
         "comp2",
@@ -33,7 +33,7 @@ TEST(ConnectionTest, ConnectionCreation) {
     );
 
     ASSERT_EQ(connection.getId(), std::string("conn1"));
-    ASSERT_EQ(connection.getType(), dd::Connection::Type::Port);
+    ASSERT_EQ(connection.getType(), diag::Connection::Type::Port);
     ASSERT_EQ(connection.getSourceComponentId(), std::string("comp1"));
     ASSERT_EQ(connection.getSourceIoId(), std::string("portA"));
     ASSERT_EQ(connection.getTargetComponentId(), std::string("comp2"));
@@ -41,14 +41,14 @@ TEST(ConnectionTest, ConnectionCreation) {
 }
 
 TEST(ConnectionTest, SignalConnectionType) {
-    dd::Connection connection(
+    diag::Connection connection(
         "conn2",
-        dd::Connection::Type::Signal,
+        diag::Connection::Type::Signal,
         "comp3",
         "signalX",
         "comp4",
         "signalY"
     );
 
-    ASSERT_EQ(connection.getType(), dd::Connection::Type::Signal);
+    ASSERT_EQ(connection.getType(), diag::Connection::Type::Signal);
 }

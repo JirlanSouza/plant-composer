@@ -20,7 +20,7 @@
 
 #include "domain/project/model/project.h"
 
-namespace dp = domain::project;
+namespace dp = project;
 
 TEST(ProjectTest, ProjectCreation) {
     dp::Project project(
