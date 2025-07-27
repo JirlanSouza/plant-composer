@@ -19,7 +19,7 @@
 #pragma once
 #include <string>
 
-namespace domain {
+namespace common {
     class IDFactory {
     public:
         virtual ~IDFactory() = default;

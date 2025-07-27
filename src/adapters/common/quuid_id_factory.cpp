@@ -16,17 +16,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "shared/quuid_id_factory.h"
 
-#include "domain/shared/ilogger.h"
+#include <QUuid>
 
 namespace adapters {
-    class SpdlogLogger : public domain::Ilogger {
-    public:
-        SpdlogLogger();
-
-        ~SpdlogLogger() override;
-
-        void log(domain::LogLevel level, const std::string &message) override;
-    };
+    std::string QUuidIdFactory::create() {
+        return QUuid::createUuidV7().toString().toStdString();
+    }
 }

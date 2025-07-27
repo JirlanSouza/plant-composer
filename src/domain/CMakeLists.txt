@@ -2,8 +2,9 @@ add_library(domain STATIC)
 
 target_sources(domain
         PUBLIC
-        shared/ilogger.h
-        shared/id_factory.h
+        common/ilogger.h
+        common/id_factory.h
+        common/ilogger_factory.h
         settings/app_settings.h
 
         components_library/model/component_type.h

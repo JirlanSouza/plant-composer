@@ -21,7 +21,7 @@
 #include <format>
 #include <string>
 
-namespace domain {
+namespace common {
     enum class LogLevel {
         DEBUG = 0,
         INFO,

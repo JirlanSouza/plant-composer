@@ -20,8 +20,8 @@
 
 #include "domain/project/project_loader.h"
 #include "flat_buffer_project_parser.h"
-#include "domain/shared/id_factory.h"
-#include "domain/shared/ilogger.h"
+#include "domain/id_factory.h"
+#include "domain/ilogger.h"
 
 namespace dp = domain::project;
 namespace dd = domain::diagram;

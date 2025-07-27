@@ -20,10 +20,10 @@
 
 #include <memory>
 #include <vector>
-#include "flatbuffers/flatbuffers.h"
 
 #include "domain/project/model/project.h"
-#include "domain/shared/ilogger.h"
+#include "flatbuffers/flatbuffers.h"
+#include "domain/ilogger.h"
 #include "adapters/serialization/flatbuffers/project_generated.h"
 
 namespace dp = domain::project;

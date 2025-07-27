@@ -2,10 +2,10 @@ add_library(adapters STATIC)
 
 target_sources(adapters
         PUBLIC
-        shared/spdlog_logger.h
-        shared/spdlog_logger.cpp
-        shared/quuid_id_factory.h
-        shared/quuid_id_factory.cpp
+        spdlog_logger.h
+        spdlog_logger.cpp
+        quuid_id_factory.h
+        quuid_id_factory.cpp
 
         components_library/json/components_library_json.cpp
         components_library/json/components_library_json.h

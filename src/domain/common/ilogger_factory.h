@@ -16,12 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "quuid_id_factory.h"
+#pragma once
 
-#include <QUuid>
+#include <memory>
+#include <string>
 
-namespace adapters {
-    std::string QUuidIdFactory::create() {
-        return QUuid::createUuidV7().toString().toStdString();
-    }
+#include "ilogger.h"
+
+namespace common {
+    class ILoggerFactory {
+    public:
+        virtual ~ILoggerFactory() = default;
+
+        virtual std::unique_ptr<Ilogger> getLogger(const std::string &name) = 0;
+    };
 }

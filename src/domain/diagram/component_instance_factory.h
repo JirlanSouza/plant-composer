@@ -17,15 +17,16 @@
  */
 
 #pragma once
-#include <string>
+
 #include <vector>
 
 #include "model/component_instance.h"
 #include "model/node_transform.h"
 #include "domain/components_library/model/library.h"
 #include "domain/settings/app_settings.h"
-#include "domain/shared/id_factory.h"
+#include "domain/common/id_factory.h"
 
+namespace cm = common;
 namespace dcl = domain::components_library;
 namespace dst = domain::settings;
 
@@ -33,7 +34,7 @@ namespace domain::diagram {
     class ComponentInstanceFactory {
     public:
         explicit ComponentInstanceFactory(
-            IDFactory *idFactory,
+            cm::IDFactory *idFactory,
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings
         );
@@ -45,7 +46,7 @@ namespace domain::diagram {
         ) const;
 
     private:
-        IDFactory *idFactory_;
+        cm::IDFactory *idFactory_;
         std::vector<dcl::Library> *libraries_;
         dst::AppSettings *appSettings_;
 

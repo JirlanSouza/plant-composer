@@ -22,7 +22,7 @@
 
 namespace domain::diagram {
     ComponentInstanceFactory::ComponentInstanceFactory(
-        IDFactory *idFactory,
+        cm::IDFactory *idFactory,
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings
     ): idFactory_(idFactory),
