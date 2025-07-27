@@ -24,14 +24,12 @@
 #include "sidebar/side_bar_tabs.h"
 #include "ui/actions_manager/actions_manager.h"
 
-namespace uam = ui::actions_manager;
-
-namespace ui::layout {
+namespace app_layout {
     class AppLayoutManager : public QObject {
         Q_OBJECT
 
     public:
-        AppLayoutManager(QMainWindow *mainWindow, uam::ActionsManager *actionsManager);
+        AppLayoutManager(QMainWindow *mainWindow, app_actions::ActionsManager *actionsManager);
 
         ~AppLayoutManager() override;
 
@@ -47,7 +45,7 @@ namespace ui::layout {
 
     private:
         QMainWindow *mainWindow_;
-        uam::ActionsManager *actionsManager_;
+        app_actions::ActionsManager *actionsManager_;
         QMenuBar *menuBar_;
         QToolBar *mainToolBar_;
         QStatusBar *statusBar_;

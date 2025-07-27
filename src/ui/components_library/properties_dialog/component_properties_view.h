@@ -34,30 +34,29 @@
  */
 
 #pragma once
+
 #include <QDialog>
 #include <QGroupBox>
 #include <QTableWidget>
 
 #include "domain/components_library/model/component_type.h"
 
-namespace dcl = domain::components_library;
-
-namespace ui::components_library {
+namespace components_library {
     class LibraryComponentPropertiesView final : public QDialog {
         Q_OBJECT
 
     public:
         LibraryComponentPropertiesView(
             QWidget *parent,
-            const dcl::ComponentType &component,
-            std::unordered_map<int, dcl::PortType> &portTypes
+            const ComponentType &component,
+            std::unordered_map<int, PortType> &portTypes
         );
 
         ~LibraryComponentPropertiesView() override = default;
 
     private:
-        const dcl::ComponentType &component_;
-        std::unordered_map<int, dcl::PortType> &portTypes_;
+        const ComponentType &component_;
+        std::unordered_map<int, PortType> &portTypes_;
 
         void buildUI();
 

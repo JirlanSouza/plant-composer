@@ -24,14 +24,12 @@
 
 #include "domain/diagram/model/component_instance.h"
 
-namespace dd = domain::diagram;
-
-namespace ui::diagram_editor {
+namespace diagram {
     class ComponentViewModel : public QObject {
         Q_OBJECT
 
     public:
-        explicit ComponentViewModel(dd::ComponentInstance *componentInstance, QObject *parent = nullptr);
+        explicit ComponentViewModel(ComponentInstance *componentInstance, QObject *parent = nullptr);
 
         ~ComponentViewModel() override = default;
 
@@ -47,7 +45,7 @@ namespace ui::diagram_editor {
 
         void setPosition(const QPointF &newPosition);
 
-        [[nodiscard]] dd::ComponentInstance *getDomainComponent() const { return componentInstance_; }
+        [[nodiscard]] ComponentInstance *getDomainComponent() const { return componentInstance_; }
 
     signals:
         void nameChanged();
@@ -55,6 +53,6 @@ namespace ui::diagram_editor {
         void positionChanged();
 
     private:
-        dd::ComponentInstance *componentInstance_;
+        ComponentInstance *componentInstance_;
     };
 }

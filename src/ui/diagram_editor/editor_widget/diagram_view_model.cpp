@@ -18,10 +18,10 @@
 
 #include "diagram_view_model.h"
 
-namespace ui::diagram_editor {
+namespace diagram {
     DiagramViewModel::DiagramViewModel(
-        dd::Diagram *diagram,
-        dd::ComponentInstanceFactory *componentInstanceFactory,
+        Diagram *diagram,
+        ComponentInstanceFactory *componentInstanceFactory,
         QObject *parent
     ): QObject(parent), diagram_(diagram), componentInstanceFactory_(componentInstanceFactory) {
         for (auto component: diagram_->getComponents()) {
@@ -33,7 +33,7 @@ namespace ui::diagram_editor {
     DiagramViewModel::~DiagramViewModel() = default;
 
     void DiagramViewModel::addComponent(const int libraryId, const int componentId, const QPointF posi) {
-        const dd::NodeTransform position{static_cast<int>(posi.x()), static_cast<int>(posi.y())};
+        const NodeTransform position{static_cast<int>(posi.x()), static_cast<int>(posi.y())};
 
         const auto componentInstance = componentInstanceFactory_->createComponentInstance(
             libraryId,

@@ -20,10 +20,10 @@
 
 #include <QTabBar>
 
-namespace ui::diagram_editor {
+namespace diagram {
     DiagramEditorManager::DiagramEditorManager(
         DiagramManager *diagramManager,
-        ui::project::ProjectViewModel *projectViewModel,
+        project::ProjectViewModel *projectViewModel,
         QWidget *parent
     ): QObject(parent),
         diagramManager_(diagramManager),

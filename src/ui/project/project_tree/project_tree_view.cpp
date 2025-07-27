@@ -18,7 +18,7 @@
 
 #include "project_tree_view.h"
 
-namespace ui::project {
+namespace project {
     ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, QWidget *parent): QTreeView(parent) {
         QTreeView::setModel(model);
         setHeaderHidden(true);

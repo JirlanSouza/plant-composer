@@ -26,9 +26,7 @@
 #include "domain/common/ilogger.h"
 #include "domain/common/ilogger_factory.h"
 
-namespace dp = domain::project;
-
-namespace ui::project {
+namespace project {
     class ProjectViewModel : public QObject {
         Q_OBJECT
 
@@ -36,11 +34,11 @@ namespace ui::project {
         explicit ProjectViewModel(
             common::ILoggerFactory *loggerFactory,
             common::IDFactory *idFactory,
-            dp::IProjectLoader *projectLoader,
+            IProjectLoader *projectLoader,
             QObject *parent = nullptr
         );
 
-        [[nodiscard]] dp::Project *getProject() const;
+        [[nodiscard]] Project *getProject() const;
 
         [[nodiscard]] bool hasOpenedProject() const;
 
@@ -80,11 +78,11 @@ namespace ui::project {
 
         void projectClosed();
 
-        void diagramAdded(const domain::project::DiagramMetadata *diagram);
+        void diagramAdded(const project::DiagramMetadata *diagram);
 
-        void diagramFolderAdded(const domain::project::NodeContainer *folder);
+        void diagramFolderAdded(const project::NodeContainer *folder);
 
-        void openDiagram(const domain::project::DiagramMetadata *diagram);
+        void openDiagram(const project::DiagramMetadata *diagram);
 
         void diagramRemoved(const std::string &diagramId);
 
@@ -97,7 +95,7 @@ namespace ui::project {
     private:
         std::unique_ptr<common::Ilogger> logger_;
         common::IDFactory *idFactory_;
-        dp::IProjectLoader *projectLoader_;
-        std::unique_ptr<dp::Project> project_{nullptr};
+        IProjectLoader *projectLoader_;
+        std::unique_ptr<Project> project_{nullptr};
     };
 }

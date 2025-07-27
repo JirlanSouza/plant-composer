@@ -27,10 +27,7 @@
 #include "project_tree/project_tree_item_type.h"
 #include "ui/actions_manager/actions_manager.h"
 
-namespace dp = domain::project;
-namespace uam = ui::actions_manager;
-
-namespace ui::project {
+namespace project {
     class ProjectViewManager : public QObject {
         Q_OBJECT
 
@@ -38,7 +35,7 @@ namespace ui::project {
         explicit ProjectViewManager(
             common::ILoggerFactory *loggerFactory,
             ProjectViewModel *projectViewModel,
-            uam::ActionsManager *actionsManager,
+            app_actions::ActionsManager *actionsManager,
             QWidget *parent = nullptr
         );
 
@@ -74,7 +71,7 @@ namespace ui::project {
     private:
         std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
-        uam::ActionsManager *actionsManager_;
+        app_actions::ActionsManager *actionsManager_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
 

@@ -27,20 +27,16 @@
 #include "domain/diagram/component_instance_factory.h"
 #include "ui/project/project_view_model.h"
 
-namespace dd = domain::diagram;
-namespace dcl = domain::components_library;
-namespace dst = domain::settings;
-
-namespace ui::diagram_editor {
+namespace diagram {
     class DiagramManager final : public QObject {
         Q_OBJECT
 
     public:
         explicit DiagramManager(
-            std::vector<dcl::Library> *libraries,
-            dst::AppSettings *appSettings,
-            dd::ComponentInstanceFactory *componentInstanceFactory,
-            ui::project::ProjectViewModel *projectViewModel,
+            std::vector<components_library::Library> *libraries,
+            settings::AppSettings *appSettings,
+            ComponentInstanceFactory *componentInstanceFactory,
+            project::ProjectViewModel *projectViewModel,
             QObject *parent
         );
 
@@ -49,16 +45,16 @@ namespace ui::diagram_editor {
         DiagramViewModel *getDiagram(const std::string &diagramId);
 
     public slots:
-        void openDiagram(const domain::project::DiagramMetadata *diagramMetadata);
+        void openDiagram(const project::DiagramMetadata *diagramMetadata);
 
     signals:
         void diagramOpened(std::string diagramId);
 
     private:
-        std::vector<dcl::Library> *libraries_;
+        std::vector<components_library::Library> *libraries_;
         std::unordered_map<std::string, DiagramViewModel *> openedDiagrams_;
-        dst::AppSettings *appSettings_;
-        dd::ComponentInstanceFactory *componentInstanceFactory_;
-        ui::project::ProjectViewModel *projectViewModel_;
+        settings::AppSettings *appSettings_;
+        ComponentInstanceFactory *componentInstanceFactory_;
+        project::ProjectViewModel *projectViewModel_;
     };
 }

@@ -20,7 +20,7 @@
 
 #include <QObject>
 
-namespace ui::project {
+namespace project {
     class TreeItemTypes : public QObject {
         Q_OBJECT
 

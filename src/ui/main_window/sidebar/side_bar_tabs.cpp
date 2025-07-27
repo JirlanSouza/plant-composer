@@ -22,7 +22,7 @@
 
 #include "side_bar_item.h"
 
-namespace ui::layout {
+namespace app_layout {
     SideBarTabs::SideBarTabs(const int width, QWidget *parent): QToolBar(parent), layout_(new QVBoxLayout(this)) {
         setFixedWidth(width);
         layout_->setContentsMargins(0, 0, 0, 0);

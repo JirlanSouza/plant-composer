@@ -22,7 +22,7 @@
 #include <QPainter>
 #include <QStyleOptionToolButton>
 
-namespace ui::layout {
+namespace app_layout {
     SideBarItem::SideBarItem(
         const int index,
         const QString &title,

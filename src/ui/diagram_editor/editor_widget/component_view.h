@@ -17,11 +17,12 @@
  */
 
 #pragma once
+
 #include <QGraphicsSvgItem>
 
 #include "component_view_model.h"
 
-namespace ui::diagram_editor {
+namespace diagram {
     class ComponentView final : public QGraphicsSvgItem {
         Q_OBJECT
 
@@ -49,7 +50,7 @@ namespace ui::diagram_editor {
 
         QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
-        bool isPositionSameAsViewModel(const QPointF &posi) const;
+        [[nodiscard]] bool isPositionSameAsViewModel(const QPointF &posi) const;
 
     private
     :

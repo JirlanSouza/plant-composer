@@ -24,10 +24,10 @@
 
 #include "mime_types.h"
 
-namespace ui::components_library {
+namespace components_library {
     ComponentsLibraryModel::ComponentsLibraryModel(
         QObject *parent,
-        const std::vector<dcl::Library> &libraries,
+        const std::vector<Library> &libraries,
         std::string componentIconPath
     ) : QStandardItemModel(parent),
         libraries_(libraries),
@@ -37,7 +37,7 @@ namespace ui::components_library {
         }
     };
 
-    void ComponentsLibraryModel::addLibrary(const int libraryIndex, const dcl::Library &library) {
+    void ComponentsLibraryModel::addLibrary(const int libraryIndex, const Library &library) {
         setColumnCount(1);
         auto *libraryItem = new QStandardItem(
             QIcon(":/icons/components_library.svg"),

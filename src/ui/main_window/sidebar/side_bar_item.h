@@ -19,19 +19,16 @@
 #pragma once
 #include <QToolButton>
 
-namespace ui::layout {
+namespace app_layout {
     class SideBarItem : public QToolButton {
         Q_OBJECT
 
     public:
         SideBarItem(int index, const QString &title, QWidget *parent);
 
-        QSize sizeHint() const override;
+        [[nodiscard]] QSize sizeHint() const override;
 
-        int getIndex() const;
-
-    signals:
-        void clicked(int index);
+        [[nodiscard]] int getIndex() const;
 
     protected:
         void paintEvent(QPaintEvent *) override;

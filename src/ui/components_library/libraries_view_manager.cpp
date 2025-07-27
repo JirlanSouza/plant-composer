@@ -18,10 +18,10 @@
 
 #include "libraries_view_manager.h"
 
-namespace ui::components_library {
+namespace components_library {
     LibrariesViewManager::LibrariesViewManager(
-        std::vector<dcl::Library> *libraries,
-        dst::AppSettings *appSettings,
+        std::vector<Library> *libraries,
+        settings::AppSettings *appSettings,
         QWidget *parent
     ): QObject(parent), libraries_(libraries) {
         libraryModel_ = new ComponentsLibraryModel(parent, *libraries, appSettings->getComponentIconPath());

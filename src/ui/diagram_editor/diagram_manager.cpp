@@ -18,16 +18,12 @@
 
 #include "diagram_manager.h"
 
-#include <iostream>
-
-#include "id/id_utils.h"
-
-namespace ui::diagram_editor {
+namespace diagram {
     DiagramManager::DiagramManager(
-        std::vector<dcl::Library> *libraries,
-        dst::AppSettings *appSettings,
-        dd::ComponentInstanceFactory *componentInstanceFactory,
-        ui::project::ProjectViewModel *projectViewModel,
+        std::vector<components_library::Library> *libraries,
+        settings::AppSettings *appSettings,
+        ComponentInstanceFactory *componentInstanceFactory,
+        project::ProjectViewModel *projectViewModel,
         QObject *parent
     ): QObject(parent),
         libraries_(libraries),
@@ -35,18 +31,18 @@ namespace ui::diagram_editor {
         appSettings_(appSettings),
         componentInstanceFactory_(componentInstanceFactory),
         projectViewModel_(projectViewModel) {
-        connect(projectViewModel_, &ui::project::ProjectViewModel::openDiagram, this, &DiagramManager::openDiagram);
+        connect(projectViewModel_, &project::ProjectViewModel::openDiagram, this, &DiagramManager::openDiagram);
     }
 
     DiagramManager::~DiagramManager() = default;
 
-    void DiagramManager::openDiagram(const dp::DiagramMetadata *diagramMetadata) {
+    void DiagramManager::openDiagram(const project::DiagramMetadata *diagramMetadata) {
         if (openedDiagrams_.contains(diagramMetadata->getId())) {
             emit diagramOpened(diagramMetadata->getId());
             return;
         }
 
-        const auto diagram = new dd::Diagram(diagramMetadata->getId(), diagramMetadata->getName());
+        const auto diagram = new Diagram(diagramMetadata->getId(), diagramMetadata->getName());
         openedDiagrams_[diagramMetadata->getId()] = new DiagramViewModel(diagram, componentInstanceFactory_, this);
         emit diagramOpened(diagramMetadata->getId());
     }

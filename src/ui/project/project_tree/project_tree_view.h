@@ -24,7 +24,7 @@
 
 #include "project_tree_model.h"
 
-namespace ui::project {
+namespace project {
     class ProjectTreeView final : public QTreeView {
         Q_OBJECT
 

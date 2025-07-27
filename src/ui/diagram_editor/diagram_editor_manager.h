@@ -27,10 +27,7 @@
 #include "editor_widget/diagram_view_model.h"
 #include "ui/project/project_view_model.h"
 
-namespace dcl = domain::components_library;
-namespace dst = domain::settings;
-
-namespace ui::diagram_editor {
+namespace diagram {
     struct DiagramEditorTab {
         DiagramViewModel *diagram;
         DiagramEditorView *diagramEditorView_;
@@ -43,7 +40,7 @@ namespace ui::diagram_editor {
     public:
         explicit DiagramEditorManager(
             DiagramManager *diagramManager,
-            ui::project::ProjectViewModel *projectViewModel,
+            project::ProjectViewModel *projectViewModel,
             QWidget *parent = nullptr
         );
 
@@ -53,7 +50,7 @@ namespace ui::diagram_editor {
 
     private:
         DiagramManager *diagramManager_;
-        ui::project::ProjectViewModel *projectViewModel_;
+        project::ProjectViewModel *projectViewModel_;
         QTabWidget *editorArea_;
         std::unordered_map<std::string, DiagramEditorTab> diagramEditorTabs_;
         std::vector<std::string> editorTabsOrder_;

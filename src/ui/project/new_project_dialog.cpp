@@ -20,11 +20,12 @@
 
 #include <QFormLayout>
 #include <QFileDialog>
+#include <QPushButton>
 #include <QFileInfo>
 #include <QDir>
 #include <QPalette>
 
-namespace ui::project {
+namespace project {
     NewProjectDialog::NewProjectDialog(QWidget *parent) : QDialog(parent) {
         setWindowTitle(tr("Create New Project"));
         setMinimumSize(400, 300);
@@ -93,7 +94,12 @@ namespace ui::project {
         connect(browsePathButton_, &QPushButton::clicked, this, &NewProjectDialog::onBrowsePathClicked);
 
         connect(projectNameLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectNameInput);
-        connect(projectParentDirectoryLineEdit_, &QLineEdit::textChanged, this, &NewProjectDialog::validateProjectParentDirectoryInput);
+        connect(
+            projectParentDirectoryLineEdit_,
+            &QLineEdit::textChanged,
+            this,
+            &NewProjectDialog::validateProjectParentDirectoryInput
+        );
     }
 
     void NewProjectDialog::validateProjectNameInput() {

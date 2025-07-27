@@ -17,10 +17,11 @@
  */
 
 #pragma once
+
 #include <QDockWidget>
 #include <QStackedWidget>
 
-namespace ui::layout {
+namespace app_layout {
     enum Side {
         LEFT = 0, RIGHT,
     };
@@ -29,13 +30,13 @@ namespace ui::layout {
         Q_OBJECT
 
     public:
-        SideBar(QMainWindow *parent = nullptr, Side side = LEFT);
+        explicit SideBar(QMainWindow *parent = nullptr, Side side = LEFT);
 
         ~SideBar() override;
 
         void addItem(const QString &label, QWidget *content) const;
 
-        int getBeforeCollapsedWidth() const;
+        [[nodiscard]] int getBeforeCollapsedWidth() const;
 
     signals:
         void collapsedChange(bool collapsed, Side side);

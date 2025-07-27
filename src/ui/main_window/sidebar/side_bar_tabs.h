@@ -36,7 +36,7 @@
 #pragma once
 #include <QToolBar>
 
-namespace ui::layout {
+namespace app_layout {
     class SideBarTabs : public QToolBar {
         Q_OBJECT
 
@@ -47,9 +47,9 @@ namespace ui::layout {
 
         int addTab(const QString &label);
 
-        int tabsCount() const;
+        [[nodiscard]] int tabsCount() const;
 
-        int currentTabIndex() const;
+        [[nodiscard]] int currentTabIndex() const;
 
         void setCurrentTabIndex(int index);
 

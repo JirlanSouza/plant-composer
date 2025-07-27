@@ -18,9 +18,9 @@
 
 #include "actions_manager.h"
 
-namespace ui::actions_manager {
-
-    ActionsManager::ActionsManager(QObject *parent) : QObject(parent) {}
+namespace app_actions {
+    ActionsManager::ActionsManager(QObject *parent) : QObject(parent) {
+    }
 
     void ActionsManager::addAction(ActionGroupType group, QAction *action) {
         actions_[group].append(action);
@@ -29,6 +29,4 @@ namespace ui::actions_manager {
     QList<QAction *> ActionsManager::getActions(ActionGroupType group) const {
         return actions_.value(group);
     }
-
 }
-

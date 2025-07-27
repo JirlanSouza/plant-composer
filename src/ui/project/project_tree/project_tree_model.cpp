@@ -23,7 +23,7 @@
 
 #include "project_tree_item_type.h"
 
-namespace ui::project {
+namespace project {
     ProjectTreeModel::ProjectTreeModel(
         common::ILoggerFactory *loggerFactory,
         ProjectViewModel *projectViewModel,
@@ -129,7 +129,7 @@ namespace ui::project {
 
     void ProjectTreeModel::populateFolder(
         QStandardItem *parentItem,
-        const dp::NodeContainer *folder,
+        const NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
     ) {
         logger_->info(
@@ -139,12 +139,10 @@ namespace ui::project {
             folder->getChildren().size()
         );
         for (const auto *item: folder->getChildren()) {
-            logger_->info("Before");
             if (item->isFile()) {
-                logger_->info("Before 2");
-                appendItem(parentItem, dynamic_cast<const dp::FileNode *>(item), TreeItemTypes::DIAGRAM_FILE);
+                appendItem(parentItem, dynamic_cast<const FileNode *>(item), TreeItemTypes::DIAGRAM_FILE);
             } else if (item->isFolder()) {
-                appendFolder(parentItem, dynamic_cast<const dp::NodeContainer *>(item), type);
+                appendFolder(parentItem, dynamic_cast<const NodeContainer *>(item), type);
             }
         }
         logger_->info(
@@ -157,7 +155,7 @@ namespace ui::project {
 
     void ProjectTreeModel::appendItem(
         QStandardItem *parent,
-        const dp::FileNode *file,
+        const FileNode *file,
         const TreeItemTypes::TreeItemType type
     ) {
         logger_->info("Appending project tree item with ID: {}, name: {}", file->getId(), file->getName());
@@ -180,7 +178,7 @@ namespace ui::project {
 
     void ProjectTreeModel::appendFolder(
         QStandardItem *parent,
-        const dp::NodeContainer *folder,
+        const NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
     ) {
         logger_->info(
@@ -210,7 +208,7 @@ namespace ui::project {
         clearModel();
     }
 
-    void ProjectTreeModel::onDiagramAdded(const dp::DiagramMetadata *diagram) {
+    void ProjectTreeModel::onDiagramAdded(const DiagramMetadata *diagram) {
         auto parentId = diagram->getParent()->getId();
         if (itemMap_.contains(parentId)) {
             appendItem(itemMap_[parentId], diagram, TreeItemTypes::TreeItemType::DIAGRAM_FILE);
@@ -218,7 +216,7 @@ namespace ui::project {
         }
     }
 
-    void ProjectTreeModel::onDiagramFolderAdded(const dp::NodeContainer *folder) {
+    void ProjectTreeModel::onDiagramFolderAdded(const NodeContainer *folder) {
         auto parentId = folder->getParent()->getId();
         if (itemMap_.contains(parentId)) {
             appendFolder(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
@@ -227,23 +225,28 @@ namespace ui::project {
     }
 
     void ProjectTreeModel::onDiagramRemoved(const std::string &diagramId) {
+        logger_->info("Diagram removed from tree: {}", diagramId);
         if (!itemMap_.contains(diagramId)) return;
 
         const auto *diagramItem = itemMap_[diagramId];
         diagramItem->parent()->removeRow(diagramItem->row());
+        itemMap_.erase(diagramId);
     }
 
     void ProjectTreeModel::onDiagramFolderRemoved(const std::string &folderId) {
+        logger_->info("Folder removed from tree: {}", folderId);
         if (!itemMap_.contains(folderId)) return;
 
         const auto *folderItem = itemMap_[folderId];
         folderItem->parent()->removeRow(folderItem->row());
+        itemMap_.erase(folderId);
     }
 
     void ProjectTreeModel::onDiagramRenamed(
         const std::string &diagramId,
         const std::string &newName
     ) {
+        logger_->info("Diagram renamed in tree: {} to {}", diagramId, newName);
         if (!itemMap_.contains(diagramId)) return;
 
         auto *diagramItem = itemMap_[diagramId];
@@ -254,6 +257,7 @@ namespace ui::project {
         const std::string &folderId,
         const std::string &newName
     ) {
+        logger_->info("Folder renamed in tree: {} to {}", folderId, newName);
         if (!itemMap_.contains(folderId)) return;
 
         auto *folderItem = itemMap_[folderId];

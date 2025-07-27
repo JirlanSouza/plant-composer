@@ -23,10 +23,9 @@
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QVBoxLayout>
-#include <QPushButton>
 #include <QFileDialog>
 
-namespace ui::project {
+namespace project {
     class NewProjectDialog : public QDialog {
         Q_OBJECT
 

@@ -23,7 +23,7 @@
 #include <QVBoxLayout>
 #include <QWindow>
 
-namespace ui::layout {
+namespace app_layout {
     SideBar::SideBar(QMainWindow *parent, const Side side): QDockWidget(parent),
         side_(side),
         stacked_(new QStackedWidget(this)) {

@@ -3,8 +3,8 @@ add_library(ui STATIC)
 target_sources(ui
         PUBLIC
         mime_types.h
-        main_window/main_window.h
-        main_window/main_window.cpp
+        main_window/app_main_windows.h
+        main_window/app_main_windows.cpp
         main_window/app_layout_manager.h
         main_window/app_layout_manager.cpp
 
@@ -21,14 +21,13 @@ target_sources(ui
         project/project_view_manager.cpp
         project/project_view_model.h
         project/project_view_model.cpp
+        project/new_project_dialog.h
+        project/new_project_dialog.cpp
         project/project_tree/project_tree_item_type.h
-        project/project_tree/project_tree_item_type.cpp
         project/project_tree/project_tree_model.h
         project/project_tree/project_tree_model.cpp
         project/project_tree/project_tree_view.h
         project/project_tree/project_tree_view.cpp
-        project/new_project_dialog.h
-        project/new_project_dialog.cpp
 
         components_library/libraries_view_manager.h
         components_library/libraries_view_manager.cpp

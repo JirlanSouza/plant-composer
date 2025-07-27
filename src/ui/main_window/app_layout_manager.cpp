@@ -23,8 +23,8 @@
 #include <QStatusBar>
 #include <QToolBar>
 
-namespace ui::layout {
-    AppLayoutManager::AppLayoutManager(QMainWindow *mainWindow, uam::ActionsManager *actionsManager): QObject(
+namespace app_layout {
+    AppLayoutManager::AppLayoutManager(QMainWindow *mainWindow, app_actions::ActionsManager *actionsManager): QObject(
             mainWindow
         ),
         mainWindow_(mainWindow),
@@ -68,22 +68,22 @@ namespace ui::layout {
         mainWindow_->setMenuBar(menuBar_);
 
         const auto menuFile = menuBar_->addMenu(tr("File"));
-        menuFile->addActions(actionsManager_->getActions(uam::ActionGroupType::File));
+        menuFile->addActions(actionsManager_->getActions(app_actions::ActionGroupType::File));
 
         const auto menuEdit = menuBar_->addMenu(tr("Edit"));
-        menuEdit->addActions(actionsManager_->getActions(uam::ActionGroupType::Edit));
+        menuEdit->addActions(actionsManager_->getActions(app_actions::ActionGroupType::Edit));
 
         const auto menuView = menuBar_->addMenu(tr("View"));
-        menuView->addActions(actionsManager_->getActions(uam::ActionGroupType::View));
+        menuView->addActions(actionsManager_->getActions(app_actions::ActionGroupType::View));
 
         const auto menuSimulation = menuBar_->addMenu(tr("Simulation"));
-        menuSimulation->addActions(actionsManager_->getActions(uam::ActionGroupType::Simulation));
+        menuSimulation->addActions(actionsManager_->getActions(app_actions::ActionGroupType::Simulation));
 
         const auto menuOptions = menuBar_->addMenu(tr("Options"));
-        menuOptions->addActions(actionsManager_->getActions(uam::ActionGroupType::Options));
+        menuOptions->addActions(actionsManager_->getActions(app_actions::ActionGroupType::Options));
 
         const auto menuWindow = menuBar_->addMenu(tr("Window"));
-        menuWindow->addActions(actionsManager_->getActions(uam::ActionGroupType::Window));
+        menuWindow->addActions(actionsManager_->getActions(app_actions::ActionGroupType::Window));
     }
 
     void AppLayoutManager::setupMainToolBar() const {
@@ -95,9 +95,9 @@ namespace ui::layout {
         mainToolBar_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         mainToolBar_->setMaximumHeight(32);
 
-        mainToolBar_->addActions(actionsManager_->getActions(uam::ActionGroupType::ToolbarFile));
+        mainToolBar_->addActions(actionsManager_->getActions(app_actions::ActionGroupType::ToolbarFile));
         mainToolBar_->addSeparator();
-        mainToolBar_->addActions(actionsManager_->getActions(uam::ActionGroupType::ToolbarEdit));
+        mainToolBar_->addActions(actionsManager_->getActions(app_actions::ActionGroupType::ToolbarEdit));
     }
 
     void AppLayoutManager::setupStatusBar() const {

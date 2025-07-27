@@ -23,11 +23,11 @@
 
 #include "new_project_dialog.h"
 
-namespace ui::project {
+namespace project {
     ProjectViewManager::ProjectViewManager(
         common::ILoggerFactory *loggerFactory,
         ProjectViewModel *projectViewModel,
-        uam::ActionsManager *actionsManager,
+        app_actions::ActionsManager *actionsManager,
         QWidget *parent
     ): QObject(parent),
         logger_(loggerFactory->getLogger("ProjectViewManager")),
@@ -69,47 +69,48 @@ namespace ui::project {
     void ProjectViewManager::createActions() {
         newProjectAction_ = new QAction(QIcon::fromTheme("document-new"), tr("New Project"), this);
         connect(newProjectAction_, &QAction::triggered, this, &ProjectViewManager::onCreateNewProjectTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::File, newProjectAction_);
-        actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, newProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::File, newProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::ToolbarFile, newProjectAction_);
 
         openProjectAction_ = new QAction(QIcon::fromTheme("document-open"), tr("Open Project"), this);
         connect(openProjectAction_, &QAction::triggered, this, &ProjectViewManager::onOpenProjectTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::File, openProjectAction_);
-        actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, openProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::File, openProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::ToolbarFile, openProjectAction_);
 
         saveProjectAction_ = new QAction(QIcon::fromTheme("document-save"), tr("Save Project"), this);
         saveProjectAction_->setEnabled(false);
         connect(saveProjectAction_, &QAction::triggered, projectViewModel_, &ProjectViewModel::saveProject);
-        actionsManager_->addAction(uam::ActionGroupType::File, saveProjectAction_);
-        actionsManager_->addAction(uam::ActionGroupType::ToolbarFile, saveProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::File, saveProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::ToolbarFile, saveProjectAction_);
 
         closeProjectAction_ = new QAction(QIcon::fromTheme("document-close"), tr("Close Project"), this);
         closeProjectAction_->setEnabled(false);
         connect(closeProjectAction_, &QAction::triggered, projectViewModel_, &ProjectViewModel::closeProject);
-        actionsManager_->addAction(uam::ActionGroupType::File, closeProjectAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::File, closeProjectAction_);
 
         addDiagramAction_ = new QAction(tr("Add Diagram"), this);
         connect(addDiagramAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewDiagramTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::Edit, addDiagramAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, addDiagramAction_);
 
         addFolderAction_ = new QAction(tr("Add Folder"), this);
         connect(addFolderAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewFolderTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::Edit, addFolderAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, addFolderAction_);
 
         openAction_ = new QAction(tr("Open"), this);
         connect(openAction_, &QAction::triggered, this, &ProjectViewManager::onOpenTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::File, openAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::File, openAction_);
 
         renameAction_ = new QAction(tr("Rename"), this);
         connect(renameAction_, &QAction::triggered, this, &ProjectViewManager::onRenameTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::Edit, renameAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, renameAction_);
 
         deleteAction_ = new QAction(tr("Delete"), this);
         connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteTriggered);
-        actionsManager_->addAction(uam::ActionGroupType::Edit, deleteAction_);
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, deleteAction_);
     }
 
     void ProjectViewManager::onCreateNewProjectTriggered() const {
+        logger_->info("User triggered 'New Project' action.");
         NewProjectDialog newProjectDialog(getView());
         if (newProjectDialog.exec() == QDialog::Accepted) {
             projectViewModel_->createNewProject(
@@ -122,6 +123,7 @@ namespace ui::project {
     }
 
     void ProjectViewManager::onOpenProjectTriggered() const {
+        logger_->info("User triggered 'Open Project' action.");
         const QString projectPath = QFileDialog::getOpenFileName(
             this->getView(),
             tr("Open Project"),
@@ -135,6 +137,7 @@ namespace ui::project {
     }
 
     void ProjectViewManager::onProjectOpened() const {
+        logger_->info("Project opened signal received. Expanding tree.");
         projectTreeView_->expandAll();
         projectTreeView_->setFocus();
         saveProjectAction_->setEnabled(true);
@@ -142,6 +145,7 @@ namespace ui::project {
     }
 
     void ProjectViewManager::onOpenProjectFailed(const QString &errorMessage) const {
+        logger_->error("Project open failed: {}", errorMessage.toStdString());
         const auto messageBox = new QMessageBox(
             QMessageBox::Critical,
             tr("Open Project Failed"),
@@ -159,6 +163,8 @@ namespace ui::project {
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
         currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+
+        logger_->info("User double-clicked item ID: {}, Type: {}", currentItemId_, static_cast<int>(type));
 
         if (type == TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM) {
             const auto parent = item->parent();
@@ -180,6 +186,8 @@ namespace ui::project {
         const auto item = projectTreeModel_->itemFromIndex(currentItemIndex_);
         currentItemType_ = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
         currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+
+        logger_->info("User right-clicked item ID: {}, Type: {}", currentItemId_, static_cast<int>(currentItemType_));
 
         QMenu menu;
         menu.setMinimumWidth(220);
@@ -203,24 +211,29 @@ namespace ui::project {
     }
 
     void ProjectViewManager::onAddNewDiagramTriggered() const {
+        logger_->info("User triggered 'Add New Diagram' for parent: {}", currentItemId_);
         projectViewModel_->addNewDiagram(currentItemId_, "New Diagram");
     }
 
     void ProjectViewManager::onAddNewFolderTriggered() const {
+        logger_->info("User triggered 'Add New Folder' for parent: {}", currentItemId_);
         projectViewModel_->addNewDiagramFolder(currentItemId_, "New Folder");
     }
 
     void ProjectViewManager::onOpenTriggered() const {
+        logger_->info("User triggered 'Open' for item: {}", currentItemId_);
         projectViewModel_->openDiagramRequested(currentItemId_);
     }
 
     void ProjectViewManager::onRenameTriggered() const {
+        logger_->info("User triggered 'Rename' for item: {}", currentItemId_);
         if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE || currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
             projectTreeView_->edit(currentItemIndex_);
         }
     }
 
     void ProjectViewManager::onDeleteTriggered() const {
+        logger_->info("User triggered 'Delete' for item: {}", currentItemId_);
         if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE) {
             projectViewModel_->removeDiagram(currentItemId_);
         } else if (currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
@@ -229,6 +242,7 @@ namespace ui::project {
     }
 
     void ProjectViewManager::onItemReadyForEditing(const QModelIndex &index) const {
+        logger_->info("Item ready for editing at index: {}", index.row());
         projectTreeView_->edit(index);
     }
 }

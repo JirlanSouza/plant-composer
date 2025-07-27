@@ -25,7 +25,7 @@
 
 #include "mime_types.h"
 
-namespace ui::diagram_editor {
+namespace diagram {
     DiagramEditorView::DiagramEditorView(const std::string &diagramId, QWidget *parent)
         : QGraphicsView(parent), diagramId_(diagramId) {
         setRenderHint(QPainter::Antialiasing);

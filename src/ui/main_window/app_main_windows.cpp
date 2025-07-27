@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "application.h"
+#include "app_main_windows.h"
 
 #include <qboxlayout.h>
 #include <QMdiSubWindow>

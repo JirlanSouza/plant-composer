@@ -18,8 +18,8 @@
 
 #include "component_view_model.h"
 
-namespace ui::diagram_editor {
-    ComponentViewModel::ComponentViewModel(dd::ComponentInstance *componentInstance, QObject *parent)
+namespace diagram {
+    ComponentViewModel::ComponentViewModel(ComponentInstance *componentInstance, QObject *parent)
         : QObject(parent), componentInstance_(componentInstance) {
     }
 

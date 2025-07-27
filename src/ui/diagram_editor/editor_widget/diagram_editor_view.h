@@ -17,11 +17,12 @@
  */
 
 #pragma once
+
 #include <qevent.h>
 #include <qgraphicsitem.h>
 #include <QGraphicsView>
 
-namespace ui::diagram_editor {
+namespace diagram {
     class DiagramEditorView : public QGraphicsView {
         Q_OBJECT
 
@@ -31,7 +32,7 @@ namespace ui::diagram_editor {
     signals:
         void addComponentToScene(std::string diagramId, int libraryId, int componentId, QPointF posi);
 
-        public slots:
+    public slots:
         void fitSceneToView();
 
     protected:

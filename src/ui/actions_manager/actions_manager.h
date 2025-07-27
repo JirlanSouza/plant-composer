@@ -23,8 +23,7 @@
 #include <QMap>
 #include <QList>
 
-namespace ui::actions_manager {
-
+namespace app_actions {
     enum class ActionGroupType {
         File,
         Edit,
@@ -42,14 +41,14 @@ namespace ui::actions_manager {
 
     public:
         explicit ActionsManager(QObject *parent = nullptr);
+
         ~ActionsManager() override = default;
 
         void addAction(ActionGroupType group, QAction *action);
-        QList<QAction *> getActions(ActionGroupType group) const;
+
+        [[nodiscard]] QList<QAction *> getActions(ActionGroupType group) const;
 
     private:
-        QMap<ActionGroupType, QList<QAction *>> actions_;
+        QMap<ActionGroupType, QList<QAction *> > actions_;
     };
-
 }
-

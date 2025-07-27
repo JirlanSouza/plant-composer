@@ -17,6 +17,7 @@
  */
 
 #pragma once
+
 #include <QGraphicsScene>
 #include <QPainter>
 
@@ -24,7 +25,7 @@
 #include "component_view.h"
 #include "component_view_model.h"
 
-namespace ui::diagram_editor {
+namespace diagram {
     class DiagramEditorScene final : public QGraphicsScene {
         Q_OBJECT
 
@@ -44,6 +45,6 @@ namespace ui::diagram_editor {
         std::unordered_map<std::string, ComponentView *> componentInstanceViews_;
 
     public slots:
-        void onComponentAdded(ui::diagram_editor::ComponentViewModel *componentViewModel);
+        void onComponentAdded(diagram::ComponentViewModel *componentViewModel);
     };
 }

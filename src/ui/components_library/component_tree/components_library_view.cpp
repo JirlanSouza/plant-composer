@@ -21,7 +21,7 @@
 #include <qevent.h>
 #include <QMenu>
 
-namespace ui::components_library {
+namespace components_library {
     ComponentsLibraryView::ComponentsLibraryView(QWidget *parent, ComponentsLibraryModel *model): QTreeView(parent),
         model_(model) {
         QTreeView::setModel(model_);

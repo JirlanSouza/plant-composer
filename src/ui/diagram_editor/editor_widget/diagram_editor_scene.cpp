@@ -18,7 +18,7 @@
 
 #include "diagram_editor_scene.h"
 
-namespace ui::diagram_editor {
+namespace diagram {
     DiagramEditorScene::DiagramEditorScene(DiagramViewModel *diagramModel, QObject *parent) : QGraphicsScene(parent),
         diagramModel_(diagramModel), parent_(parent) {
         setSceneRect(0, 0, diagramModel->getWidth(), diagramModel->getHeight());

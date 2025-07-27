@@ -22,7 +22,7 @@
 #include <qpen.h>
 #include <QSvgRenderer>
 
-namespace ui::diagram_editor {
+namespace diagram {
     ComponentView::ComponentView(
         ComponentViewModel *componentViewModel,
         QGraphicsItem *parent

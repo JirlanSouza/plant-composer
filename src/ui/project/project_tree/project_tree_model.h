@@ -25,9 +25,7 @@
 #include "domain/project/model/project.h"
 #include "ui/project/project_view_model.h"
 
-namespace dp = domain::project;
-
-namespace ui::project {
+namespace project {
     enum ProjectTreeRole {
         ITEM_TYPE_ROLE = Qt::UserRole + 1, ITEM_ID_ROLE,
     };
@@ -50,11 +48,9 @@ namespace ui::project {
     private slots:
         void onProjectClosed();
 
-        void onDiagramAdded(const domain::project::DiagramMetadata *diagram);
+        void onDiagramAdded(const project::DiagramMetadata *diagram);
 
-        void onDiagramFolderAdded(
-            const domain::project::NodeContainer *folder
-        );
+        void onDiagramFolderAdded(const project::NodeContainer *folder);
 
         void onDiagramRemoved(const std::string &diagramId);
 
@@ -79,23 +75,11 @@ namespace ui::project {
 
         void clearModel();
 
-        void populateFolder(
-            QStandardItem *parentItem,
-            const dp::NodeContainer *folder,
-            TreeItemTypes::TreeItemType type
-        );
+        void populateFolder(QStandardItem *parentItem, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
 
-        void appendItem(
-            QStandardItem *parent,
-            const dp::FileNode *file,
-            TreeItemTypes::TreeItemType type
-        );
+        void appendItem(QStandardItem *parent, const FileNode *file, TreeItemTypes::TreeItemType type);
 
-        void appendFolder(
-            QStandardItem *parent,
-            const dp::NodeContainer *folder,
-            TreeItemTypes::TreeItemType type
-        );
+        void appendFolder(QStandardItem *parent, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
 
         static QIcon getIconForType(TreeItemTypes::TreeItemType type);
 

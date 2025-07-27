@@ -23,11 +23,11 @@
 #include <QTableWidget>
 #include <QLabel>
 
-namespace ui::components_library {
+namespace components_library {
     LibraryComponentPropertiesView::LibraryComponentPropertiesView(
         QWidget *parent,
-        const dcl::ComponentType &component,
-        std::unordered_map<int, dcl::PortType>
+        const ComponentType &component,
+        std::unordered_map<int, PortType>
         &portTypes
     ) : QDialog(parent),
         component_(component),
@@ -136,7 +136,7 @@ namespace ui::components_library {
                 i,
                 1,
                 newTableItem(
-                    dcl::dataTypeToString(component_.signalsIo.inputs[i].dataType)
+                    dataTypeToString(component_.signalsIo.inputs[i].dataType)
                 )
             );
         }
@@ -147,7 +147,7 @@ namespace ui::components_library {
                 i,
                 1,
                 newTableItem(
-                    dcl::dataTypeToString(component_.signalsIo.inputs[i].dataType)
+                    dataTypeToString(component_.signalsIo.inputs[i].dataType)
                 )
             );
         }
