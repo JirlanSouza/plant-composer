@@ -68,6 +68,16 @@ namespace project {
 
         void onItemReadyForEditing(const QModelIndex &index) const;
 
+        void onCopyTriggered() const;
+
+        void onCutTriggered() const;
+
+        void onPasteTriggered() const;
+
+        void onNodeCopied() const;
+
+        void onNodeCut() const;
+
     private:
         std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
@@ -79,11 +89,14 @@ namespace project {
         QAction *openProjectAction_;
         QAction *saveProjectAction_;
         QAction *closeProjectAction_;
-        QAction *addDiagramAction_;
-        QAction *addFolderAction_;
+        QAction *newDiagramAction_;
+        QAction *newFolderAction_;
         QAction *openAction_;
         QAction *renameAction_;
         QAction *deleteAction_;
+        QAction *copyAction_;
+        QAction *cutAction_;
+        QAction *pasteAction_;
 
         QModelIndex currentItemIndex_;
         std::string currentItemId_;

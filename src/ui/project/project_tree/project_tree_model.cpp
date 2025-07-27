@@ -32,31 +32,31 @@ namespace project {
         projectViewModel_(projectViewModel) {
         connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectTreeModel::buildModel);
         connect(projectViewModel_, &ProjectViewModel::projectClosed, this, &ProjectTreeModel::onProjectClosed);
-        connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onDiagramAdded);
+        connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onFileNodeAdded);
         connect(
             projectViewModel_,
             &ProjectViewModel::diagramFolderAdded,
             this,
-            &ProjectTreeModel::onDiagramFolderAdded
+            &ProjectTreeModel::onFolderNodeAdded
         );
-        connect(projectViewModel_, &ProjectViewModel::diagramRemoved, this, &ProjectTreeModel::onDiagramRemoved);
+        connect(projectViewModel_, &ProjectViewModel::diagramRemoved, this, &ProjectTreeModel::onFileNodeRemoved);
         connect(
             projectViewModel_,
             &ProjectViewModel::diagramFolderRemoved,
             this,
-            &ProjectTreeModel::onDiagramFolderRemoved
+            &ProjectTreeModel::onFolderNodeRemoved
         );
         connect(
             projectViewModel_,
             &ProjectViewModel::diagramRenamed,
             this,
-            &ProjectTreeModel::onDiagramRenamed
+            &ProjectTreeModel::onFileNodeRenamed
         );
         connect(
             projectViewModel_,
             &ProjectViewModel::diagramFolderRenamed,
             this,
-            &ProjectTreeModel::onDiagramFolderRenamed
+            &ProjectTreeModel::onFolderNodeRenamed
         );
     }
 
@@ -140,11 +140,12 @@ namespace project {
         );
         for (const auto *item: folder->getChildren()) {
             if (item->isFile()) {
-                appendItem(parentItem, dynamic_cast<const FileNode *>(item), TreeItemTypes::DIAGRAM_FILE);
+                appendFileNode(parentItem, dynamic_cast<const FileNode *>(item), TreeItemTypes::DIAGRAM_FILE);
             } else if (item->isFolder()) {
-                appendFolder(parentItem, dynamic_cast<const NodeContainer *>(item), type);
+                appendFolderNode(parentItem, dynamic_cast<const NodeContainer *>(item), type);
             }
         }
+        parentItem->sortChildren(0, Qt::AscendingOrder);
         logger_->info(
             "Seccess populating folder with ID: {}, name: {}, children: {}",
             folder->getId(),
@@ -153,7 +154,7 @@ namespace project {
         );
     }
 
-    void ProjectTreeModel::appendItem(
+    void ProjectTreeModel::appendFileNode(
         QStandardItem *parent,
         const FileNode *file,
         const TreeItemTypes::TreeItemType type
@@ -176,7 +177,7 @@ namespace project {
         );
     }
 
-    void ProjectTreeModel::appendFolder(
+    void ProjectTreeModel::appendFolderNode(
         QStandardItem *parent,
         const NodeContainer *folder,
         const TreeItemTypes::TreeItemType type
@@ -195,6 +196,7 @@ namespace project {
         parent->appendRow(folderItem);
         itemMap_[folder->getId()] = folderItem;
         populateFolder(folderItem, folder, type);
+        parent->sortChildren(0, Qt::AscendingOrder);
         logger_->info(
             "Successfully appended project tree folder with ID: {}, name: {}, children: {}",
             folder->getId(),
@@ -208,60 +210,82 @@ namespace project {
         clearModel();
     }
 
-    void ProjectTreeModel::onDiagramAdded(const DiagramMetadata *diagram) {
-        auto parentId = diagram->getParent()->getId();
+    void ProjectTreeModel::onFileNodeAdded(const FileNode *file) {
+        if (!file) {
+            logger_->warn("Received null diagram in onFileNodeAdded");
+            return;
+        }
+
+        auto parentId = file->getParent()->getId();
         if (itemMap_.contains(parentId)) {
-            appendItem(itemMap_[parentId], diagram, TreeItemTypes::TreeItemType::DIAGRAM_FILE);
-            emit itemReadyForEditing(itemMap_[diagram->getId()]->index());
+            appendFileNode(itemMap_[parentId], file, TreeItemTypes::TreeItemType::DIAGRAM_FILE);
+            itemMap_[parentId]->sortChildren(0, Qt::AscendingOrder);
+            emit itemReadyForEditing(itemMap_[file->getId()]->index());
         }
     }
 
-    void ProjectTreeModel::onDiagramFolderAdded(const NodeContainer *folder) {
+    void ProjectTreeModel::onFolderNodeAdded(const NodeContainer *folder) {
+        if (!folder) {
+            logger_->warn("Received null diagram in onFolderNodeAdded");
+            return;
+        }
+
         auto parentId = folder->getParent()->getId();
         if (itemMap_.contains(parentId)) {
-            appendFolder(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
+            appendFolderNode(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
             emit itemReadyForEditing(itemMap_[folder->getId()]->index());
         }
     }
 
-    void ProjectTreeModel::onDiagramRemoved(const std::string &diagramId) {
-        logger_->info("Diagram removed from tree: {}", diagramId);
-        if (!itemMap_.contains(diagramId)) return;
+    void ProjectTreeModel::onFileNodeRemoved(const std::string &fileId) {
+        logger_->info("Diagram removed from tree: {}", fileId);
+        if (!itemMap_.contains(fileId)) {
+            logger_->warn("Received invalid file id in onFileNodeRemoved");
+            return;
+        }
 
-        const auto *diagramItem = itemMap_[diagramId];
+        const auto *diagramItem = itemMap_[fileId];
         diagramItem->parent()->removeRow(diagramItem->row());
-        itemMap_.erase(diagramId);
+        itemMap_.erase(fileId);
     }
 
-    void ProjectTreeModel::onDiagramFolderRemoved(const std::string &folderId) {
+    void ProjectTreeModel::onFolderNodeRemoved(const std::string &folderId) {
         logger_->info("Folder removed from tree: {}", folderId);
-        if (!itemMap_.contains(folderId)) return;
+        if (!itemMap_.contains(folderId)) {
+            logger_->warn("Received invalid folder id in onFolderNodeRemoved");
+            return;
+        }
 
         const auto *folderItem = itemMap_[folderId];
         folderItem->parent()->removeRow(folderItem->row());
         itemMap_.erase(folderId);
     }
 
-    void ProjectTreeModel::onDiagramRenamed(
-        const std::string &diagramId,
-        const std::string &newName
-    ) {
-        logger_->info("Diagram renamed in tree: {} to {}", diagramId, newName);
-        if (!itemMap_.contains(diagramId)) return;
+    void ProjectTreeModel::onFileNodeRenamed(const std::string &fileId, const std::string &newName) {
+        logger_->info("Diagram renamed in tree: {} to {}", fileId, newName);
+        if (!itemMap_.contains(fileId)) {
+            logger_->warn("Received invalid file id in onFileNodeRemoved");
+            return;
+        }
 
-        auto *diagramItem = itemMap_[diagramId];
-        diagramItem->setText(QString::fromStdString(newName));
+        auto *fileItem = itemMap_[fileId];
+        fileItem->setText(QString::fromStdString(newName));
+        fileItem->parent()->sortChildren(0, Qt::AscendingOrder);
     }
 
-    void ProjectTreeModel::onDiagramFolderRenamed(
+    void ProjectTreeModel::onFolderNodeRenamed(
         const std::string &folderId,
         const std::string &newName
     ) {
         logger_->info("Folder renamed in tree: {} to {}", folderId, newName);
-        if (!itemMap_.contains(folderId)) return;
+        if (!itemMap_.contains(folderId)) {
+            logger_->warn("Received invalid folder id in onFolderNodeRemoved");
+            return;
+        }
 
         auto *folderItem = itemMap_[folderId];
         folderItem->setText(QString::fromStdString(newName));
+        folderItem->parent()->sortChildren(0, Qt::AscendingOrder);
     }
 
     QIcon ProjectTreeModel::getIconForType(const TreeItemTypes::TreeItemType type) {

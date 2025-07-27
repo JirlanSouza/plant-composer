@@ -64,6 +64,9 @@ namespace project {
 
         virtual std::optional<FileNode *> getAsFile() = 0;
 
+
+        void setParent(NodeContainer *parent) { parent_ = parent; }
+
     private:
         NodeType type_;
         std::string id_;
@@ -92,6 +95,8 @@ namespace project {
         void addChild(std::unique_ptr<ProjectNode> item);
 
         void removeChild(const std::string &id);
+
+        std::unique_ptr<ProjectNode> releaseChild(const std::string &id);
 
         [[nodiscard]] std::vector<ProjectNode *> getChildren() const;
 

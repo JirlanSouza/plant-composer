@@ -70,6 +70,8 @@ namespace project {
 
         [[nodiscard]] ProjectCategory *diagrams() const;
 
+        [[nodiscard]] ProjectNode *findNode(const std::string &id) const;
+
     private:
         static const std::string PROJECT_START_VERSION;
         static const std::string DIAGRAMS_ROOT_ID;

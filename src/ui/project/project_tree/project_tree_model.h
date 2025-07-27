@@ -48,23 +48,17 @@ namespace project {
     private slots:
         void onProjectClosed();
 
-        void onDiagramAdded(const project::DiagramMetadata *diagram);
+        void onFileNodeAdded(const project::FileNode *file);
 
-        void onDiagramFolderAdded(const project::NodeContainer *folder);
+        void onFolderNodeAdded(const project::NodeContainer *folder);
 
-        void onDiagramRemoved(const std::string &diagramId);
+        void onFileNodeRemoved(const std::string &fileId);
 
-        void onDiagramFolderRemoved(const std::string &folderId);
+        void onFolderNodeRemoved(const std::string &folderId);
 
-        void onDiagramRenamed(
-            const std::string &diagramId,
-            const std::string &newName
-        );
+        void onFileNodeRenamed(const std::string &fileId, const std::string &newName);
 
-        void onDiagramFolderRenamed(
-            const std::string &folderId,
-            const std::string &newName
-        );
+        void onFolderNodeRenamed(const std::string &folderId, const std::string &newName);
 
     private:
         std::unique_ptr<common::Ilogger> logger_;
@@ -77,9 +71,9 @@ namespace project {
 
         void populateFolder(QStandardItem *parentItem, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
 
-        void appendItem(QStandardItem *parent, const FileNode *file, TreeItemTypes::TreeItemType type);
+        void appendFileNode(QStandardItem *parent, const FileNode *file, TreeItemTypes::TreeItemType type);
 
-        void appendFolder(QStandardItem *parent, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
+        void appendFolderNode(QStandardItem *parent, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
 
         static QIcon getIconForType(TreeItemTypes::TreeItemType type);
 

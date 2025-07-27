@@ -70,6 +70,12 @@ namespace project {
 
         void renameDiagramFolder(const std::string &folderId, const std::string &newName);
 
+        void copy(const std::string &itemId);
+
+        void cut(const std::string &itemId);
+
+        void paste(const std::string &targetId);
+
 
     signals:
         void projectOpened();
@@ -92,10 +98,25 @@ namespace project {
 
         void diagramFolderRenamed(const std::string &folderId, const std::string &newName);
 
+        void nodeCopied();
+
+        void nodeCut();
+
     private:
         std::unique_ptr<common::Ilogger> logger_;
         common::IDFactory *idFactory_;
         IProjectLoader *projectLoader_;
         std::unique_ptr<Project> project_{nullptr};
+
+        enum class ClipboardMode {
+            NONE, COPY, CUT
+        };
+
+        struct ClipboardItem {
+            ClipboardMode mode = ClipboardMode::NONE;
+            const ProjectNode *node = nullptr;
+        };
+
+        ClipboardItem clipboard_;
     };
 }

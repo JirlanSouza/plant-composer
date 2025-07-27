@@ -75,11 +75,29 @@ namespace project {
         return diagrams_.get();
     }
 
+    ProjectNode *Project::findNode(const std::string &id) const {
+        if (diagrams_->getId() == id) {
+            return diagrams_.get();
+        }
+
+        auto node = diagrams_->getFile(id);
+        if (node.has_value()) {
+            return node.value();
+        }
+
+        auto folder = diagrams_->getFolder(id);
+        if (folder.has_value()) {
+            return folder.value();
+        }
+
+        return nullptr;
+    }
+
     DiagramMetadata::DiagramMetadata(
         const std::string &id,
         NodeContainer *parent,
         const std::string &name,
         const std::string &filePath
-    ): FileNode(id, parent, name, filePath) {
+    ) : FileNode(id, parent, name, filePath) {
     }
 }

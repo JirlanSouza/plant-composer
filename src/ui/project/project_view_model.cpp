@@ -125,12 +125,13 @@ namespace project {
             "diagrams/" + name + ".fbs"
         );
 
-        emit diagramAdded(diagram.get());
+        auto addedDiagram = diagram.get();
         parentFolder->addChild(std::move(diagram));
+        emit diagramAdded(addedDiagram);
         logger_->info(
             "Successfully added new diagram '{}' (ID: {}) to folder '{}'.",
             name,
-            diagram->getId(),
+            addedDiagram->getId(),
             parentFolderId
         );
     }
@@ -157,12 +158,13 @@ namespace project {
             name
         );
 
-        emit diagramFolderAdded(newFolder.get());
+        auto addedFolder = newFolder.get();
         parentFolder->addChild(std::move(newFolder));
+        emit diagramFolderAdded(addedFolder);
         logger_->info(
             "Successfully added new folder '{}' (ID: {}) to folder '{}'.",
             name,
-            newFolder->getId(),
+            addedFolder->getId(),
             parentFolderId
         );
     }
@@ -229,5 +231,61 @@ namespace project {
         folderOpt.value()->rename(newName);
         emit diagramFolderRenamed(folderId, newName);
         logger_->info("Successfully renamed folder with ID: {} to '{}'.", folderId, newName);
+    }
+
+    void ProjectViewModel::copy(const std::string &itemId) {
+        logger_->info("Copying item with id: {}", itemId);
+        const auto item = project_->findNode(itemId);
+        if (!item) {
+            logger_->warn("Item with id: {} not found", itemId);
+            return;
+        }
+
+        clipboard_.mode = ClipboardMode::COPY;
+        clipboard_.node = item;
+        emit nodeCopied();
+    }
+
+    void ProjectViewModel::cut(const std::string &itemId) {
+        logger_->info("Cutting item with id: {}", itemId);
+        const auto item = project_->findNode(itemId);
+        if (!item) {
+            logger_->warn("Item with id: {} not found", itemId);
+            return;
+        }
+
+        clipboard_.mode = ClipboardMode::CUT;
+        clipboard_.node = item;
+        emit nodeCut();
+    }
+
+    void ProjectViewModel::paste(const std::string &targetId) {
+        logger_->info("Pasting item to target with id: {}", targetId);
+        if (clipboard_.mode == ClipboardMode::NONE || !clipboard_.node) {
+            logger_->warn("Clipboard is empty");
+            return;
+        }
+
+        const auto target = project_->findNode(targetId);
+        if (!target || !target->isFolder()) {
+            logger_->warn("Target with id: {} not found or is not a folder", targetId);
+            return;
+        }
+
+        auto targetFolder = target->getAsFolder().value();
+
+        if (clipboard_.mode == ClipboardMode::CUT) {
+            auto originalParent = clipboard_.node->getParent();
+            auto node = originalParent->releaseChild(clipboard_.node->getId());
+            auto releasedNode = node.get();
+            targetFolder->addChild(std::move(node));
+            emit diagramRemoved(releasedNode->getId());
+            emit diagramAdded(static_cast<const DiagramMetadata *>(releasedNode));
+        } else if (clipboard_.mode == ClipboardMode::COPY) {
+            // TODO: Implement deep copy of the node
+        }
+
+        clipboard_.mode = ClipboardMode::NONE;
+        clipboard_.node = nullptr;
     }
 }

@@ -77,15 +77,26 @@ namespace project {
     }
 
     void NodeContainer::addChild(std::unique_ptr<ProjectNode> item) {
-        if (item == nullptr || item->getParent() != this) {
+        if (item == nullptr) {
             return;
         }
 
+        item->setParent(this);
         children_[item->getId()] = std::move(item);
     }
 
     void NodeContainer::removeChild(const std::string &id) {
         children_.erase(id);
+    }
+
+    std::unique_ptr<ProjectNode> NodeContainer::releaseChild(const std::string &id) {
+        if (!children_.contains(id)) {
+            return nullptr;
+        }
+
+        auto node = std::move(children_[id]);
+        children_.erase(id);
+        return node;
     }
 
     std::vector<ProjectNode *> NodeContainer::getChildren() const {
