@@ -25,10 +25,15 @@
 namespace fs = std::filesystem;
 
 namespace adapters::project {
-    FlatBufferProjectLoader::FlatBufferProjectLoader(domain::Ilogger *logger, domain::IDFactory *idFactory): logger_(
-        logger
-    ), idFactory_(idFactory) {
-        parser_ = std::make_unique<FlatBufferProjectParser>(logger_);
+    FlatBufferProjectLoader::FlatBufferProjectLoader(
+        common::ILoggerFactory *loggerFactory,
+        common::IDFactory *idFactory
+    ): logger_(loggerFactory->getLogger("FlatBufferProjectLoader")), idFactory_(idFactory) {
+        parser_ = std::make_unique<FlatBufferProjectParser>(loggerFactory);
+        if (!logger_) {
+            throw std::runtime_error("Failed to create logger for FlatBufferProjectLoader");
+        }
+        logger_->info("FlatBufferProjectLoader initialized successfully");
     }
 
     std::optional<std::unique_ptr<dp::Project> > FlatBufferProjectLoader::createNewProject(

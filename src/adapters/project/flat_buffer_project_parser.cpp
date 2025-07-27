@@ -23,7 +23,13 @@
 #include "adapters/serialization/flatbuffers/project_generated.h"
 
 namespace adapters::project {
-    FlatBufferProjectParser::FlatBufferProjectParser(domain::Ilogger *logger): logger_(logger) {
+    FlatBufferProjectParser::FlatBufferProjectParser(common::ILoggerFactory *loggerFactory): logger_(
+        loggerFactory->getLogger("FlatBufferProjectParser")
+    ) {
+        if (!logger_) {
+            throw std::runtime_error("Failed to create logger for FlatBufferProjectParser");
+        }
+        logger_->info("FlatBufferProjectParser initialized successfully");
     }
 
     FbProjectNode FlatBufferProjectParser::serializeProjectNode(

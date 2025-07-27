@@ -16,24 +16,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "shared/spdlog_logger.h"
+#include "spdlog_logger.h"
 
-namespace adapters::shared {
-    SpdlogLogger::SpdlogLogger(std::shared_ptr<spdlog::logger> logger) : logger_(std::move(logger)) {}
+namespace common {
+    SpdlogLogger::SpdlogLogger(std::shared_ptr<spdlog::logger> logger) : logger_(std::move(logger)) {
+    }
 
-    void SpdlogLogger::log(const domain::LogLevel level, const std::string &message) {
+    void SpdlogLogger::log(const LogLevel level, const std::string &message) {
         switch (level) {
-            case domain::LogLevel::INFO: logger_->info(message);
+            case LogLevel::INFO: logger_->info(message);
                 break;
-            case domain::LogLevel::DEBUG: logger_->debug(message);
+            case LogLevel::DEBUG: logger_->debug(message);
                 break;
-            case domain::LogLevel::WARN: logger_->warn(message);
+            case LogLevel::WARN: logger_->warn(message);
                 break;
-            case domain::LogLevel::ERROR: logger_->error(message);
+            case LogLevel::ERROR: logger_->error(message);
                 break;
-            case domain::LogLevel::FATAL: logger_->critical(message);
+            case LogLevel::FATAL: logger_->critical(message);
                 break;
         }
     }
 }
-

@@ -19,13 +19,15 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-#include "domain/ilogger.h"
 
-namespace adapters::shared {
-    class SpdlogLogger : public domain::Ilogger {
+#include "domain/common/ilogger.h"
+
+namespace common {
+    class SpdlogLogger : public Ilogger {
     public:
         explicit SpdlogLogger(std::shared_ptr<spdlog::logger> logger);
-        void log(domain::LogLevel level, const std::string &message) override;
+
+        void log(LogLevel level, const std::string &message) override;
 
     private:
         std::shared_ptr<spdlog::logger> logger_;

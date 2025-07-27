@@ -17,11 +17,10 @@
  */
 
 #pragma once
-#include "domain/shared/id_factory.h"
 
-using domain::IDFactory;
+#include "domain/common/id_factory.h"
 
-namespace adapters {
+namespace common {
     class QUuidIdFactory : public IDFactory {
     public:
         std::string create() override;

@@ -16,11 +16,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "shared/quuid_id_factory.h"
+#include "quuid_id_factory.h"
 
 #include <QUuid>
 
-namespace adapters {
+namespace common {
     std::string QUuidIdFactory::create() {
         return QUuid::createUuidV7().toString().toStdString();
     }

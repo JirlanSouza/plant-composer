@@ -23,8 +23,9 @@
 
 #include "domain/project/model/project.h"
 #include "flatbuffers/flatbuffers.h"
-#include "domain/ilogger.h"
+#include "domain/common/ilogger.h"
 #include "adapters/serialization/flatbuffers/project_generated.h"
+#include "domain/common/ilogger_factory.h"
 
 namespace dp = domain::project;
 
@@ -36,7 +37,7 @@ namespace adapters::project {
 
     class FlatBufferProjectParser {
     public:
-        explicit FlatBufferProjectParser(domain::Ilogger *logger);
+        explicit FlatBufferProjectParser(common::ILoggerFactory *loggerFactory);
 
         FbProjectNode serializeProjectNode(flatbuffers::FlatBufferBuilder &builder, dp::ProjectNode *domainNode);
 
@@ -60,6 +61,6 @@ namespace adapters::project {
         flatbuffers::DetachedBuffer serialize(const dp::Project &project);
 
     private:
-        domain::Ilogger *logger_;
+        std::unique_ptr<common::Ilogger> logger_;
     };
 }
