@@ -18,7 +18,7 @@
 
 #include "connection.h"
 
-namespace domain::diagram {
+namespace diagram {
     Connection::Connection(
         const std::string &id,
         const Type type,

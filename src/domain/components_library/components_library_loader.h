@@ -17,14 +17,12 @@
  */
 
 #pragma once
+
 #include <vector>
-#include <filesystem>
 
 #include "model/library.h"
 
-namespace fs = std::filesystem;
-
-namespace domain::components_library {
+namespace components_library {
     class ComponentsLibraryLoader {
     public:
         virtual ~ComponentsLibraryLoader() = default;

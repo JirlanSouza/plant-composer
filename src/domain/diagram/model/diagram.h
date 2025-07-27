@@ -17,11 +17,12 @@
  */
 
 #pragma once
+
 #include "component_instance.h"
 #include "connection.h"
 #include <vector>
 
-namespace domain::diagram {
+namespace diagram {
     class Diagram {
     public:
         Diagram(const std::string &id, const std::string &name);
@@ -29,11 +30,13 @@ namespace domain::diagram {
         ~Diagram();
 
         void addComponent(const ComponentInstance &component);
+
         void addConnection(const Connection &connection);
 
         ComponentInstance *getLastAddedComponent();
 
         [[nodiscard]] int componentsCount() const;
+
         [[nodiscard]] int connectionsCount() const;
 
         [[nodiscard]] std::string getId() const;
@@ -45,6 +48,7 @@ namespace domain::diagram {
         [[nodiscard]] int getHeight() const;
 
         [[nodiscard]] std::vector<ComponentInstance> getComponents() const;
+
         [[nodiscard]] std::vector<Connection> getConnections() const;
 
     private:

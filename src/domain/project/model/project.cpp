@@ -18,7 +18,7 @@
 
 #include "project.h"
 
-namespace domain::project {
+namespace project {
     const std::string Project::PROJECT_START_VERSION = "1.0.0";
     const std::string Project::DIAGRAMS_ROOT_ID = "diagrams_root";
     const std::string Project::DIAGRAMS_ROOT_NAME = "Diagrams";

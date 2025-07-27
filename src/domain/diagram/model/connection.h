@@ -20,7 +20,7 @@
 
 #include <string>
 
-namespace domain::diagram {
+namespace diagram {
     class Connection {
     public:
         enum class Type {

@@ -23,7 +23,7 @@
 
 #include "component_type.h"
 
-namespace domain::components_library {
+namespace components_library {
     struct Library {
         std::string id;
         std::string name;

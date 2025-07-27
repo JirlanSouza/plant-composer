@@ -26,9 +26,9 @@ target_sources(domain
 
         project/model/project.h
         project/model/project.cpp
-        project/project_loader.h
         project/model/project_node.h
         project/model/project_node.cpp
+        project/project_loader.h
 
 )
 

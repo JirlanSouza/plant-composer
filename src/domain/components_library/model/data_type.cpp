@@ -18,7 +18,7 @@
 
 #include "data_type.h"
 
-namespace domain::components_library {
+namespace components_library {
     std::string dataTypeToString(const DataType &dataType) {
         switch (dataType) {
             case DataType::BOOLEAN: return "BOOLEAN";

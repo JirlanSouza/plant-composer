@@ -17,14 +17,13 @@
  */
 
 #pragma once
+
 #include <unordered_map>
 
 #include "node_transform.h"
 #include "domain/components_library/model/component_type.h"
 
-namespace dcl = domain::components_library;
-
-namespace domain::diagram {
+namespace diagram {
     class ComponentInstance {
     public:
         ComponentInstance(
@@ -32,11 +31,11 @@ namespace domain::diagram {
             std::string name,
             std::string typeId,
             NodeTransform position,
-            const dcl::ComponentType *component,
+            const components_library::ComponentType *component,
             std::string assetsPath
         );
 
-        [[nodiscard]] const dcl::ComponentType *getDefinition() const { return component_; }
+        [[nodiscard]] const components_library::ComponentType *getDefinition() const { return component_; }
 
         [[nodiscard]] std::string getId() const { return id_; }
 
@@ -60,7 +59,7 @@ namespace domain::diagram {
         std::string name_;
         std::string componentTypeId_;
         NodeTransform position_;
-        const dcl::ComponentType *component_;
+        const components_library::ComponentType *component_;
         std::string assetsPath_;
 
         std::unordered_map<std::string, std::string> constants;

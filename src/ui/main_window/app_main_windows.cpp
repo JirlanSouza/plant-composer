@@ -16,30 +16,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "main_window.h"
+#include "application.h"
 
 #include <qboxlayout.h>
 #include <QMdiSubWindow>
 
-namespace ui::main_window {
+namespace application {
     AppMainWindow::AppMainWindow(
         common::ILoggerFactory *loggerFactory,
-        std::vector<dcl::Library> *libraries,
-        dst::AppSettings *appSettings,
-        dp::IProjectLoader *projectLoader,
+        std::vector<components_library::Library> *libraries,
+        settings::AppSettings *appSettings,
+        project::IProjectLoader *projectLoader,
         common::IDFactory *idFactory,
-        dd::ComponentInstanceFactory *componentInstanceFactory,
+        diagram::ComponentInstanceFactory *componentInstanceFactory,
         QWidget *parent
     ) : QMainWindow(parent),
         logger_(loggerFactory->getLogger("AppMainWindow")),
         appSettings_(appSettings),
         projectLoader_(projectLoader),
-        actionsManager_(new uam::ActionsManager(this)),
+        actionsManager_(new app_actions::ActionsManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
-        appLayoutManager_ = new uil::AppLayoutManager(this, actionsManager_);
-        projectViewModel_ = new uip::ProjectViewModel(loggerFactory, idFactory, projectLoader_, this);
-        diagramManager_ = new ui::diagram_editor::DiagramManager(
+        appLayoutManager_ = new app_layout::AppLayoutManager(this, actionsManager_);
+        projectViewModel_ = new project::ProjectViewModel(loggerFactory, idFactory, projectLoader_, this);
+        diagramManager_ = new diagram::DiagramManager(
             libraries,
             appSettings_,
             componentInstanceFactory_,
@@ -47,14 +47,14 @@ namespace ui::main_window {
             this
         );
 
-        projectViewManager_ = new uip::ProjectViewManager(loggerFactory, projectViewModel_, actionsManager_, this);
-        diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_, projectViewModel_, this);
+        projectViewManager_ = new project::ProjectViewManager(loggerFactory, projectViewModel_, actionsManager_, this);
+        diagramEditorManager_ = new diagram::DiagramEditorManager(diagramManager_, projectViewModel_, this);
 
         appLayoutManager_->setupManuBar();
         appLayoutManager_->setupMainToolBar();
 
-        appLayoutManager_->addSideBarView(tr("Project"), projectViewManager_->getView(), uil::LEFT);
-        appLayoutManager_->addSideBarView(tr("Libraries"), librariesViewManager_->getView(), uil::RIGHT);
+        appLayoutManager_->addSideBarView(tr("Project"), projectViewManager_->getView(), app_layout::LEFT);
+        appLayoutManager_->addSideBarView(tr("Libraries"), librariesViewManager_->getView(), app_layout::RIGHT);
         appLayoutManager_->setCentralWidget(diagramEditorManager_->getView());
     }
 

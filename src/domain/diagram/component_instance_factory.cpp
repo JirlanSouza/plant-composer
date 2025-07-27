@@ -20,11 +20,11 @@
 
 #include <iostream>
 
-namespace domain::diagram {
+namespace diagram {
     ComponentInstanceFactory::ComponentInstanceFactory(
-        cm::IDFactory *idFactory,
-        std::vector<dcl::Library> *libraries,
-        dst::AppSettings *appSettings
+        common::IDFactory *idFactory,
+        std::vector<components_library::Library> *libraries,
+        settings::AppSettings *appSettings
     ): idFactory_(idFactory),
         libraries_(libraries),
         appSettings_(appSettings) {
@@ -55,7 +55,7 @@ namespace domain::diagram {
         };
     }
 
-    const dcl::ComponentType *ComponentInstanceFactory::getComponentDefinition(
+    const components_library::ComponentType *ComponentInstanceFactory::getComponentDefinition(
         const int libraryId,
         const int componentId
     ) const {

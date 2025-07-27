@@ -23,7 +23,7 @@
 
 #include "project_node.h"
 
-namespace domain::project {
+namespace project {
     class DiagramMetadata : public FileNode {
     public:
         DiagramMetadata(

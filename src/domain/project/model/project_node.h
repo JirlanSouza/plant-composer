@@ -24,7 +24,7 @@
 #include <memory>
 #include <optional>
 
-namespace domain::project {
+namespace project {
     enum class NodeType {
         FOLDER, FILE
     };

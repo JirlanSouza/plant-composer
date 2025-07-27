@@ -17,9 +17,10 @@
  */
 
 #pragma once
+
 #include <string>
 
-namespace domain::components_library {
+namespace components_library {
     enum class DataType {
         BOOLEAN,
         INTEGER,

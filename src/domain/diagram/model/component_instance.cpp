@@ -18,13 +18,13 @@
 
 #include "component_instance.h"
 
-namespace domain::diagram {
+namespace diagram {
     ComponentInstance::ComponentInstance(
         std::string id,
         std::string name,
         std::string typeId,
         NodeTransform position,
-        const dcl::ComponentType *component,
+        const components_library::ComponentType *component,
         std::string assetsPath
     ): id_(id),
         name_(name),
@@ -46,7 +46,7 @@ namespace domain::diagram {
     void ComponentInstance::setConstantValue(const std::string &name, const std::string &value) {
         const auto it = std::ranges::find_if(
             component_->constants,
-            [&](const dcl::Constant &constant) {
+            [&](const components_library::Constant &constant) {
                 return constant.name == name;
             }
         );

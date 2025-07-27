@@ -17,11 +17,12 @@
  */
 
 #pragma once
+
 #include <string>
 
 #include "data_type.h"
 
-namespace domain::components_library {
+namespace components_library {
     struct Constant {
         std::string name;
         DataType dataType;

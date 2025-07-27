@@ -20,23 +20,19 @@
 
 #include <vector>
 
+#include "domain/common/id_factory.h"
+#include "domain/settings/app_settings.h"
 #include "model/component_instance.h"
 #include "model/node_transform.h"
 #include "domain/components_library/model/library.h"
-#include "domain/settings/app_settings.h"
-#include "domain/common/id_factory.h"
 
-namespace cm = common;
-namespace dcl = domain::components_library;
-namespace dst = domain::settings;
-
-namespace domain::diagram {
+namespace diagram {
     class ComponentInstanceFactory {
     public:
         explicit ComponentInstanceFactory(
-            cm::IDFactory *idFactory,
-            std::vector<dcl::Library> *libraries,
-            dst::AppSettings *appSettings
+            common::IDFactory *idFactory,
+            std::vector<components_library::Library> *libraries,
+            settings::AppSettings *appSettings
         );
 
         [[nodiscard]] ComponentInstance createComponentInstance(
@@ -46,11 +42,11 @@ namespace domain::diagram {
         ) const;
 
     private:
-        cm::IDFactory *idFactory_;
-        std::vector<dcl::Library> *libraries_;
-        dst::AppSettings *appSettings_;
+        common::IDFactory *idFactory_;
+        std::vector<components_library::Library> *libraries_;
+        settings::AppSettings *appSettings_;
 
-        [[nodiscard]] const dcl::ComponentType *getComponentDefinition(
+        [[nodiscard]] const components_library::ComponentType *getComponentDefinition(
             int libraryId,
             int componentId
         ) const;

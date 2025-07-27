@@ -18,7 +18,7 @@
 
 #include "diagram.h"
 
-namespace domain::diagram {
+namespace diagram {
     Diagram::Diagram(const std::string &id, const std::string &name): id_(id), name_(name), width_(1920), height_(1080),
         components_(std::vector<ComponentInstance>()), connections_(std::vector<Connection>()) {
     };

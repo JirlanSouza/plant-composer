@@ -21,7 +21,7 @@
 #include <ranges>
 #include <utility>
 
-namespace domain::project {
+namespace project {
     ProjectNode::ProjectNode(const NodeType type, std::string id, std::string name, NodeContainer *parent)
         : type_(type), id_(std::move(id)), name_(std::move(name)), parent_(parent) {
     }

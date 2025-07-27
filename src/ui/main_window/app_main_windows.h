@@ -30,29 +30,20 @@
 #include "domain/common/ilogger_factory.h"
 #include "domain/diagram/component_instance_factory.h"
 #include "domain/project/model/project.h"
+#include "domain/project/project_loader.h"
 
-namespace uil = ui::layout;
-namespace uam = ui::actions_manager;
-namespace uip = ui::project;
-namespace ucl = ui::components_library;
-namespace ude = ui::diagram_editor;
-namespace dst = domain::settings;
-namespace dcl = domain::components_library;
-namespace dd = domain::diagram;
-namespace dp = domain::project;
-
-namespace ui::main_window {
+namespace application {
     class AppMainWindow final : public QMainWindow {
         Q_OBJECT
 
     public:
         AppMainWindow(
             common::ILoggerFactory *loggerFactory,
-            std::vector<dcl::Library> *libraries,
-            dst::AppSettings *appSettings,
-            dp::IProjectLoader *projectLoader,
+            std::vector<components_library::Library> *libraries,
+            settings::AppSettings *appSettings,
+            project::IProjectLoader *projectLoader,
             common::IDFactory *idFactory,
-            dd::ComponentInstanceFactory *componentInstanceFactory,
+            diagram::ComponentInstanceFactory *componentInstanceFactory,
             QWidget *parent
         );
 
@@ -60,16 +51,16 @@ namespace ui::main_window {
 
     private:
         std::unique_ptr<common::Ilogger> logger_;
-        dst::AppSettings *appSettings_;
-        uil::AppLayoutManager *appLayoutManager_;
-        uam::ActionsManager *actionsManager_;
-        dp::IProjectLoader *projectLoader_;
-        uip::ProjectViewManager *projectViewManager_;
-        uip::ProjectViewModel *projectViewModel_;
-        ucl::LibrariesViewManager *librariesViewManager_;
-        ude::DiagramManager *diagramManager_;
-        ude::DiagramEditorManager *diagramEditorManager_;
-        dd::ComponentInstanceFactory *componentInstanceFactory_;
+        settings::AppSettings *appSettings_;
+        app_layout::AppLayoutManager *appLayoutManager_;
+        app_actions::ActionsManager *actionsManager_;
+        project::IProjectLoader *projectLoader_;
+        project::ProjectViewManager *projectViewManager_;
+        project::ProjectViewModel *projectViewModel_;
+        components_library::LibrariesViewManager *librariesViewManager_;
+        diagram::DiagramManager *diagramManager_;
+        diagram::DiagramEditorManager *diagramEditorManager_;
+        diagram::ComponentInstanceFactory *componentInstanceFactory_;
 
     private slots:
         void showComponentLibraryPropertiesDialog(int libraryId, int componentId);

@@ -18,7 +18,7 @@
 
 #pragma once
 
-namespace domain::diagram {
+namespace diagram {
     struct NodeTransform {
         int x;
         int y;

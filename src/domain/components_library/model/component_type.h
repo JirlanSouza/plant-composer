@@ -17,12 +17,13 @@
  */
 
 #pragma once
+
 #include <string>
 #include <vector>
 
 #include "component_io.h"
 
-namespace domain::components_library {
+namespace components_library {
     struct ComponentType {
         std::string id;
         std::string name;

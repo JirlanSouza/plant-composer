@@ -19,7 +19,7 @@
 #pragma once
 #include <string>
 
-namespace domain::settings {
+namespace settings {
     class AppSettings {
     public:
         virtual ~AppSettings() = default;
