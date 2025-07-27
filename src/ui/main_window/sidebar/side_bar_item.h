@@ -30,6 +30,9 @@ namespace app_layout {
 
         [[nodiscard]] int getIndex() const;
 
+    signals:
+        void clicked(int index);
+
     protected:
         void paintEvent(QPaintEvent *) override;
 

@@ -33,11 +33,9 @@ namespace app_layout {
         setFloatable(false);
         setAllowedAreas(Qt::LeftToolBarArea | Qt::RightToolBarArea);
         setOrientation(Qt::Vertical);
-        setStyleSheet("QToolBar { border: none; background: transparent; }");
     }
 
     SideBarTabs::~SideBarTabs() = default;
-
 
     int SideBarTabs::addTab(const QString &label) {
         const int index = itemsCount_++;

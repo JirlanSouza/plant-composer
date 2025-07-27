@@ -32,21 +32,24 @@ namespace app_layout {
         setText(title);
         setAutoRaise(true);
         setFocusPolicy(Qt::NoFocus);
-        setStyleSheet(
+        QColor hoverColor = palette().color(QPalette::Window);
+        const auto qss = QString(
             R"(
-        QToolButton {
-            background: transparent;
-            border: none;
-            padding: 4px;
-        }
-        QToolButton:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        QToolButton:checked {
-            background: rgba(100, 100, 255, 0.2);
-        }
-    )"
-        );
+                    QToolButton {
+                        background: transparent;
+                        border: none;
+                        padding: 4px;
+                    }
+                    QToolButton:hover {
+                        background-color: %1;
+                        border-radius: 4px;
+                    }
+                    QToolButton:checked {
+                        background: rgba(100, 100, 255, 0.2);
+                    }
+            )"
+        ).arg(hoverColor.lighter().name());
+        setStyleSheet(qss);
 
         connect(this, &QToolButton::clicked, this, &SideBarItem::onClicked);
     }

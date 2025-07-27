@@ -18,20 +18,67 @@
 
 #include "side_bar.h"
 
+#include <QLabel>
 #include <QMainWindow>
 #include <qscrollarea.h>
+#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWindow>
 
 namespace app_layout {
     SideBar::SideBar(QMainWindow *parent, const Side side): QDockWidget(parent),
         side_(side),
-        stacked_(new QStackedWidget(this)) {
+        stacked_(new QStackedWidget(this)), itemsLabels_(new QList<QString>()) {
         auto palette = QPalette();
-        palette.setColor(QPalette::Window, palette.base().color());
+        palette.setColor(QPalette::Window, palette.alternateBase().color());
         stacked_->setPalette(palette);
         stacked_->setAutoFillBackground(true);
         stacked_->setMinimumWidth(32);
+
+        title_ = new QLabel(this);
+        collapseButton_ = new QToolButton(this);
+        collapseButton_->setText(side == Side::LEFT ? "«" : "»");
+        collapseButton_->setToolTip(tr("Collapse sidebar"));
+
+        QColor hoverColor = QPalette().color(QPalette::Window);
+        hoverColor.setAlpha(150);
+        QString qss = QString(
+            R"(
+                QToolButton {
+                    border: none;
+                    background: transparent;
+                    padding: 4px;
+                }
+                QToolButton:hover {
+                    background-color: %1;
+                    border-radius: 4px;
+                }
+            )"
+        ).arg(hoverColor.lighter().name());
+
+        collapseButton_->setStyleSheet(
+            qss
+        );
+        connect(collapseButton_, &QToolButton::clicked, this, &SideBar::collapse);
+
+        const auto titleBarLayout = new QHBoxLayout(this);
+
+        if (side == Side::LEFT) {
+            titleBarLayout->setContentsMargins(6, 0, 0, 0);
+            titleBarLayout->addWidget(title_);
+            titleBarLayout->addStretch();
+            titleBarLayout->addWidget(collapseButton_);
+        } else {
+            titleBarLayout->setContentsMargins(0, 0, 0, 0);
+            titleBarLayout->addWidget(collapseButton_);
+            titleBarLayout->addWidget(title_);
+        }
+
+        const auto titleBarWidget = new QWidget(this);
+        titleBarWidget->setLayout(titleBarLayout);
+        setTitleBarWidget(titleBarWidget);
+
+        setFeatures(QDockWidget::DockWidgetMovable);
         setWidget(stacked_);
     }
 
@@ -40,10 +87,12 @@ namespace app_layout {
 
     void SideBar::addItem(const QString &label, QWidget *content) const {
         stacked_->addWidget(content);
+        itemsLabels_->append(label);
 
         if (stacked_->count() == 1) {
             stacked_->setCurrentIndex(0);
             stacked_->show();
+            title_->setText(label);
         }
     }
 
@@ -61,6 +110,7 @@ namespace app_layout {
         if (collapsed_ && stacked_->isHidden()) {
             stacked_->setCurrentIndex(index);
             stacked_->show();
+            title_->setText(itemsLabels_->at(index));
             show();
             collapsed_ = false;
             emit collapsedChange(collapsed_, side_);
@@ -68,20 +118,29 @@ namespace app_layout {
         }
 
         if (stacked_->currentIndex() == index) {
-            lastExpandedWidth_ = width();
-            stacked_->hide();
-            hide();
-            collapsed_ = true;
-            resize(tabBarWidth_, size().height());
-            updateGeometry();
-            emit collapsedChange(collapsed_, side_);
+            collapse();
             return;
         }
 
         stacked_->setCurrentIndex(index);
         stacked_->show();
+        title_->setText(itemsLabels_->at(index));
         show();
         collapsed_ = false;
+        emit collapsedChange(collapsed_, side_);
+    }
+
+    void SideBar::collapse() {
+        if (collapsed_) {
+            return;
+        }
+
+        lastExpandedWidth_ = width();
+        stacked_->hide();
+        hide();
+        collapsed_ = true;
+        resize(tabBarWidth_, size().height());
+        updateGeometry();
         emit collapsedChange(collapsed_, side_);
     }
 }

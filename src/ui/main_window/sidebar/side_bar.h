@@ -19,7 +19,10 @@
 #pragma once
 
 #include <QDockWidget>
+#include <QToolButton>
 #include <QStackedWidget>
+
+class QLabel;
 
 namespace app_layout {
     enum Side {
@@ -47,9 +50,14 @@ namespace app_layout {
     private:
         Side side_;
         QStackedWidget *stacked_;
+        QList<QString> *itemsLabels_;
+        QLabel *title_;
+        QToolButton *collapseButton_;
 
         int tabBarWidth_ = 32;
         int lastExpandedWidth_ = 220;
         bool collapsed_ = false;
+
+        void collapse();
     };
 }
