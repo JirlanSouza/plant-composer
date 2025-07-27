@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     QApplication application(argc, argv);
 
     try {
-        const auto plantComposerApplication = new PlantComposerApplication();
+        const auto plantComposerApplication = new ::application::PlantComposerApplication();
         plantComposerApplication->initialize(argc, argv);
         plantComposerApplication->getMainWindow()->showMaximized();
         return QApplication::exec();

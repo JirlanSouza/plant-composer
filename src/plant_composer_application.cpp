@@ -24,64 +24,71 @@
 #include <QLocale>
 #include <QCoreApplication>
 
+#include "adapters/common/quuid_id_factory.h"
 #include "adapters/common/spdlog_logger_factory.h"
+#include "adapters/components_library/json_components_library_loader.h"
+#include "adapters/project/flat_buffer_project_loader.h"
 
-PlantComposerApplication::PlantComposerApplication() {
-    loggerFactory_ = std::make_unique<common::SpdlogLoggerFactory>();
-    auto logger = loggerFactory_->getLogger("Application");
-    appSettings_ = std::make_unique<QtAppSettings>(new QSettings(ORGANIZATION_NAME, APPLICATION_NAME));
-    appSettings_->setAssetsDir(getAssetsDir());
-    librariesLoader_ = std::make_unique<JsonComponentsLibraryLoader>(appSettings_->getComponentsLibraryDir());
-    idFactory_ = std::make_unique<common::QUuidIdFactory>();
-    projectLoader_ = std::make_unique<FlatBufferProjectLoader>(loggerFactory_.get(), idFactory_.get());
-    componentInstanceFactory_ = std::make_unique<ComponentInstanceFactory>(
-        idFactory_.get(),
-        &libraries_,
-        appSettings_.get()
-    );
-};
-
-
-void PlantComposerApplication::initialize(int argc, char *argv[]) {
-    Q_UNUSED(argc);
-    Q_UNUSED(argv);
-
-    try {
-        setupTranslations();
-        libraries_ = std::move(librariesLoader_->loadLibraries());
-        appMainWindow_ = std::make_unique<AppMainWindow>(
-            loggerFactory_.get(),
-            &libraries_,
-            appSettings_.get(),
-            projectLoader_.get(),
-            idFactory_.get(),
-            componentInstanceFactory_.get(),
-            nullptr
+namespace application {
+    PlantComposerApplication::PlantComposerApplication() {
+        loggerFactory_ = std::make_unique<common::SpdlogLoggerFactory>();
+        auto logger = loggerFactory_->getLogger("Application");
+        appSettings_ = std::make_unique<settings::QtAppSettings>(new QSettings(ORGANIZATION_NAME, APPLICATION_NAME));
+        appSettings_->setAssetsDir(getAssetsDir());
+        librariesLoader_ = std::make_unique<components_library::JsonComponentsLibraryLoader>(
+            appSettings_->getComponentsLibraryDir()
         );
-    } catch (const std::exception &e) {
-        std::cerr << e.what() << std::endl;
-    }
-}
+        idFactory_ = std::make_unique<common::QUuidIdFactory>();
+        projectLoader_ = std::make_unique<project::FlatBufferProjectLoader>(loggerFactory_.get(), idFactory_.get());
+        componentInstanceFactory_ = std::make_unique<diagram::ComponentInstanceFactory>(
+            idFactory_.get(),
+            &libraries_,
+            appSettings_.get()
+        );
+    };
 
-AppMainWindow *PlantComposerApplication::getMainWindow() const {
-    return appMainWindow_.get();
-}
 
+    void PlantComposerApplication::initialize(int argc, char *argv[]) {
+        Q_UNUSED(argc);
+        Q_UNUSED(argv);
 
-void PlantComposerApplication::setupTranslations() {
-    QTranslator translator;
-    const QStringList uiLanguages = QLocale::system().uiLanguages();
-    for (const QString &locale: uiLanguages) {
-        const QString baseName = "plant-composer_" + QLocale(locale).name();
-        if (translator.load(":/i18n/" + baseName)) {
-            QCoreApplication::installTranslator(&translator);
-            break;
+        try {
+            setupTranslations();
+            libraries_ = std::move(librariesLoader_->loadLibraries());
+            appMainWindow_ = std::make_unique<AppMainWindow>(
+                loggerFactory_.get(),
+                &libraries_,
+                appSettings_.get(),
+                projectLoader_.get(),
+                idFactory_.get(),
+                componentInstanceFactory_.get(),
+                nullptr
+            );
+        } catch (const std::exception &e) {
+            std::cerr << e.what() << std::endl;
         }
     }
-}
+
+    AppMainWindow *PlantComposerApplication::getMainWindow() const {
+        return appMainWindow_.get();
+    }
 
 
-std::string PlantComposerApplication::getAssetsDir() {
-    auto assetsDir = std::string(SOURCE_ROOT) + "/assets";
-    return assetsDir;
+    void PlantComposerApplication::setupTranslations() {
+        QTranslator translator;
+        const QStringList uiLanguages = QLocale::system().uiLanguages();
+        for (const QString &locale: uiLanguages) {
+            const QString baseName = "plant-composer_" + QLocale(locale).name();
+            if (translator.load(":/i18n/" + baseName)) {
+                QCoreApplication::installTranslator(&translator);
+                break;
+            }
+        }
+    }
+
+
+    std::string PlantComposerApplication::getAssetsDir() {
+        auto assetsDir = std::string(SOURCE_ROOT) + "/assets";
+        return assetsDir;
+    }
 }

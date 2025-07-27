@@ -24,47 +24,34 @@
 #include "domain/common/ilogger_factory.h"
 #include "domain/settings/app_settings.h"
 #include "domain/components_library/components_library_loader.h"
-#include "adapters/components_library/json_components_library_loader.h"
-#include "adapters/project/flat_buffer_project_loader.h"
 #include "adapters/settings/qt_app_settings.h"
-#include "adapters/common/quuid_id_factory.h"
-#include "ui/main_window/main_window.h"
-#include "ui/diagram_editor/diagram_manager.h"
+#include "ui/main_window/app_main_windows.h"
 #include "domain/diagram/component_instance_factory.h"
 
-using common::IDFactory;
-using common::ILoggerFactory;
-using ui::main_window::AppMainWindow;
-using domain::settings::AppSettings;
-using domain::components_library::Library;
-using adapters::settings::QtAppSettings;
-using adapters::components_library::JsonComponentsLibraryLoader;
-using adapters::project::FlatBufferProjectLoader;
-using ui::diagram_editor::DiagramManager;
-using domain::diagram::ComponentInstanceFactory;
+namespace application {
+    class PlantComposerApplication {
+    public:
+        const QString ORGANIZATION_NAME = "Plant Composer";
+        const QString APPLICATION_NAME = "Plant Composer";
 
-class PlantComposerApplication {
-public:
-    const QString ORGANIZATION_NAME = "Plant Composer";
-    const QString APPLICATION_NAME = "Plant Composer";
+        PlantComposerApplication();
 
-    PlantComposerApplication();
+        void initialize(int argc, char *argv[]);
 
-    void initialize(int argc, char *argv[]);
+        [[nodiscard]] AppMainWindow *getMainWindow() const;
 
-    [[nodiscard]] AppMainWindow *getMainWindow() const;
+    private:
+        std::unique_ptr<common::ILoggerFactory> loggerFactory_;
+        std::unique_ptr<common::IDFactory> idFactory_;
+        std::unique_ptr<settings::AppSettings> appSettings_;
+        std::unique_ptr<components_library::ComponentsLibraryLoader> librariesLoader_;
+        std::vector<components_library::Library> libraries_;
+        std::unique_ptr<project::IProjectLoader> projectLoader_;
+        std::unique_ptr<diagram::ComponentInstanceFactory> componentInstanceFactory_;
+        std::unique_ptr<AppMainWindow> appMainWindow_;
 
-private:
-    std::unique_ptr<ILoggerFactory> loggerFactory_;
-    std::unique_ptr<IDFactory> idFactory_;
-    std::unique_ptr<QtAppSettings> appSettings_;
-    std::unique_ptr<JsonComponentsLibraryLoader> librariesLoader_;
-    std::vector<Library> libraries_;
-    std::unique_ptr<FlatBufferProjectLoader> projectLoader_;
-    std::unique_ptr<ComponentInstanceFactory> componentInstanceFactory_;
-    std::unique_ptr<AppMainWindow> appMainWindow_;
+        static std::string getAssetsDir();
 
-    static std::string getAssetsDir();
-
-    static void setupTranslations();
-};
+        static void setupTranslations();
+    };
+}
