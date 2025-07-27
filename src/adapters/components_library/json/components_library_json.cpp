@@ -20,9 +20,7 @@
 
 #include <fstream>
 
-#include "domain/components_library/model/data_type.h"
-
-namespace domain::components_library {
+namespace components_library {
     NLOHMANN_JSON_SERIALIZE_ENUM(
         DataType,
         { { DataType::BOOLEAN,

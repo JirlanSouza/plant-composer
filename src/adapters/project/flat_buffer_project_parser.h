@@ -22,14 +22,12 @@
 #include <vector>
 
 #include "domain/project/model/project.h"
-#include "flatbuffers/flatbuffers.h"
-#include "domain/common/ilogger.h"
-#include "adapters/serialization/flatbuffers/project_generated.h"
 #include "domain/common/ilogger_factory.h"
+#include "domain/common/ilogger.h"
+#include "flatbuffers/flatbuffers.h"
+#include "adapters/serialization/flatbuffers/project_generated.h"
 
-namespace dp = domain::project;
-
-namespace adapters::project {
+namespace project {
     struct FbProjectNode {
         flatbuffers::Offset<void> nodeOffset;
         plant_composer::fbs::ProjectNode type;
@@ -39,26 +37,26 @@ namespace adapters::project {
     public:
         explicit FlatBufferProjectParser(common::ILoggerFactory *loggerFactory);
 
-        FbProjectNode serializeProjectNode(flatbuffers::FlatBufferBuilder &builder, dp::ProjectNode *domainNode);
+        FbProjectNode serializeProjectNode(flatbuffers::FlatBufferBuilder &builder, ProjectNode *domainNode);
 
         void parserFlatBufferProjectNodes(
             const flatbuffers::Vector<flatbuffers::Offset<void> > *nodes,
             const flatbuffers::Vector<u_int8_t> *types,
-            dp::NodeContainer *parent
+            NodeContainer *parent
         );
 
         flatbuffers::Offset<plant_composer::fbs::ProjectCategory> serializeProjectCategory(
             flatbuffers::FlatBufferBuilder &builder,
-            const dp::ProjectCategory *category
+            const ProjectCategory *category
         );
 
-        std::unique_ptr<dp::ProjectCategory> parserFlatBufferProjectCategory(
+        std::unique_ptr<ProjectCategory> parserFlatBufferProjectCategory(
             const plant_composer::fbs::ProjectCategory *fbProjectCategory
         );
 
-        std::optional<std::unique_ptr<dp::Project> > parse(const std::vector<char> &buffer, const std::string &path);
+        std::optional<std::unique_ptr<Project> > parse(const std::vector<char> &buffer, const std::string &path);
 
-        flatbuffers::DetachedBuffer serialize(const dp::Project &project);
+        flatbuffers::DetachedBuffer serialize(const Project &project);
 
     private:
         std::unique_ptr<common::Ilogger> logger_;

@@ -24,7 +24,7 @@
 
 namespace fs = std::filesystem;
 
-namespace adapters::project {
+namespace project {
     FlatBufferProjectLoader::FlatBufferProjectLoader(
         common::ILoggerFactory *loggerFactory,
         common::IDFactory *idFactory
@@ -36,7 +36,7 @@ namespace adapters::project {
         logger_->info("FlatBufferProjectLoader initialized successfully");
     }
 
-    std::optional<std::unique_ptr<dp::Project> > FlatBufferProjectLoader::createNewProject(
+    std::optional<std::unique_ptr<Project> > FlatBufferProjectLoader::createNewProject(
         const std::string &name,
         const std::string &description,
         const std::string &author,
@@ -58,7 +58,7 @@ namespace adapters::project {
         fs::create_directory(projectPath);
         fs::create_directory(projectPath / "diagrams");
 
-        auto project = std::make_unique<dp::Project>(
+        auto project = std::make_unique<Project>(
             idFactory_->create(),
             name,
             description,
@@ -71,7 +71,7 @@ namespace adapters::project {
         return project;
     }
 
-    std::optional<std::unique_ptr<dp::Project> > FlatBufferProjectLoader::loadProject(const std::string &path) {
+    std::optional<std::unique_ptr<Project> > FlatBufferProjectLoader::loadProject(const std::string &path) {
         try {
             logger_->info("Loading project from path: {}", path);
             std::ifstream infile(path, std::ios::binary);
@@ -96,7 +96,7 @@ namespace adapters::project {
         }
     }
 
-    void FlatBufferProjectLoader::saveProject(const dp::Project &project) {
+    void FlatBufferProjectLoader::saveProject(const Project &project) {
         logger_->info("Saving project with name: {} to path: {}", project.getName(), project.getPath());
         auto buffer = parser_->serialize(project);
         std::ofstream outfile(project.getPath(), std::ios::binary);
@@ -105,14 +105,14 @@ namespace adapters::project {
         logger_->info("Project saved successfully to: {}", project.getPath());
     }
 
-    std::optional<std::unique_ptr<dd::Diagram> > FlatBufferProjectLoader::loadDiagram(
-        const dp::DiagramMetadata &metadata
+    std::optional<std::unique_ptr<diagram::Diagram> > FlatBufferProjectLoader::loadDiagram(
+        const DiagramMetadata &metadata
     ) {
         // TODO: Implement diagram loading using parser
         return std::nullopt;
     }
 
-    void FlatBufferProjectLoader::saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) {
+    void FlatBufferProjectLoader::saveDiagram(const DiagramMetadata &metadata, const diagram::Diagram &diagram) {
         // TODO: Implement diagram saving using parser
     }
 }

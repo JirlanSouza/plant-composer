@@ -20,32 +20,29 @@
 
 #include "domain/project/project_loader.h"
 
-#include "flat_buffer_project_parser.h"
 #include "domain/common/id_factory.h"
 #include "domain/common/ilogger_factory.h"
+#include "flat_buffer_project_parser.h"
 
-namespace dp = domain::project;
-namespace dd = domain::diagram;
-
-namespace adapters::project {
-    class FlatBufferProjectLoader : public dp::IProjectLoader {
+namespace project {
+    class FlatBufferProjectLoader : public IProjectLoader {
     public:
-        FlatBufferProjectLoader(common::ILoggerFactory *logger, common::IDFactory *idFactory);
+        FlatBufferProjectLoader(common::ILoggerFactory *loggerFactory, common::IDFactory *idFactory);
 
-        std::optional<std::unique_ptr<dp::Project> > createNewProject(
+        std::optional<std::unique_ptr<Project> > createNewProject(
             const std::string &name,
             const std::string &description,
             const std::string &author,
             const std::string &parentDirectory
         ) override;
 
-        std::optional<std::unique_ptr<dp::Project> > loadProject(const std::string &path) override;
+        std::optional<std::unique_ptr<Project> > loadProject(const std::string &path) override;
 
-        void saveProject(const dp::Project &project) override;
+        void saveProject(const Project &project) override;
 
-        std::optional<std::unique_ptr<dd::Diagram> > loadDiagram(const dp::DiagramMetadata &metadata) override;
+        std::optional<std::unique_ptr<diagram::Diagram> > loadDiagram(const DiagramMetadata &metadata) override;
 
-        void saveDiagram(const dp::DiagramMetadata &metadata, const dd::Diagram &diagram) override;
+        void saveDiagram(const DiagramMetadata &metadata, const diagram::Diagram &diagram) override;
 
     private:
         std::unique_ptr<common::Ilogger> logger_;

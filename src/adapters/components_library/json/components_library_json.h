@@ -17,13 +17,14 @@
  */
 
 #pragma once
+
 #include <nlohmann/json.hpp>
 
 #include "domain/components_library/model/library.h"
 
 using json = nlohmann::json;
 
-namespace domain::components_library {
+namespace components_library {
     void to_json(json &j, const Constant &constant);
 
     void from_json(const json &j, Constant &constant);
@@ -46,7 +47,7 @@ namespace domain::components_library {
 
     void to_json(json &j, const ComponentType &component);
 
-void from_json(const json &j, ComponentType &component);
+    void from_json(const json &j, ComponentType &component);
 
     void to_json(json &j, const Library &library);
 

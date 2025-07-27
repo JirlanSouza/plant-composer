@@ -25,7 +25,7 @@
 
 using json = nlohmann::json;
 
-namespace adapters::components_library {
+namespace components_library {
     JsonComponentsLibraryLoader::JsonComponentsLibraryLoader(const std::string &librariesDir)
         : ComponentsLibraryLoader(),
         librariesDir_(fs::path(librariesDir)) {

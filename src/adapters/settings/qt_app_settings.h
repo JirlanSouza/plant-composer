@@ -17,13 +17,12 @@
  */
 
 #pragma once
+
 #include <QSettings>
 
 #include "domain/settings/app_settings.h"
 
-using domain::settings::AppSettings;
-
-namespace adapters::settings {
+namespace settings {
     class QtAppSettings final : public AppSettings {
     public:
         explicit QtAppSettings(QSettings *qSettings): AppSettings(), settings_(qSettings) {

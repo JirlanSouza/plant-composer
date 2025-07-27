@@ -22,7 +22,9 @@
 
 #include "adapters/serialization/flatbuffers/project_generated.h"
 
-namespace adapters::project {
+namespace fbs = plant_composer::fbs;
+
+namespace project {
     FlatBufferProjectParser::FlatBufferProjectParser(common::ILoggerFactory *loggerFactory): logger_(
         loggerFactory->getLogger("FlatBufferProjectParser")
     ) {
@@ -34,9 +36,9 @@ namespace adapters::project {
 
     FbProjectNode FlatBufferProjectParser::serializeProjectNode(
         flatbuffers::FlatBufferBuilder &builder,
-        dp::ProjectNode *domainNode
+        ProjectNode *domainNode
     ) {
-        FbProjectNode fbProjectNode{0, plant_composer::fbs::ProjectNode_NONE};
+        FbProjectNode fbProjectNode{0, fbs::ProjectNode_NONE};
 
         if (domainNode->isFile()) {
             const auto *fileNode = domainNode->getAsFile().value();
@@ -46,7 +48,7 @@ namespace adapters::project {
                 fileNode->getName()
             );
 
-            const auto fbFileNode = plant_composer::fbs::CreateFileNode(
+            const auto fbFileNode = fbs::CreateFileNode(
                 builder,
                 builder.CreateString(fileNode->getId()),
                 builder.CreateString(fileNode->getName()),
@@ -54,7 +56,7 @@ namespace adapters::project {
             );
 
             fbProjectNode.nodeOffset = fbFileNode.Union();
-            fbProjectNode.type = plant_composer::fbs::ProjectNode_FileNode;
+            fbProjectNode.type = fbs::ProjectNode_FileNode;
         } else if (domainNode->isFolder()) {
             const auto *folderNode = domainNode->getAsFolder().value();
             logger_->info(
@@ -65,9 +67,9 @@ namespace adapters::project {
             );
 
             std::vector<flatbuffers::Offset<void> > fbChildren;
-            std::vector<plant_composer::fbs::ProjectNode> fbTypes;
+            std::vector<fbs::ProjectNode> fbTypes;
 
-            for (dp::ProjectNode *child: folderNode->getChildren()) {
+            for (ProjectNode *child: folderNode->getChildren()) {
                 auto [nodeOffset, nodeType] = serializeProjectNode(builder, child);
                 fbChildren.push_back(nodeOffset);
                 fbTypes.push_back(nodeType);
@@ -79,7 +81,7 @@ namespace adapters::project {
                 fbTypes.size()
             );
 
-            const auto fbFolder = plant_composer::fbs::CreateFolderNode(
+            const auto fbFolder = fbs::CreateFolderNode(
                 builder,
                 builder.CreateString(folderNode->getId()),
                 folderNode->getParent()
@@ -91,7 +93,7 @@ namespace adapters::project {
             );
 
             fbProjectNode.nodeOffset = fbFolder.Union();
-            fbProjectNode.type = plant_composer::fbs::ProjectNode_FolderNode;
+            fbProjectNode.type = fbs::ProjectNode_FolderNode;
         }
 
         logger_->info(
@@ -105,14 +107,14 @@ namespace adapters::project {
     void FlatBufferProjectParser::parserFlatBufferProjectNodes(
         const flatbuffers::Vector<flatbuffers::Offset<void> > *nodes,
         const flatbuffers::Vector<u_int8_t> *types,
-        dp::NodeContainer *parent
+        NodeContainer *parent
     ) {
         if (!parent) {
             logger_->error("Received null parent");
             throw std::runtime_error("Received null parent");
         }
 
-        std::vector<dp::ProjectNode> projectNodes;
+        std::vector<ProjectNode> projectNodes;
 
         if (!nodes || !types || nodes->size() != types->size()) {
             logger_->warn("Invalid FlatBuffer project nodes or types provided");
@@ -123,29 +125,29 @@ namespace adapters::project {
             const auto fbType = types->Get(i);
             const auto fbNode = nodes->Get(i);
 
-            if (fbType == plant_composer::fbs::ProjectNode_FileNode) {
-                const auto file = static_cast<const plant_composer::fbs::FileNode *>(fbNode);
+            if (fbType == fbs::ProjectNode_FileNode) {
+                const auto file = static_cast<const fbs::FileNode *>(fbNode);
                 logger_->info(
                     "Parsing FlatBuffer project FileNode with ID: {}, name: {}",
                     file->id()->str(),
                     file->name()->str()
                 );
-                std::unique_ptr<dp::ProjectNode> domainFileNode = std::make_unique<dp::FileNode>(
+                std::unique_ptr<ProjectNode> domainFileNode = std::make_unique<FileNode>(
                     file->id()->str(),
                     parent,
                     file->name()->str(),
                     file->file_path()->str()
                 );
                 parent->addChild(std::move(domainFileNode));
-            } else if (fbType == plant_composer::fbs::ProjectNode_FolderNode) {
-                const auto folder = static_cast<const plant_composer::fbs::FolderNode *>(fbNode);
+            } else if (fbType == fbs::ProjectNode_FolderNode) {
+                const auto folder = static_cast<const fbs::FolderNode *>(fbNode);
                 logger_->info(
                     "Parsing FlatBuffer project FolderNode with ID: {}, name: {}, children: {}",
                     folder->id()->str(),
                     folder->name()->str(),
                     folder->children()->size()
                 );
-                std::unique_ptr<dp::ProjectNode> domainFolder = std::make_unique<dp::NodeContainer>(
+                std::unique_ptr<ProjectNode> domainFolder = std::make_unique<NodeContainer>(
                     folder->id()->str(),
                     parent,
                     folder->name()->str()
@@ -154,7 +156,7 @@ namespace adapters::project {
                 parserFlatBufferProjectNodes(
                     folder->children(),
                     folder->children_type(),
-                    dynamic_cast<dp::NodeContainer *>(domainFolder.get())
+                    dynamic_cast<NodeContainer *>(domainFolder.get())
                 );
                 parent->addChild(std::move(domainFolder));
             }
@@ -163,9 +165,9 @@ namespace adapters::project {
         logger_->info("Successfully parsed FlatBuffer project nodes with total: {} nodes", nodes->size());
     }
 
-    flatbuffers::Offset<plant_composer::fbs::ProjectCategory> FlatBufferProjectParser::serializeProjectCategory(
+    flatbuffers::Offset<fbs::ProjectCategory> FlatBufferProjectParser::serializeProjectCategory(
         flatbuffers::FlatBufferBuilder &builder,
-        const dp::ProjectCategory *category
+        const ProjectCategory *category
     ) {
         logger_->info(
             "Serializing FlatBuffer project category with ID: {}, name: {}, children count: {}",
@@ -174,7 +176,7 @@ namespace adapters::project {
             category->getChildren().size()
         );
         std::vector<flatbuffers::Offset<void> > fbChildren;
-        std::vector<plant_composer::fbs::ProjectNode> fbTypes;
+        std::vector<fbs::ProjectNode> fbTypes;
 
         for (const auto &child: category->getChildren()) {
             if (child->isFile()) {
@@ -184,14 +186,14 @@ namespace adapters::project {
                     child->getName()
                 );
                 const auto *fileNode = child->getAsFile().value();
-                const auto fbFileNode = plant_composer::fbs::CreateFileNode(
+                const auto fbFileNode = fbs::CreateFileNode(
                     builder,
                     builder.CreateString(fileNode->getId()),
                     builder.CreateString(fileNode->getName()),
                     builder.CreateString(fileNode->getFilePath())
                 );
                 fbChildren.push_back(fbFileNode.Union());
-                fbTypes.push_back(plant_composer::fbs::ProjectNode_FileNode);
+                fbTypes.push_back(fbs::ProjectNode_FileNode);
             } else if (child->isFolder()) {
                 logger_->info("Serialize FolderNode with ID: {}, name: {}", child->getId(), child->getName());
                 auto [nodeOffset, nodeType] = serializeProjectNode(builder, child->getAsFolder().value());
@@ -212,7 +214,7 @@ namespace adapters::project {
             category->getName()
         );
 
-        return plant_composer::fbs::CreateProjectCategory(
+        return fbs::CreateProjectCategory(
             builder,
             builder.CreateString(category->getId()),
             builder.CreateString(category->getName()),
@@ -222,8 +224,8 @@ namespace adapters::project {
         );
     }
 
-    std::unique_ptr<dp::ProjectCategory> FlatBufferProjectParser::parserFlatBufferProjectCategory(
-        const plant_composer::fbs::ProjectCategory *fbProjectCategory
+    std::unique_ptr<ProjectCategory> FlatBufferProjectParser::parserFlatBufferProjectCategory(
+        const fbs::ProjectCategory *fbProjectCategory
     ) {
         logger_->info(
             "Parsing project category from FlatBuffer with ID: {}, name: {}, children count: {}",
@@ -232,7 +234,7 @@ namespace adapters::project {
             fbProjectCategory->children()->size()
         );
 
-        auto category = std::make_unique<dp::ProjectCategory>(
+        auto category = std::make_unique<ProjectCategory>(
             fbProjectCategory->id()->str(),
             fbProjectCategory->name()->str(),
             fbProjectCategory->folder_name()->str()
@@ -254,18 +256,18 @@ namespace adapters::project {
     }
 
 
-    std::optional<std::unique_ptr<dp::Project> > FlatBufferProjectParser::parse(
+    std::optional<std::unique_ptr<Project> > FlatBufferProjectParser::parse(
         const std::vector<char> &buffer,
         const std::string &path
     ) {
-        if (buffer.empty() || !plant_composer::fbs::SizePrefixedProjectBufferHasIdentifier(buffer.data())) {
+        if (buffer.empty() || !fbs::SizePrefixedProjectBufferHasIdentifier(buffer.data())) {
             logger_->warn("FlatBufferProjectParser: invalid buffer provided");
             return std::nullopt;
         }
 
-        auto *projectTable = flatbuffers::GetSizePrefixedRoot<plant_composer::fbs::Project>(buffer.data());
+        auto *projectTable = flatbuffers::GetSizePrefixedRoot<fbs::Project>(buffer.data());
 
-        auto project = std::make_unique<dp::Project>(
+        auto project = std::make_unique<Project>(
             projectTable->id()->str(),
             projectTable->name()->str(),
             projectTable->description()->str(),
@@ -284,7 +286,7 @@ namespace adapters::project {
         return project;
     }
 
-    flatbuffers::DetachedBuffer FlatBufferProjectParser::serialize(const dp::Project &project) {
+    flatbuffers::DetachedBuffer FlatBufferProjectParser::serialize(const Project &project) {
         flatbuffers::FlatBufferBuilder builder;
 
         const auto id = builder.CreateString(project.getId());
@@ -295,7 +297,7 @@ namespace adapters::project {
 
         const auto fbDiagramsRoot = serializeProjectCategory(builder, project.diagrams());
 
-        const auto projectTable = plant_composer::fbs::CreateProject(
+        const auto projectTable = fbs::CreateProject(
             builder,
             id,
             name,
@@ -305,7 +307,7 @@ namespace adapters::project {
             fbDiagramsRoot
         );
 
-        plant_composer::fbs::FinishSizePrefixedProjectBuffer(builder, projectTable);
+        fbs::FinishSizePrefixedProjectBuffer(builder, projectTable);
         return builder.Release();
     }
 }
