@@ -22,10 +22,10 @@
 
 #include "domain/project/project_loader.h"
 #include "domain/project/model/project.h"
-#include "domain/shared/id_factory.h"
-#include "domain/shared/ilogger.h"
+#include "domain/common/id_factory.h"
+#include "domain/common/ilogger.h"
+#include "domain/common/ilogger_factory.h"
 
-using domain::IDFactory;
 namespace dp = domain::project;
 
 namespace ui::project {
@@ -34,8 +34,8 @@ namespace ui::project {
 
     public:
         explicit ProjectViewModel(
-            domain::Ilogger *logger,
-            IDFactory *idFactory,
+            common::ILoggerFactory *loggerFactory,
+            common::IDFactory *idFactory,
             dp::IProjectLoader *projectLoader,
             QObject *parent = nullptr
         );
@@ -95,8 +95,8 @@ namespace ui::project {
         void diagramFolderRenamed(const std::string &folderId, const std::string &newName);
 
     private:
-        domain::Ilogger *logger_;
-        IDFactory *idFactory_;
+        std::unique_ptr<common::Ilogger> logger_;
+        common::IDFactory *idFactory_;
         dp::IProjectLoader *projectLoader_;
         std::unique_ptr<dp::Project> project_{nullptr};
     };

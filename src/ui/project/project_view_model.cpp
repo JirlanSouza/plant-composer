@@ -18,16 +18,18 @@
 
 #include "project_view_model.h"
 
+#include "domain/common/ilogger_factory.h"
 #include "domain/project/project_loader.h"
 
 namespace ui::project {
     ProjectViewModel::ProjectViewModel(
-        domain::Ilogger *logger,
-        IDFactory *idFactory,
+        common::ILoggerFactory *loggerFactory,
+        common::IDFactory *idFactory,
         domain::project::IProjectLoader *projectLoader,
         QObject *parent
     )
-        : QObject(parent), logger_(logger), idFactory_(idFactory), projectLoader_(projectLoader) {
+        : QObject(parent), logger_(loggerFactory->getLogger("ProjectViewModel")), idFactory_(idFactory),
+        projectLoader_(projectLoader) {
     }
 
     dp::Project *ProjectViewModel::getProject() const {

@@ -37,7 +37,7 @@ namespace ui::project {
 
     public:
         explicit ProjectTreeModel(
-            domain::Ilogger *logger,
+            common::ILoggerFactory *loggerFactory,
             ProjectViewModel *projectViewModel,
             QObject *parent = nullptr
         );
@@ -71,7 +71,7 @@ namespace ui::project {
         );
 
     private:
-        domain::Ilogger *logger_;
+        std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
         std::unordered_map<std::string, QStandardItem *> itemMap_;
 

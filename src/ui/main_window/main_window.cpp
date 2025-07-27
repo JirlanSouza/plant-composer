@@ -23,22 +23,22 @@
 
 namespace ui::main_window {
     AppMainWindow::AppMainWindow(
-        domain::Ilogger *logger,
+        common::ILoggerFactory *loggerFactory,
         std::vector<dcl::Library> *libraries,
         dst::AppSettings *appSettings,
         dp::IProjectLoader *projectLoader,
-        domain::IDFactory *idFactory,
+        common::IDFactory *idFactory,
         dd::ComponentInstanceFactory *componentInstanceFactory,
         QWidget *parent
     ) : QMainWindow(parent),
-        logger_(logger),
+        logger_(loggerFactory->getLogger("AppMainWindow")),
         appSettings_(appSettings),
         projectLoader_(projectLoader),
         actionsManager_(new uam::ActionsManager(this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
         appLayoutManager_ = new uil::AppLayoutManager(this, actionsManager_);
-        projectViewModel_ = new uip::ProjectViewModel(logger_, idFactory, projectLoader_, this);
+        projectViewModel_ = new uip::ProjectViewModel(loggerFactory, idFactory, projectLoader_, this);
         diagramManager_ = new ui::diagram_editor::DiagramManager(
             libraries,
             appSettings_,
@@ -47,7 +47,7 @@ namespace ui::main_window {
             this
         );
 
-        projectViewManager_ = new uip::ProjectViewManager(logger_, projectViewModel_, actionsManager_, this);
+        projectViewManager_ = new uip::ProjectViewManager(loggerFactory, projectViewModel_, actionsManager_, this);
         diagramEditorManager_ = new ui::diagram_editor::DiagramEditorManager(diagramManager_, projectViewModel_, this);
 
         appLayoutManager_->setupManuBar();

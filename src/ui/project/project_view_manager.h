@@ -36,7 +36,7 @@ namespace ui::project {
 
     public:
         explicit ProjectViewManager(
-            domain::Ilogger *logger,
+            common::ILoggerFactory *loggerFactory,
             ProjectViewModel *projectViewModel,
             uam::ActionsManager *actionsManager,
             QWidget *parent = nullptr
@@ -72,7 +72,7 @@ namespace ui::project {
         void onItemReadyForEditing(const QModelIndex &index) const;
 
     private:
-        domain::Ilogger *logger_;
+        std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
         uam::ActionsManager *actionsManager_;
         ProjectTreeModel *projectTreeModel_;

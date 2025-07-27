@@ -27,6 +27,7 @@
 #include "ui/project/project_view_model.h"
 #include "components_library/libraries_view_manager.h"
 #include "diagram_editor/diagram_editor_manager.h"
+#include "domain/common/ilogger_factory.h"
 #include "domain/diagram/component_instance_factory.h"
 #include "domain/project/model/project.h"
 
@@ -46,11 +47,11 @@ namespace ui::main_window {
 
     public:
         AppMainWindow(
-            domain::Ilogger *logger,
+            common::ILoggerFactory *loggerFactory,
             std::vector<dcl::Library> *libraries,
             dst::AppSettings *appSettings,
             dp::IProjectLoader *projectLoader,
-            domain::IDFactory *idFactory,
+            common::IDFactory *idFactory,
             dd::ComponentInstanceFactory *componentInstanceFactory,
             QWidget *parent
         );
@@ -58,7 +59,7 @@ namespace ui::main_window {
         ~AppMainWindow() override;
 
     private:
-        domain::Ilogger *logger_;
+        std::unique_ptr<common::Ilogger> logger_;
         dst::AppSettings *appSettings_;
         uil::AppLayoutManager *appLayoutManager_;
         uam::ActionsManager *actionsManager_;

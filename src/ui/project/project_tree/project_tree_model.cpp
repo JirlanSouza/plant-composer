@@ -25,10 +25,11 @@
 
 namespace ui::project {
     ProjectTreeModel::ProjectTreeModel(
-        domain::Ilogger *logger,
+        common::ILoggerFactory *loggerFactory,
         ProjectViewModel *projectViewModel,
         QObject *parent
-    ) : QStandardItemModel(parent), logger_(logger), projectViewModel_(projectViewModel) {
+    ) : QStandardItemModel(parent), logger_(loggerFactory->getLogger("ProjectTreeModel")),
+        projectViewModel_(projectViewModel) {
         connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectTreeModel::buildModel);
         connect(projectViewModel_, &ProjectViewModel::projectClosed, this, &ProjectTreeModel::onProjectClosed);
         connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onDiagramAdded);

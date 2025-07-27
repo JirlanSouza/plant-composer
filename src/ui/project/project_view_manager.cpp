@@ -25,15 +25,15 @@
 
 namespace ui::project {
     ProjectViewManager::ProjectViewManager(
-        domain::Ilogger *logger,
+        common::ILoggerFactory *loggerFactory,
         ProjectViewModel *projectViewModel,
         uam::ActionsManager *actionsManager,
         QWidget *parent
     ): QObject(parent),
-        logger_(logger),
+        logger_(loggerFactory->getLogger("ProjectViewManager")),
         projectViewModel_(projectViewModel),
         actionsManager_(actionsManager) {
-        projectTreeModel_ = new ProjectTreeModel(logger_, projectViewModel, this);
+        projectTreeModel_ = new ProjectTreeModel(loggerFactory, projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
 
         createActions();
