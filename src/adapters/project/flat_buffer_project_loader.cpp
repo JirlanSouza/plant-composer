@@ -106,13 +106,13 @@ namespace project {
     }
 
     std::optional<std::unique_ptr<diagram::Diagram> > FlatBufferProjectLoader::loadDiagram(
-        const DiagramMetadata &metadata
+        const FileNode &metadata
     ) {
         // TODO: Implement diagram loading using parser
         return std::nullopt;
     }
 
-    void FlatBufferProjectLoader::saveDiagram(const DiagramMetadata &metadata, const diagram::Diagram &diagram) {
+    void FlatBufferProjectLoader::saveDiagram(const FileNode &metadata, const diagram::Diagram &diagram) {
         // TODO: Implement diagram saving using parser
     }
 }

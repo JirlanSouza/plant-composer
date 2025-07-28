@@ -40,9 +40,9 @@ namespace project {
 
         void saveProject(const Project &project) override;
 
-        std::optional<std::unique_ptr<diagram::Diagram> > loadDiagram(const DiagramMetadata &metadata) override;
+        std::optional<std::unique_ptr<diagram::Diagram> > loadDiagram(const FileNode &metadata) override;
 
-        void saveDiagram(const DiagramMetadata &metadata, const diagram::Diagram &diagram) override;
+        void saveDiagram(const FileNode &metadata, const diagram::Diagram &diagram) override;
 
     private:
         std::unique_ptr<common::Ilogger> logger_;

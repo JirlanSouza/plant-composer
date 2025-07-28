@@ -277,7 +277,7 @@ namespace project {
             parserFlatBufferProjectCategory(projectTable->diagrams())
         );
 
-        if (!project->diagrams()) {
+        if (!project->getCategory(ProjectCategoryType::DIAGRAM).has_value()) {
             logger_->warn("FlatBufferProjectParser: failed to parse diagrams from project");
             return std::nullopt;
         }
@@ -295,7 +295,10 @@ namespace project {
         const auto author = builder.CreateString(project.getAuthor());
         const auto version = builder.CreateString(project.getVersion());
 
-        const auto fbDiagramsRoot = serializeProjectCategory(builder, project.diagrams());
+        const auto fbDiagramsRoot = serializeProjectCategory(
+            builder,
+            project.getCategory(ProjectCategoryType::DIAGRAM).value()
+        );
 
         const auto projectTable = fbs::CreateProject(
             builder,
