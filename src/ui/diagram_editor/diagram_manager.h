@@ -45,7 +45,7 @@ namespace diagram {
         DiagramViewModel *getDiagram(const std::string &diagramId);
 
     public slots:
-        void openDiagram(const project::DiagramMetadata *diagramMetadata);
+        void openDiagram(const project::FileNode *diagramMetadata);
 
     signals:
         void diagramOpened(std::string diagramId);

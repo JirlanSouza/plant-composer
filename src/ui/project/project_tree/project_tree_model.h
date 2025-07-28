@@ -48,17 +48,13 @@ namespace project {
     private slots:
         void onProjectClosed();
 
-        void onFileNodeAdded(const project::FileNode *file);
+        void onProjectNodeAdded(const ProjectNode *node);
 
-        void onFolderNodeAdded(const project::NodeContainer *folder);
+        void onProjectNodeRemoved(const std::string &nodeId);
 
-        void onFileNodeRemoved(const std::string &fileId);
+        void onProjectNodeCut(const ProjectNode *node);
 
-        void onFolderNodeRemoved(const std::string &folderId);
-
-        void onFileNodeRenamed(const std::string &fileId, const std::string &newName);
-
-        void onFolderNodeRenamed(const std::string &folderId, const std::string &newName);
+        void onProjectNodeRenamed(const std::string &fileId, const std::string &newName);
 
     private:
         std::unique_ptr<common::Ilogger> logger_;

@@ -99,8 +99,10 @@ namespace project {
         QAction *pasteAction_;
 
         QModelIndex currentItemIndex_;
+        std::string currentParentId_;
         std::string currentItemId_;
         TreeItemTypes::TreeItemType currentItemType_;
+        ProjectContext currentContext_;
 
         void createActions();
     };

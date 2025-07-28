@@ -31,12 +31,12 @@ namespace diagram {
         appSettings_(appSettings),
         componentInstanceFactory_(componentInstanceFactory),
         projectViewModel_(projectViewModel) {
-        connect(projectViewModel_, &project::ProjectViewModel::openDiagram, this, &DiagramManager::openDiagram);
+        connect(projectViewModel_, &project::ProjectViewModel::openFileNode, this, &DiagramManager::openDiagram);
     }
 
     DiagramManager::~DiagramManager() = default;
 
-    void DiagramManager::openDiagram(const project::DiagramMetadata *diagramMetadata) {
+    void DiagramManager::openDiagram(const project::FileNode *diagramMetadata) {
         if (openedDiagrams_.contains(diagramMetadata->getId())) {
             emit diagramOpened(diagramMetadata->getId());
             return;

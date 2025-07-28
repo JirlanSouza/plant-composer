@@ -20,6 +20,8 @@
 
 #include <QObject>
 
+#include "domain/project/model/project.h"
+
 namespace project {
     class TreeItemTypes : public QObject {
         Q_OBJECT
@@ -34,5 +36,42 @@ namespace project {
         };
 
         Q_ENUM(TreeItemType)
+
+        static TreeItemTypes::TreeItemType fromProjectCategoryAndNodeType(
+            const ProjectCategoryType category,
+            const NodeType nodeType
+        ) {
+            if (category == ProjectCategoryType::DIAGRAM) {
+                if (nodeType == NodeType::FOLDER) {
+                    return TreeItemTypes::DIAGRAM_FOLDER;
+                } else if (nodeType == NodeType::FILE) {
+                    return TreeItemTypes::DIAGRAM_FILE;
+                }
+            }
+            return TreeItemTypes::PROJECT_ROOT;
+        }
+
+        static std::optional<ProjectCategoryType> toProjectCategory(const TreeItemType type) {
+            switch (type) {
+                case TreeItemType::DIAGRAM_ROOT_FOLDER:
+                case TreeItemTypes::DIAGRAM_FOLDER:
+                case TreeItemTypes::DIAGRAM_FILE:
+                    return ProjectCategoryType::DIAGRAM;
+                default:
+                    return std::nullopt;
+            }
+        }
+
+        static std::optional<NodeType> toNodeType(const TreeItemType type) {
+            switch (type) {
+                case TreeItemType::DIAGRAM_ROOT_FOLDER:
+                case TreeItemTypes::DIAGRAM_FOLDER:
+                    return NodeType::FOLDER;
+                case TreeItemType::DIAGRAM_FILE:
+                    return NodeType::FILE;
+                default:
+                    return std::nullopt;
+            }
+        }
     };
 }

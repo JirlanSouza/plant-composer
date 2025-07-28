@@ -32,31 +32,24 @@ namespace project {
         projectViewModel_(projectViewModel) {
         connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectTreeModel::buildModel);
         connect(projectViewModel_, &ProjectViewModel::projectClosed, this, &ProjectTreeModel::onProjectClosed);
-        connect(projectViewModel_, &ProjectViewModel::diagramAdded, this, &ProjectTreeModel::onFileNodeAdded);
+        connect(projectViewModel_, &ProjectViewModel::projectNodeAdded, this, &ProjectTreeModel::onProjectNodeAdded);
         connect(
             projectViewModel_,
-            &ProjectViewModel::diagramFolderAdded,
+            &ProjectViewModel::projectNodeRemoved,
             this,
-            &ProjectTreeModel::onFolderNodeAdded
-        );
-        connect(projectViewModel_, &ProjectViewModel::diagramRemoved, this, &ProjectTreeModel::onFileNodeRemoved);
-        connect(
-            projectViewModel_,
-            &ProjectViewModel::diagramFolderRemoved,
-            this,
-            &ProjectTreeModel::onFolderNodeRemoved
+            &ProjectTreeModel::onProjectNodeRemoved
         );
         connect(
             projectViewModel_,
-            &ProjectViewModel::diagramRenamed,
+            &ProjectViewModel::projectNodePastedAsCut,
             this,
-            &ProjectTreeModel::onFileNodeRenamed
+            &ProjectTreeModel::onProjectNodeCut
         );
         connect(
             projectViewModel_,
-            &ProjectViewModel::diagramFolderRenamed,
+            &ProjectViewModel::projectNodeRenamed,
             this,
-            &ProjectTreeModel::onFolderNodeRenamed
+            &ProjectTreeModel::onProjectNodeRenamed
         );
     }
 
@@ -67,14 +60,23 @@ namespace project {
 
         const auto type = index.data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
         const auto itemId = index.data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto parentId = index.parent().data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
         const auto newName = value.toString().toStdString();
 
-        if (type == TreeItemTypes::DIAGRAM_FILE) {
-            projectViewModel_->renameDiagram(itemId, newName);
-        } else if (type == TreeItemTypes::DIAGRAM_FOLDER) {
-            projectViewModel_->renameDiagramFolder(itemId, newName);
+        const auto categoryOpt = TreeItemTypes::toProjectCategory(type);
+        const auto nodeTypeOpt = TreeItemTypes::toNodeType(type);
+
+        if (!categoryOpt.has_value() || !nodeTypeOpt.has_value()) {
+            logger_->warn(
+                "Invalid item type for renaming: {}, ID: {}, parent ID: {}",
+                static_cast<int>(type),
+                itemId,
+                parentId
+            );
+            return QStandardItemModel::setData(index, value, role);
         }
 
+        projectViewModel_->renameProjectNode({categoryOpt.value(), parentId, nodeTypeOpt.value(), itemId}, newName);
         return false;
     }
 
@@ -94,7 +96,14 @@ namespace project {
         appendRow(rootItem);
 
         logger_->info("Building diagrams root item");
-        const auto *diagramsRoot = projectViewModel_->getProject()->diagrams();
+        const auto diagramsRootOpt = projectViewModel_->getProject()->getCategory(ProjectCategoryType::DIAGRAM);
+
+        if (!diagramsRootOpt.has_value()) {
+            logger_->warn("No diagrams root found in project, skipping diagram root item creation");
+            return;
+        }
+
+        const auto *diagramsRoot = diagramsRootOpt.value();
         auto *diagramsRootItem = new QStandardItem(
             getIconForType(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER),
             QString::fromStdString(diagramsRoot->getName())
@@ -210,82 +219,100 @@ namespace project {
         clearModel();
     }
 
-    void ProjectTreeModel::onFileNodeAdded(const FileNode *file) {
-        if (!file) {
-            logger_->warn("Received null diagram in onFileNodeAdded");
+    void ProjectTreeModel::onProjectNodeAdded(const ProjectNode *node) {
+        if (!node) {
+            logger_->warn("Received null node in onProjectNodeAdded");
             return;
         }
 
-        auto parentId = file->getParent()->getId();
-        if (itemMap_.contains(parentId)) {
-            appendFileNode(itemMap_[parentId], file, TreeItemTypes::TreeItemType::DIAGRAM_FILE);
+        auto parentId = node->getParent()->getId();
+        if (!itemMap_.contains(parentId)) {
+            logger_->warn("Invalid parent ID: {} for node with ID: {}", parentId, node->getId());
+            return;
+        }
+
+        if (node->isFile()) {
+            appendFileNode(
+                itemMap_[parentId],
+                static_cast<const FileNode *>(node),
+                TreeItemTypes::TreeItemType::DIAGRAM_FILE
+            );
             itemMap_[parentId]->sortChildren(0, Qt::AscendingOrder);
-            emit itemReadyForEditing(itemMap_[file->getId()]->index());
+        } else if (node->isFolder()) {
+            appendFolderNode(
+                itemMap_[parentId],
+                static_cast<const NodeContainer *>(node),
+                TreeItemTypes::TreeItemType::DIAGRAM_FOLDER
+            );
         }
+
+        emit itemReadyForEditing(itemMap_[node->getId()]->index());
     }
 
-    void ProjectTreeModel::onFolderNodeAdded(const NodeContainer *folder) {
-        if (!folder) {
-            logger_->warn("Received null diagram in onFolderNodeAdded");
+    void ProjectTreeModel::onProjectNodeRemoved(const std::string &nodeId) {
+        logger_->info("Removing node from project tree: {}", nodeId);
+        if (!itemMap_.contains(nodeId)) {
+            logger_->warn("Received invalid node id in onProjectNodeRemoved");
             return;
         }
 
-        auto parentId = folder->getParent()->getId();
-        if (itemMap_.contains(parentId)) {
-            appendFolderNode(itemMap_[parentId], folder, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
-            emit itemReadyForEditing(itemMap_[folder->getId()]->index());
-        }
+        const auto *nodeItem = itemMap_[nodeId];
+        nodeItem->parent()->removeRow(nodeItem->row());
+        itemMap_.erase(nodeId);
     }
 
-    void ProjectTreeModel::onFileNodeRemoved(const std::string &fileId) {
-        logger_->info("Diagram removed from tree: {}", fileId);
+    void ProjectTreeModel::onProjectNodeCut(const ProjectNode *node) {
+        if (!node) {
+            logger_->warn("Received null node in onProjectNodeCut");
+            return;
+        }
+
+        logger_->info("Cutting node from project tree: {} to folder: {}", node->getId(), node->getParent()->getId());
+        if (!itemMap_.contains(node->getId()) || !itemMap_.contains(node->getParent()->getId())) {
+            logger_->warn("Received invalid node or target folder id in onProjectNodeCut");
+            return;
+        }
+
+        QStandardItem *nodeItem = itemMap_[node->getId()];
+        QStandardItem *targetFolderItem = itemMap_[node->getParent()->getId()];
+
+        if (nodeItem->parent() == targetFolderItem) {
+            logger_->warn("Node is already in the target folder, no action taken");
+            return;
+        }
+
+        QStandardItem *nodeParentItem = nodeItem->parent();
+        if (!nodeParentItem) {
+            logger_->warn("Node has invalid node parent in onProjectNodeCut");
+            return;
+        }
+
+        QStandardItem *removedItem = nodeParentItem->takeChild(nodeItem->row());
+
+        if (!removedItem) {
+            logger_->warn("No item found to cut for node ID: {}", node->getId());
+            return;
+        }
+
+        targetFolderItem->appendRow(removedItem);
+        targetFolderItem->sortChildren(0, Qt::AscendingOrder);
+        logger_->info(
+            "Successfully cut node from project tree: {} to folder: {}",
+            node->getId(),
+            node->getParent()->getId()
+        );
+    }
+
+    void ProjectTreeModel::onProjectNodeRenamed(const std::string &fileId, const std::string &newName) {
+        logger_->info("Renaming node in project tree ID: {} to {}", fileId, newName);
         if (!itemMap_.contains(fileId)) {
-            logger_->warn("Received invalid file id in onFileNodeRemoved");
+            logger_->warn("Received invalid node id in onProjectNodeRemoved");
             return;
         }
 
-        const auto *diagramItem = itemMap_[fileId];
-        diagramItem->parent()->removeRow(diagramItem->row());
-        itemMap_.erase(fileId);
-    }
-
-    void ProjectTreeModel::onFolderNodeRemoved(const std::string &folderId) {
-        logger_->info("Folder removed from tree: {}", folderId);
-        if (!itemMap_.contains(folderId)) {
-            logger_->warn("Received invalid folder id in onFolderNodeRemoved");
-            return;
-        }
-
-        const auto *folderItem = itemMap_[folderId];
-        folderItem->parent()->removeRow(folderItem->row());
-        itemMap_.erase(folderId);
-    }
-
-    void ProjectTreeModel::onFileNodeRenamed(const std::string &fileId, const std::string &newName) {
-        logger_->info("Diagram renamed in tree: {} to {}", fileId, newName);
-        if (!itemMap_.contains(fileId)) {
-            logger_->warn("Received invalid file id in onFileNodeRemoved");
-            return;
-        }
-
-        auto *fileItem = itemMap_[fileId];
-        fileItem->setText(QString::fromStdString(newName));
-        fileItem->parent()->sortChildren(0, Qt::AscendingOrder);
-    }
-
-    void ProjectTreeModel::onFolderNodeRenamed(
-        const std::string &folderId,
-        const std::string &newName
-    ) {
-        logger_->info("Folder renamed in tree: {} to {}", folderId, newName);
-        if (!itemMap_.contains(folderId)) {
-            logger_->warn("Received invalid folder id in onFolderNodeRemoved");
-            return;
-        }
-
-        auto *folderItem = itemMap_[folderId];
-        folderItem->setText(QString::fromStdString(newName));
-        folderItem->parent()->sortChildren(0, Qt::AscendingOrder);
+        auto *nodeItem = itemMap_[fileId];
+        nodeItem->setText(QString::fromStdString(newName));
+        nodeItem->parent()->sortChildren(0, Qt::AscendingOrder);
     }
 
     QIcon ProjectTreeModel::getIconForType(const TreeItemTypes::TreeItemType type) {

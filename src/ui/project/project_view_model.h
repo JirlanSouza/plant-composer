@@ -56,25 +56,19 @@ namespace project {
 
         void closeProject();
 
-        void addNewDiagram(const std::string &parentFolderId, const std::string &name);
+        void addNewProjectNode(const ProjectContext &context, const std::string &name);
 
-        void addNewDiagramFolder(const std::string &parentFolderId, const std::string &name);
+        void openFileNodeRequested(ProjectContext context);
 
-        void openDiagramRequested(const std::string &diagramId);
+        void removeProjectNode(const ProjectContext &context);
 
-        void removeDiagram(const std::string &diagramId);
+        void renameProjectNode(const ProjectContext &context, const std::string &newName);
 
-        void removeDiagramFolder(const std::string &folderId);
+        void copyProjectNode(const ProjectContext &context);
 
-        void renameDiagram(const std::string &diagramId, const std::string &newName);
+        void cutProjectNode(const ProjectContext &context);
 
-        void renameDiagramFolder(const std::string &folderId, const std::string &newName);
-
-        void copy(const std::string &itemId);
-
-        void cut(const std::string &itemId);
-
-        void paste(const std::string &targetId);
+        void pasteProjectNode(const ProjectContext &context);
 
 
     signals:
@@ -84,23 +78,33 @@ namespace project {
 
         void projectClosed();
 
-        void diagramAdded(const project::DiagramMetadata *diagram);
+        void projectNodeAdded(const project::ProjectNode *node);
 
-        void diagramFolderAdded(const project::NodeContainer *folder);
+        void addNewProjectNodeFailed(const QString &errorMessage);
 
-        void openDiagram(const project::DiagramMetadata *diagram);
+        void openFileNode(const project::FileNode *fileNode);
 
-        void diagramRemoved(const std::string &diagramId);
+        void openFileNodeFailed(const QString &errorMessage);
 
-        void diagramFolderRemoved(const std::string &folderId);
+        void projectNodeRemoved(const std::string &nodeId);
 
-        void diagramRenamed(const std::string &diagramId, const std::string &newName);
+        void removeProjectNodeFailed(const QString &errorMessage);
 
-        void diagramFolderRenamed(const std::string &folderId, const std::string &newName);
+        void projectNodeRenamed(const std::string &nodeId, const std::string &newName);
 
-        void nodeCopied();
+        void renameProjectNodeFailed(const QString &errorMessage);
 
-        void nodeCut();
+        void projectNodeCopied();
+
+        void projectNodeCopiedFailed(const QString &errorMessage);
+
+        void projectNodeCut();
+
+        void projectNodeCutFailed(const QString &errorMessage);
+
+        void projectNodePastedAsCopy(const project::ProjectNode *node);
+
+        void projectNodePastedAsCut(const project::ProjectNode *node);
 
     private:
         std::unique_ptr<common::Ilogger> logger_;

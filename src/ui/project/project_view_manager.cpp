@@ -58,8 +58,8 @@ namespace project {
             this,
             &ProjectViewManager::onItemReadyForEditing
         );
-        connect(projectViewModel_, &ProjectViewModel::nodeCopied, this, &ProjectViewManager::onNodeCopied);
-        connect(projectViewModel_, &ProjectViewModel::nodeCut, this, &ProjectViewManager::onNodeCut);
+        connect(projectViewModel_, &ProjectViewModel::projectNodeCopied, this, &ProjectViewManager::onNodeCopied);
+        connect(projectViewModel_, &ProjectViewModel::projectNodeCut, this, &ProjectViewManager::onNodeCut);
     }
 
     ProjectViewManager::~ProjectViewManager() = default;
@@ -200,7 +200,7 @@ namespace project {
                 onAddNewDiagramTriggered();
             }
         } else if (type == TreeItemTypes::DIAGRAM_FILE) {
-            projectViewModel_->openDiagramRequested(currentItemId_);
+            projectViewModel_->openFileNodeRequested(currentContext_);
         } else if (type == TreeItemTypes::DIAGRAM_FOLDER || type == TreeItemTypes::DIAGRAM_ROOT_FOLDER) {
             projectTreeView_->toggleExpanded(index);
         }
@@ -213,6 +213,10 @@ namespace project {
         const auto item = projectTreeModel_->itemFromIndex(currentItemIndex_);
         currentItemType_ = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
         currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto parentItem = item->parent();
+        if (parentItem) {
+            currentParentId_ = parentItem->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        }
 
         logger_->info("User right-clicked item ID: {}, Type: {}", currentItemId_, static_cast<int>(currentItemType_));
 
@@ -220,6 +224,8 @@ namespace project {
         menu.setMinimumWidth(220);
         if (currentItemType_ == TreeItemTypes::DIAGRAM_ROOT_FOLDER ||
             currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
+            currentContext_ = {ProjectCategoryType::DIAGRAM, currentParentId_, NodeType::FOLDER, currentItemId_};
+
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
@@ -230,6 +236,7 @@ namespace project {
             menu.addAction(renameAction_);
             menu.addAction(deleteAction_);
         } else if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE) {
+            currentContext_ = {ProjectCategoryType::DIAGRAM, currentParentId_, NodeType::FILE, currentItemId_};
             menu.addAction(openAction_);
             menu.addSeparator();
             menu.addAction(copyAction_);
@@ -246,17 +253,17 @@ namespace project {
 
     void ProjectViewManager::onAddNewDiagramTriggered() const {
         logger_->info("User triggered 'Add New Diagram' for parent: {}", currentItemId_);
-        projectViewModel_->addNewDiagram(currentItemId_, "New Diagram");
+        projectViewModel_->addNewProjectNode(currentContext_, "New Diagram");
     }
 
     void ProjectViewManager::onAddNewFolderTriggered() const {
         logger_->info("User triggered 'Add New Folder' for parent: {}", currentItemId_);
-        projectViewModel_->addNewDiagramFolder(currentItemId_, "New Folder");
+        projectViewModel_->addNewProjectNode(currentContext_, "New Folder");
     }
 
     void ProjectViewManager::onOpenTriggered() const {
         logger_->info("User triggered 'Open' for item: {}", currentItemId_);
-        projectViewModel_->openDiagramRequested(currentItemId_);
+        projectViewModel_->openFileNodeRequested(currentContext_);
     }
 
     void ProjectViewManager::onRenameTriggered() const {
@@ -268,11 +275,7 @@ namespace project {
 
     void ProjectViewManager::onDeleteTriggered() const {
         logger_->info("User triggered 'Delete' for item: {}", currentItemId_);
-        if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE) {
-            projectViewModel_->removeDiagram(currentItemId_);
-        } else if (currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
-            projectViewModel_->removeDiagramFolder(currentItemId_);
-        }
+        projectViewModel_->removeProjectNode(currentContext_);
     }
 
     void ProjectViewManager::onItemReadyForEditing(const QModelIndex &index) const {
@@ -282,17 +285,17 @@ namespace project {
 
     void ProjectViewManager::onCopyTriggered() const {
         logger_->info("User triggered 'Copy' for item: {}", currentItemId_);
-        projectViewModel_->copy(currentItemId_);
+        projectViewModel_->copyProjectNode(currentContext_);
     }
 
     void ProjectViewManager::onCutTriggered() const {
         logger_->info("User triggered 'Cut' for item: {}", currentItemId_);
-        projectViewModel_->cut(currentItemId_);
+        projectViewModel_->cutProjectNode(currentContext_);
     }
 
     void ProjectViewManager::onPasteTriggered() const {
         logger_->info("User triggered 'Paste' for item: {}", currentItemId_);
-        projectViewModel_->paste(currentItemId_);
+        projectViewModel_->pasteProjectNode(currentContext_);
     }
 
     void ProjectViewManager::onNodeCopied() const {

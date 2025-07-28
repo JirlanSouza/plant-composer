@@ -18,6 +18,7 @@
 
 #include "project_view_model.h"
 
+#include "adapters/serialization/flatbuffers/project_generated.h"
 #include "domain/common/ilogger_factory.h"
 #include "domain/project/project_loader.h"
 
@@ -101,186 +102,252 @@ namespace project {
         logger_->info("Project closed successfully");
     }
 
-    void ProjectViewModel::addNewDiagram(const std::string &parentFolderId, const std::string &name) {
-        logger_->info("Request to add new diagram '{}' to folder '{}'.", name, parentFolderId);
-        NodeContainer *parentFolder;
+    void ProjectViewModel::addNewProjectNode(const ProjectContext &context, const std::string &name) {
+        logger_->info("Request to add new file '{}' to folder '{}'.", name, context.parentId);
+        const auto parentFolderOpt = project_->findNode(context.category, context.parentId);
 
-        if (parentFolderId == project_->diagrams()->getId()) {
-            parentFolder = project_->diagrams();
+        if (!parentFolderOpt.has_value() || !parentFolderOpt.value()->isFolder()) {
+            logger_->warn("Parent folder '{}' not found for new file '{}'.", context.parentId, name);
+            return;
+        }
+
+        auto parentFolder = static_cast<NodeContainer *>(parentFolderOpt.value());
+        std::unique_ptr<ProjectNode> node;
+
+        if (context.nodeType == NodeType::FILE) {
+            node = std::make_unique<FileNode>(
+                idFactory_->create(),
+                parentFolder,
+                name,
+                project_->getCategoryPath(context.category)
+            );
+        } else if (context.nodeType == NodeType::FOLDER) {
+            node = std::make_unique<NodeContainer>(
+                idFactory_->create(),
+                parentFolder,
+                name
+            );
         } else {
-            auto parentFolderOpt = project_->diagrams()->getFolder(parentFolderId);
-            if (!parentFolderOpt.has_value()) {
-                logger_->warn("Parent folder '{}' not found for new diagram '{}'.", parentFolderId, name);
-                return;
-            }
-
-            parentFolder = parentFolderOpt.value();
+            logger_->warn("Unsupported node type: {} for new node '{}'.", toString(context.nodeType), name);
+            emit addNewProjectNodeFailed(tr("Failed to add new node: Unsupported node type."));
+            return;
         }
 
-
-        auto diagram = std::make_unique<DiagramMetadata>(
-            idFactory_->create(),
-            parentFolder,
-            name,
-            "diagrams/" + name + ".fbs"
-        );
-
-        auto addedDiagram = diagram.get();
-        parentFolder->addChild(std::move(diagram));
-        emit diagramAdded(addedDiagram);
+        const auto addedNode = node.get();
+        parentFolder->addChild(std::move(node));
+        emit projectNodeAdded(addedNode);
         logger_->info(
-            "Successfully added new diagram '{}' (ID: {}) to folder '{}'.",
+            "Successfully added new node '{}' (ID: {}), type: {}, category: {} to folder '{}'.",
             name,
-            addedDiagram->getId(),
-            parentFolderId
+            addedNode->getId(),
+            toString(context.nodeType),
+            toString(context.category),
+            context.parentId
         );
     }
 
-    void ProjectViewModel::addNewDiagramFolder(const std::string &parentFolderId, const std::string &name) {
-        logger_->info("Request to add new folder '{}' to folder '{}'.", name, parentFolderId);
-        NodeContainer *parentFolder;
+    void ProjectViewModel::openFileNodeRequested(ProjectContext context) {
+        logger_->info("Request to open file with ID: {}, category: {}", context.nodeId, toString(context.category));
+        const auto nodeOpt = project_->findNode(context.category, context.nodeId);
 
-        if (parentFolderId == project_->diagrams()->getId()) {
-            parentFolder = project_->diagrams();
-        } else {
-            auto parentFolderOpt = project_->diagrams()->getFolder(parentFolderId);
-            if (!parentFolderOpt.has_value()) {
-                logger_->warn("Parent folder '{}' not found for new folder '{}'.", parentFolderId, name);
-                return;
-            }
-
-            parentFolder = parentFolderOpt.value();
+        if (!nodeOpt.has_value() || !nodeOpt.value()->isFile()) {
+            logger_->warn(
+                "File with ID: {}, category: {} not found or not is file node for open request",
+                context.nodeId,
+                toString(context.category)
+            );
+            return;
         }
 
-        auto newFolder = std::make_unique<NodeContainer>(
-            idFactory_->create(),
-            parentFolder,
-            name
-        );
-
-        auto addedFolder = newFolder.get();
-        parentFolder->addChild(std::move(newFolder));
-        emit diagramFolderAdded(addedFolder);
+        emit openFileNode(dynamic_cast<const FileNode *>(nodeOpt.value()));
         logger_->info(
-            "Successfully added new folder '{}' (ID: {}) to folder '{}'.",
-            name,
-            addedFolder->getId(),
-            parentFolderId
+            "Open file request for ID: {}, category: {} emitted.",
+            context.nodeId,
+            toString(context.category)
         );
     }
 
-    void ProjectViewModel::openDiagramRequested(const std::string &diagramId) {
-        logger_->info("Request to open diagram with ID: {}", diagramId);
-        const auto diagramOpt = project_->diagrams()->getFile(diagramId);
-        if (!diagramOpt.has_value()) {
-            logger_->warn("Diagram with ID '{}' not found for open request.", diagramId);
+    void ProjectViewModel::removeProjectNode(const ProjectContext &context) {
+        logger_->info(
+            "Request to remove node with ID: {}, category: {}, type: {}",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType)
+        );
+        const auto nodeOpt = project_->findNode(context.category, context.nodeId);
+
+        if (!nodeOpt.has_value() || !nodeOpt.value()->canBeRemoved()) {
+            logger_->warn(
+                "File with ID: {}, category: {}, type: {} not found or no be removed for remove",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
+            emit removeProjectNodeFailed(tr("Failed to remove node with ID: {}"));
             return;
         }
 
-        emit openDiagram(dynamic_cast<const DiagramMetadata *>(diagramOpt.value()));
-        logger_->info("Open diagram request for ID: {} emitted.", diagramId);
+        nodeOpt.value()->getParent()->removeChild(context.nodeId);
+        emit projectNodeRemoved(context.nodeId);
+        logger_->info(
+            "Successfully removed node with ID: {}, category: {}, type: {}.",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType)
+        );
     }
 
-    void ProjectViewModel::removeDiagram(const std::string &diagramId) {
-        logger_->info("Request to remove diagram with ID: {}", diagramId);
-        const auto diagramOpt = project_->diagrams()->getFile(diagramId);
-        if (!diagramOpt.has_value()) {
-            logger_->warn("Diagram with ID '{}' not found for remove request.", diagramId);
+    void ProjectViewModel::renameProjectNode(const ProjectContext &context, const std::string &newName) {
+        logger_->info(
+            "Request to rename node with ID: {}, category: {}, type: {}",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType)
+        );
+        const auto nodeOpt = project_->findNode(context.category, context.nodeId);
+
+        if (!nodeOpt.has_value() || !nodeOpt.value()->canBeRenamed()) {
+            logger_->warn(
+                "File with ID: {}, category: {}, type: {} not found or no be renamed for rename",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
+            emit renameProjectNodeFailed(tr("Failed to rename node with ID: {}"));
             return;
         }
 
-        diagramOpt.value()->getParent()->removeChild(diagramId);
-        emit diagramRemoved(diagramId);
-        logger_->info("Successfully removed diagram with ID: {}.", diagramId);
+        nodeOpt.value()->getParent()->removeChild(context.nodeId);
+        emit projectNodeRenamed(context.nodeId, newName);
+        logger_->info(
+            "Successfully renamed node with ID: {}, category: {}, type: {}, lastName: {}, newName: {}",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType),
+            nodeOpt.value()->getName(),
+            newName
+        );
     }
 
-    void ProjectViewModel::removeDiagramFolder(const std::string &folderId) {
-        logger_->info("Request to remove folder with ID: {}", folderId);
-        const auto folderOpt = project_->diagrams()->getFolder(folderId);
-        if (!folderOpt.has_value()) {
-            logger_->warn("Folder with ID '{}' not found for remove request.", folderId);
-            return;
-        }
+    void ProjectViewModel::copyProjectNode(const ProjectContext &context) {
+        logger_->info(
+            "Cuting node with id: {}, category: {}, type: {}",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType)
+        );
+        const auto node = project_->findNode(context.category, context.nodeId);
 
-        folderOpt.value()->getParent()->removeChild(folderId);
-        emit diagramFolderRemoved(folderId);
-        logger_->info("Successfully removed folder with ID: {}.", folderId);
-    }
-
-    void ProjectViewModel::renameDiagram(const std::string &diagramId, const std::string &newName) {
-        logger_->info("Request to rename diagram with ID: {} to '{}'.", diagramId, newName);
-        const auto diagramOpt = project_->diagrams()->getFile(diagramId);
-        if (!diagramOpt.has_value()) {
-            logger_->warn("Diagram with ID '{}' not found for rename request.", diagramId);
-            return;
-        }
-
-        diagramOpt.value()->rename(newName);
-        emit diagramRenamed(diagramId, newName);
-        logger_->info("Successfully renamed diagram with ID: {} to '{}'.", diagramId, newName);
-    }
-
-    void ProjectViewModel::renameDiagramFolder(const std::string &folderId, const std::string &newName) {
-        logger_->info("Request to rename folder with ID: {} to '{}'.", folderId, newName);
-        const auto folderOpt = project_->diagrams()->getFolder(folderId);
-        if (!folderOpt.has_value()) {
-            logger_->warn("Folder with ID '{}' not found for rename request.", folderId);
-            return;
-        }
-
-        folderOpt.value()->rename(newName);
-        emit diagramFolderRenamed(folderId, newName);
-        logger_->info("Successfully renamed folder with ID: {} to '{}'.", folderId, newName);
-    }
-
-    void ProjectViewModel::copy(const std::string &itemId) {
-        logger_->info("Copying item with id: {}", itemId);
-        const auto item = project_->findNode(itemId);
-        if (!item) {
-            logger_->warn("Item with id: {} not found", itemId);
+        if (!node.has_value() || !node.value()->canBeCopied()) {
+            logger_->warn(
+                "Node with id: {}, category: {}, type: {} not found or not be copied",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
+            emit projectNodeCopiedFailed(tr("Failed to copy node with ID: {}"));
             return;
         }
 
         clipboard_.mode = ClipboardMode::COPY;
-        clipboard_.node = item;
-        emit nodeCopied();
+        clipboard_.node = node.value();
+        emit projectNodeCopied();
     }
 
-    void ProjectViewModel::cut(const std::string &itemId) {
-        logger_->info("Cutting item with id: {}", itemId);
-        const auto item = project_->findNode(itemId);
-        if (!item) {
-            logger_->warn("Item with id: {} not found", itemId);
+    void ProjectViewModel::cutProjectNode(const ProjectContext &context) {
+        logger_->info(
+            "Cutting node with id: {}, category: {}, type: {}",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType)
+        );
+        const auto node = project_->findNode(context.category, context.nodeId);
+
+        if (!node.has_value() || !node.value()->canBeMoved()) {
+            logger_->warn(
+                "Node with id: {}, category: {}, type: {} not found or not be cut",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
+            emit projectNodeCutFailed(tr("Failed to cut node with ID: {}"));
             return;
         }
 
         clipboard_.mode = ClipboardMode::CUT;
-        clipboard_.node = item;
-        emit nodeCut();
+        clipboard_.node = node.value();
+        emit projectNodeCut();
     }
 
-    void ProjectViewModel::paste(const std::string &targetId) {
-        logger_->info("Pasting item to target with id: {}", targetId);
+    void ProjectViewModel::pasteProjectNode(const ProjectContext &context) {
+        logger_->info(
+            "Pasting node with id: {}, category: {}, type: {}",
+            context.nodeId,
+            toString(context.category),
+            toString(context.nodeType)
+        );
+
         if (clipboard_.mode == ClipboardMode::NONE || !clipboard_.node) {
-            logger_->warn("Clipboard is empty");
+            logger_->warn(
+                "Not pasting node with ID: {}, category: {}, type: {} clipboard is empty",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
             return;
         }
 
-        const auto target = project_->findNode(targetId);
-        if (!target || !target->isFolder()) {
-            logger_->warn("Target with id: {} not found or is not a folder", targetId);
+        const auto node = project_->findNode(context.category, context.nodeId);
+
+        if (!node.has_value() || !node.value()->isFolder()) {
+            logger_->warn(
+                "Node with ID: {}, category: {}, type: {} node not found or parent is not folder",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
             return;
         }
 
-        auto targetFolder = target->getAsFolder().value();
+        const auto targetFolderOpt = node.value()->getAsFolder();
+
+        if (!targetFolderOpt.has_value()) {
+            logger_->warn(
+                "Invalid node parent with ID: {}, category: {}, type: {}",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
+            return;
+        }
+
+        const auto targetFolder = targetFolderOpt.value();
 
         if (clipboard_.mode == ClipboardMode::CUT) {
-            auto originalParent = clipboard_.node->getParent();
-            auto node = originalParent->releaseChild(clipboard_.node->getId());
-            auto releasedNode = node.get();
-            targetFolder->addChild(std::move(node));
-            emit diagramRemoved(releasedNode->getId());
-            emit diagramAdded(static_cast<const DiagramMetadata *>(releasedNode));
+            if (!clipboard_.node->canBeMoved()) {
+                logger_->warn(
+                    "Node with ID: {}, category: {}, type: {} can not be moved",
+                    context.nodeId,
+                    toString(context.category),
+                    toString(context.nodeType)
+                );
+                return;
+            }
+
+
+            const auto originalParent = clipboard_.node->getParent();
+            auto nodePtr = originalParent->releaseChild(clipboard_.node->getId());
+            const auto releasedNode = nodePtr.get();
+            targetFolder->addChild(std::move(nodePtr));
+            emit projectNodePastedAsCut(releasedNode);
+            logger_->info(
+                "Successfully cut node with ID: {}, category: {}, type: {} to folder with ID: {}, name: {}",
+                releasedNode->getId(),
+                toString(context.category),
+                toString(releasedNode->getType()),
+                targetFolder->getId(),
+                targetFolder->getName()
+            );
         } else if (clipboard_.mode == ClipboardMode::COPY) {
             // TODO: Implement deep copy of the node
         }
