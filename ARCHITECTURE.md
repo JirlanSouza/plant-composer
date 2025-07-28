@@ -18,7 +18,8 @@ PlantComposer is built upon a **Model-View-ViewModel (MVVM)** architecture, whic
 
 The domain layer contains the data structures that represent the application's core concepts.
 
--   **`Project`**: Represents the user's entire workspace. It uses a generic, type-safe, hierarchical tree structure to manage different categories of assets (Diagrams, Scripts, etc.), inspired by the SIMIT project model.
+-   **`Project`**: Represents the user's entire workspace. It uses a generic, type-safe, hierarchical tree structure to manage different categories of assets. The design is inspired by the SIMIT project model, using `ProjectCategoryType` to allow for future expansion with items like "Scripts" or "Drivers" alongside the current "Diagrams".
+-   **`ProjectNode`**: A polymorphic base class for all items in the project tree, with `FileNode` and `NodeContainer` as concrete implementations. It encapsulates shared logic and business rules like `canBeMoved()` or `canBeRenamed()`.
 -   **`Library`**: Represents a collection of component types (`ComponentType`) that can be used in diagrams. This includes the definition of their ports, signals, and constants.
 -   **`Diagram`**: Represents a single diagram document. It contains the list of `ComponentInstance`s and the `Connection`s between them.
 
@@ -31,7 +32,7 @@ The UI is broken down into several key modules, each responsible for a distinct 
 This module is responsible for displaying and managing the project's hierarchical structure.
 
 -   **`ProjectViewManager` (Controller/Mediator)**: This is the main entry point to the feature. It encapsulates the entire project tree, creates its child components, and handles the logic for user interactions like double-clicks and context menus. It translates these low-level UI events into high-level commands for the ViewModel.
--   **`ProjectViewModel` (ViewModel)**: The bridge between the UI and the `Project` domain object. It exposes a clean, testable API for all project-related business logic (e.g., `addNewDiagram`, `renameItem`) and emits signals when the domain model changes.
+-   **`ProjectViewModel` (ViewModel)**: The bridge between the UI and the `Project` domain object. It exposes a clean, testable API for all project-related business logic (e.g., `addNewProjectNode`, `renameProjectNode`). It also manages the state of the clipboard for copy/cut/paste operations. It emits signals when the domain model changes.
 -   **`ProjectTreeModel` & `ProjectTreeView` (Model/View)**: A standard Qt Model/View implementation that displays the project hierarchy. The `ProjectTreeModel` listens for signals from the `ProjectViewModel` to perform efficient, granular updates to the tree.
 
 ### 4.2. `ui/components_library` - The Components Library
@@ -54,12 +55,22 @@ This module manages the main workspace where users create and edit diagrams.
 
 The power of this architecture lies in how these decoupled modules interact through signals and slots.
 
--   **Opening a Diagram**:
-    1.  The user double-clicks a diagram in the `ProjectTreeView`.
-    2.  The `ProjectViewManager` translates this into a request to the `ProjectViewModel`.
-    3.  The `ProjectViewModel` emits an `openDiagram` signal containing the `DiagramMetadata`.
+-   **Opening a File Node (e.g., a Diagram)**:
+    1.  The user double-clicks a file in the `ProjectTreeView`.
+    2.  The `ProjectViewManager` translates this into a request to the `ProjectViewModel` via the `openFileNodeRequested` slot, passing a `ProjectContext`.
+    3.  The `ProjectViewModel` emits an `openFileNode` signal containing the `FileNode` metadata.
     4.  The `DiagramManager` has a slot connected to this signal. It receives the metadata, loads the full diagram data using the `IProjectLoader`, creates a `DiagramViewModel`, and emits a `diagramOpened` signal.
     5.  The `DiagramEditorManager` has a slot connected to `diagramOpened`. It receives the new `DiagramViewModel` and creates a new editor tab with a `DiagramEditorView` to display it.
+
+-   **Pasting a Node (Cut Operation)**:
+    1.  The user right-clicks a node and selects "Cut".
+    2.  The `ProjectViewManager` calls `cutProjectNode()` on the `ProjectViewModel`, passing the context of the selected item.
+    3.  The `ProjectViewModel` verifies the action is valid (using `canBeMoved()` on the domain node), stores the `ProjectNode` and `ClipboardMode::CUT` in its internal `clipboard_`, and emits `projectNodeCut()`.
+    4.  The `ProjectViewManager` receives this signal and enables the "Paste" `QAction`.
+    5.  The user right-clicks a valid destination folder and selects "Paste".
+    6.  The `ProjectViewManager` calls `pasteProjectNode()` on the `ProjectViewModel`.
+    7.  The `ProjectViewModel` performs the core logic: it calls `releaseChild()` on the original parent `NodeContainer` and `addChild()` on the target `NodeContainer`.
+    8.  Finally, the `ProjectViewModel` emits a `projectNodePastedAsCut` signal. The `ProjectTreeModel` listens for this signal and updates the `QTreeView` by moving the corresponding `QStandardItem` to its new parent, avoiding a full model rebuild.
 
 -   **Adding a Component to a Diagram**:
     1.  The user drags a component from the `ComponentsLibraryView`.
