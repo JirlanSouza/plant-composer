@@ -29,6 +29,8 @@ namespace project {
         FOLDER, FILE
     };
 
+    std::string toString(const NodeType &type);
+
     class NodeContainer;
     class FileNode;
 
@@ -107,6 +109,8 @@ namespace project {
         std::optional<NodeContainer *> getAsFolder() override;
 
         std::optional<FileNode *> getAsFile() override;
+
+        std::optional<ProjectNode *> findNode(const std::string &id) const;
 
     private:
         std::unordered_map<std::string, std::unique_ptr<ProjectNode> > children_{};

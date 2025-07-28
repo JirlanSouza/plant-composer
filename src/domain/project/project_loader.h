@@ -41,8 +41,8 @@ namespace project {
 
         virtual void saveProject(const Project &project) = 0;
 
-        virtual std::optional<std::unique_ptr<diagram::Diagram> > loadDiagram(const DiagramMetadata &metadata) = 0;
+        virtual std::optional<std::unique_ptr<diagram::Diagram> > loadDiagram(const FileNode &metadata) = 0;
 
-        virtual void saveDiagram(const DiagramMetadata &metadata, const diagram::Diagram &diagram) = 0;
+        virtual void saveDiagram(const FileNode &metadata, const diagram::Diagram &diagram) = 0;
     };
 }

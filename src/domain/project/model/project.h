@@ -24,14 +24,17 @@
 #include "project_node.h"
 
 namespace project {
-    class DiagramMetadata : public FileNode {
-    public:
-        DiagramMetadata(
-            const std::string &id,
-            NodeContainer *parent,
-            const std::string &name,
-            const std::string &filePath
-        );
+    enum class ProjectCategoryType {
+        DIAGRAM
+    };
+
+    std::string toString(const ProjectCategoryType &type);
+
+    struct ProjectContext {
+        ProjectCategoryType category;
+        std::string parentId;
+        NodeType nodeType;
+        std::string nodeId;
     };
 
     class Project {
@@ -68,9 +71,13 @@ namespace project {
 
         [[nodiscard]] std::string getPath() const;
 
-        [[nodiscard]] ProjectCategory *diagrams() const;
+        [[nodiscard]] std::string getCategoryPath(ProjectCategoryType category) const;
 
-        [[nodiscard]] ProjectNode *findNode(const std::string &id) const;
+        [[nodiscard]] std::optional<ProjectCategory *> getCategory(ProjectCategoryType category) const;
+
+        [[nodiscard]] std::optional<ProjectNode *> findNode(ProjectCategoryType category, const std::string &id) const;
+
+        void addNode(ProjectCategoryType category, std::unique_ptr<ProjectNode> node) const;
 
     private:
         static const std::string PROJECT_START_VERSION;

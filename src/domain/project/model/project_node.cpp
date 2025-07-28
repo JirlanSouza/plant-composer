@@ -22,6 +22,17 @@
 #include <utility>
 
 namespace project {
+    std::string toString(const NodeType &type) {
+        switch (type) {
+            case NodeType::FOLDER:
+                return "Folder";
+            case NodeType::FILE:
+                return "File";
+            default:
+                return "Unknown";
+        }
+    }
+
     ProjectNode::ProjectNode(const NodeType type, std::string id, std::string name, NodeContainer *parent)
         : type_(type), id_(std::move(id)), name_(std::move(name)), parent_(parent) {
     }
@@ -167,6 +178,39 @@ namespace project {
         return std::nullopt;
     }
 
+    std::optional<ProjectNode *> NodeContainer::findNode(const std::string &id) const {
+        if (id.empty()) {
+            return std::nullopt;
+        }
+
+        if (id == getId()) {
+            return const_cast<NodeContainer *>(this);
+        }
+
+        if (children_.contains(id)) {
+            return children_.at(id).get();
+        }
+
+        for (const auto &child: children_ | std::views::values) {
+            if (child->isFile()) {
+                continue;
+            }
+
+            auto folderOpt = child->getAsFolder();
+
+            if (!folderOpt.has_value()) {
+                continue;
+            }
+
+            const auto node = folderOpt.value()->findNode(id);
+
+            if (node.has_value()) {
+                return node;
+            }
+        }
+
+        return std::nullopt;
+    }
 
     ProjectCategory::ProjectCategory(std::string id, std::string name, std::string folderName)
         : NodeContainer(std::move(id), nullptr, std::move(name)), folderName_(std::move(folderName)) {

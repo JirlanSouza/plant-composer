@@ -19,6 +19,13 @@
 #include "project.h"
 
 namespace project {
+    std::string toString(const ProjectCategoryType &category) {
+        switch (category) {
+            case ProjectCategoryType::DIAGRAM: return "Diagram";
+            default: return "Unknown";
+        }
+    }
+
     const std::string Project::PROJECT_START_VERSION = "1.0.0";
     const std::string Project::DIAGRAMS_ROOT_ID = "diagrams_root";
     const std::string Project::DIAGRAMS_ROOT_NAME = "Diagrams";
@@ -71,33 +78,42 @@ namespace project {
     std::string Project::getVersion() const { return version_; }
     std::string Project::getPath() const { return path_; }
 
-    ProjectCategory *Project::diagrams() const {
-        return diagrams_.get();
+    std::string Project::getCategoryPath(const ProjectCategoryType category) const {
+        switch (category) {
+            case ProjectCategoryType::DIAGRAM:
+                return DIAGRAMS_FOLDER_NAME;
+
+            default: return "";
+        }
     }
 
-    ProjectNode *Project::findNode(const std::string &id) const {
-        if (diagrams_->getId() == id) {
-            return diagrams_.get();
-        }
+    std::optional<ProjectCategory *> Project::getCategory(const ProjectCategoryType category) const {
+        switch (category) {
+            case ProjectCategoryType::DIAGRAM:
+                return diagrams_.get();
 
-        auto node = diagrams_->getFile(id);
-        if (node.has_value()) {
-            return node.value();
+            default: return std::nullopt;
         }
-
-        auto folder = diagrams_->getFolder(id);
-        if (folder.has_value()) {
-            return folder.value();
-        }
-
-        return nullptr;
     }
 
-    DiagramMetadata::DiagramMetadata(
-        const std::string &id,
-        NodeContainer *parent,
-        const std::string &name,
-        const std::string &filePath
-    ) : FileNode(id, parent, name, filePath) {
+    std::optional<ProjectNode *> Project::findNode(const ProjectCategoryType category, const std::string &id) const {
+        switch (category) {
+            case ProjectCategoryType::DIAGRAM: {
+                return diagrams_->findNode(id);
+            }
+            default: {
+                return std::nullopt;
+            }
+        }
+    }
+
+    void Project::addNode(const ProjectCategoryType category, std::unique_ptr<ProjectNode> node) const {
+        switch (category) {
+            case ProjectCategoryType::DIAGRAM:
+                diagrams_->addChild(std::move(node));
+                break;
+            default: {
+            }
+        }
     }
 }
