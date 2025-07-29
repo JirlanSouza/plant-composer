@@ -56,19 +56,19 @@ namespace project {
 
         void closeProject();
 
-        void addNewProjectNode(const ProjectContext &context, const std::string &name);
+        void addNewProjectNode(const project::ProjectContext &context, const std::string &name);
 
-        void openFileNodeRequested(ProjectContext context);
+        void openFileNodeRequested(project::ProjectContext context);
 
-        void removeProjectNode(const ProjectContext &context);
+        void removeProjectNode(const project::ProjectContext &context);
 
-        void renameProjectNode(const ProjectContext &context, const std::string &newName);
+        void renameProjectNode(const project::ProjectContext &context, const std::string &newName);
 
-        void copyProjectNode(const ProjectContext &context);
+        void copyProjectNode(const project::ProjectContext &context);
 
-        void cutProjectNode(const ProjectContext &context);
+        void cutProjectNode(const project::ProjectContext &context);
 
-        void pasteProjectNode(const ProjectContext &context);
+        void pasteProjectNode(const project::ProjectContext &context);
 
 
     signals:
@@ -102,7 +102,7 @@ namespace project {
 
         void projectNodeCutFailed(const QString &errorMessage);
 
-        void projectNodePastedAsCopy(const project::ProjectNode *node);
+        void projectNodePastedAsCopy(const std::string &copiedNodeId, const project::ProjectNode *copyNode);
 
         void projectNodePastedAsCut(const project::ProjectNode *node);
 

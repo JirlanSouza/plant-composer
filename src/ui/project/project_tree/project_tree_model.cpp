@@ -47,6 +47,12 @@ namespace project {
         );
         connect(
             projectViewModel_,
+            &ProjectViewModel::projectNodePastedAsCopy,
+            this,
+            &ProjectTreeModel::onProjectNodeCopied
+        );
+        connect(
+            projectViewModel_,
             &ProjectViewModel::projectNodeRenamed,
             this,
             &ProjectTreeModel::onProjectNodeRenamed
@@ -300,6 +306,45 @@ namespace project {
             "Successfully cut node from project tree: {} to folder: {}",
             node->getId(),
             node->getParent()->getId()
+        );
+    }
+
+    void ProjectTreeModel::onProjectNodeCopied(const std::string& copiedNodeId, const ProjectNode *copyNode) {
+        if (!copyNode) {
+            logger_->warn("Received null node in onProjectNodeCopied");
+            return;
+        }
+
+        logger_->info("Coping node from project tree to folder: {}", copyNode->getParent()->getId());
+        if (!itemMap_.contains(copiedNodeId) || !itemMap_.contains(copyNode->getParent()->getId())) {
+            logger_->warn("Received invalid copied node id or target folder id in onProjectNodeCopied");
+            return;
+        }
+
+        QStandardItem *copiedNodeItem = itemMap_[copiedNodeId];
+        QStandardItem *targetFolderItem = itemMap_[copyNode->getParent()->getId()];
+        const auto itemType = copiedNodeItem->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+
+
+        if (copyNode->isFile()) {
+            appendFileNode(
+                targetFolderItem,
+                dynamic_cast<const FileNode *>(copyNode),
+                itemType
+            );
+            targetFolderItem->sortChildren(0, Qt::AscendingOrder);
+        } else if (copyNode->isFolder()) {
+            appendFolderNode(
+                targetFolderItem,
+                dynamic_cast<const NodeContainer *>(copyNode),
+                itemType
+            );
+        }
+
+        logger_->info(
+            "Successfully copy node from project tree: {} to folder: {}",
+            copyNode->getId(),
+            copyNode->getParent()->getId()
         );
     }
 

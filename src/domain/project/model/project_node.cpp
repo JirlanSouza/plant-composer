@@ -82,6 +82,10 @@ namespace project {
         return this;
     }
 
+    ProjectNode *FileNode::copy(common::IDFactory *idFactory) const {
+        return new FileNode(idFactory->create(), getParent(), getName(), getFilePath());
+    }
+
 
     NodeContainer::NodeContainer(std::string id, NodeContainer *parent, std::string name)
         : ProjectNode(NodeType::FOLDER, std::move(id), std::move(name), parent) {
@@ -126,9 +130,20 @@ namespace project {
         return std::nullopt;
     }
 
+    ProjectNode *NodeContainer::copy(common::IDFactory *idFactory) const {
+        const auto folder = new NodeContainer(idFactory->create(), getParent(), getName());
+
+        for (const auto &child: children_ | std::views::values) {
+            folder->addChild(std::unique_ptr<ProjectNode>(child->copy(idFactory)));
+        }
+
+        return folder;
+    }
+
+
     std::optional<NodeContainer *> NodeContainer::getFolder(const std::string &folderId) {
         if (children_.contains(folderId) && children_.at(folderId)->isFolder()) {
-            return static_cast<NodeContainer *>(children_.at(folderId).get());
+            return dynamic_cast<NodeContainer *>(children_.at(folderId).get());
         }
 
         for (const std::unique_ptr<ProjectNode> &child: children_ | std::views::values) {
@@ -154,7 +169,7 @@ namespace project {
 
     std::optional<FileNode *> NodeContainer::getFile(const std::string &fileId) {
         if (children_.contains(fileId) && children_.at(fileId)->isFile()) {
-            return static_cast<FileNode *>(children_.at(fileId).get());
+            return dynamic_cast<FileNode *>(children_.at(fileId).get());
         }
 
         for (const std::unique_ptr<ProjectNode> &child: children_ | std::views::values) {

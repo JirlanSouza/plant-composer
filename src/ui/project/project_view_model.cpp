@@ -349,7 +349,29 @@ namespace project {
                 targetFolder->getName()
             );
         } else if (clipboard_.mode == ClipboardMode::COPY) {
-            // TODO: Implement deep copy of the node
+            if (!clipboard_.node->canBeCopied()) {
+                logger_->warn(
+                    "Node with ID: {}, category: {}, type: {} can not be copied",
+                    context.nodeId,
+                    toString(context.category),
+                    toString(context.nodeType)
+                );
+                return;
+            }
+
+
+            const auto copyNode = clipboard_.node->copy(idFactory_);
+            targetFolder->addChild(std::unique_ptr<ProjectNode>(copyNode));
+            emit projectNodePastedAsCopy(clipboard_.node->getId(), copyNode);
+            logger_->info(
+                "Successfully copy node with ID: {}, category: {}, type: {} to folder with ID: {}, name: {} and receive ID: {}",
+                clipboard_.node->getId(),
+                toString(context.category),
+                toString(clipboard_.node->getType()),
+                targetFolder->getId(),
+                targetFolder->getName(),
+                copyNode->getId()
+            );
         }
 
         clipboard_.mode = ClipboardMode::NONE;

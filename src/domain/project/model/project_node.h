@@ -24,6 +24,9 @@
 #include <memory>
 #include <optional>
 
+#include "domain/common/id_factory.h"
+#include "domain/common/ilogger_factory.h"
+
 namespace project {
     enum class NodeType {
         FOLDER, FILE
@@ -62,6 +65,8 @@ namespace project {
 
         [[nodiscard]] virtual bool canBeRenamed() const;
 
+        [[nodiscard]] virtual ProjectNode *copy(common::IDFactory *idFactory) const = 0;
+
         virtual std::optional<NodeContainer *> getAsFolder() = 0;
 
         virtual std::optional<FileNode *> getAsFile() = 0;
@@ -85,6 +90,8 @@ namespace project {
         std::optional<NodeContainer *> getAsFolder() override;
 
         std::optional<FileNode *> getAsFile() override;
+
+        [[nodiscard]] ProjectNode *copy(common::IDFactory *idFactory) const override;
 
     private:
         std::string filePath_;
@@ -110,7 +117,9 @@ namespace project {
 
         std::optional<FileNode *> getAsFile() override;
 
-        std::optional<ProjectNode *> findNode(const std::string &id) const;
+        [[nodiscard]] ProjectNode *copy(common::IDFactory *idFactory) const override;
+
+        [[nodiscard]] std::optional<ProjectNode *> findNode(const std::string &id) const;
 
     private:
         std::unordered_map<std::string, std::unique_ptr<ProjectNode> > children_{};

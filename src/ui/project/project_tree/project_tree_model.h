@@ -48,11 +48,13 @@ namespace project {
     private slots:
         void onProjectClosed();
 
-        void onProjectNodeAdded(const ProjectNode *node);
+        void onProjectNodeAdded(const project::ProjectNode *node);
 
         void onProjectNodeRemoved(const std::string &nodeId);
 
-        void onProjectNodeCut(const ProjectNode *node);
+        void onProjectNodeCut(const project::ProjectNode *node);
+
+        void onProjectNodeCopied(const std::string& copiedNodeId, const project::ProjectNode *copyNode);
 
         void onProjectNodeRenamed(const std::string &fileId, const std::string &newName);
 
