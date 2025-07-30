@@ -21,6 +21,7 @@ target_sources(ui
         project/project_view_manager.cpp
         project/project_view_model.h
         project/project_view_model.cpp
+        project/clipboard.h
         project/new_project_dialog.h
         project/new_project_dialog.cpp
         project/project_tree/project_tree_item_type.h

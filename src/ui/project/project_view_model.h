@@ -25,6 +25,7 @@
 #include "domain/common/id_factory.h"
 #include "domain/common/ilogger.h"
 #include "domain/common/ilogger_factory.h"
+#include "clipboard.h"
 
 namespace project {
     class ProjectViewModel : public QObject {
@@ -111,16 +112,6 @@ namespace project {
         common::IDFactory *idFactory_;
         IProjectLoader *projectLoader_;
         std::unique_ptr<Project> project_{nullptr};
-
-        enum class ClipboardMode {
-            NONE, COPY, CUT
-        };
-
-        struct ClipboardItem {
-            ClipboardMode mode = ClipboardMode::NONE;
-            const ProjectNode *node = nullptr;
-        };
-
-        ClipboardItem clipboard_;
+        Clipboard clipboard_;
     };
 }

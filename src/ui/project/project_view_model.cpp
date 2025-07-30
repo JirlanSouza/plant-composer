@@ -249,8 +249,7 @@ namespace project {
             return;
         }
 
-        clipboard_.mode = ClipboardMode::COPY;
-        clipboard_.node = node.value();
+        clipboard_.setCopy(node.value());
         emit projectNodeCopied();
     }
 
@@ -274,8 +273,7 @@ namespace project {
             return;
         }
 
-        clipboard_.mode = ClipboardMode::CUT;
-        clipboard_.node = node.value();
+        clipboard_.setCut(node.value());
         emit projectNodeCut();
     }
 
@@ -287,7 +285,7 @@ namespace project {
             toString(context.nodeType)
         );
 
-        if (clipboard_.mode == ClipboardMode::NONE || !clipboard_.node) {
+        if (clipboard_.isEmpty()) {
             logger_->warn(
                 "Not pasting node with ID: {}, category: {}, type: {} clipboard is empty",
                 context.nodeId,
@@ -323,8 +321,8 @@ namespace project {
 
         const auto targetFolder = targetFolderOpt.value();
 
-        if (clipboard_.mode == ClipboardMode::CUT) {
-            if (!clipboard_.node->canBeMoved()) {
+        if (clipboard_.isCut()) {
+            if (!clipboard_.getNode()->canBeMoved()) {
                 logger_->warn(
                     "Node with ID: {}, category: {}, type: {} can not be moved",
                     context.nodeId,
@@ -335,8 +333,8 @@ namespace project {
             }
 
 
-            const auto originalParent = clipboard_.node->getParent();
-            auto nodePtr = originalParent->releaseChild(clipboard_.node->getId());
+            const auto originalParent = clipboard_.getNode()->getParent();
+            auto nodePtr = originalParent->releaseChild(clipboard_.getNode()->getId());
             const auto releasedNode = nodePtr.get();
             targetFolder->addChild(std::move(nodePtr));
             emit projectNodePastedAsCut(releasedNode);
@@ -348,8 +346,8 @@ namespace project {
                 targetFolder->getId(),
                 targetFolder->getName()
             );
-        } else if (clipboard_.mode == ClipboardMode::COPY) {
-            if (!clipboard_.node->canBeCopied()) {
+        } else if (clipboard_.isCopy()) {
+            if (!clipboard_.getNode()->canBeCopied()) {
                 logger_->warn(
                     "Node with ID: {}, category: {}, type: {} can not be copied",
                     context.nodeId,
@@ -360,21 +358,20 @@ namespace project {
             }
 
 
-            const auto copyNode = clipboard_.node->copy(idFactory_);
+            const auto copyNode = clipboard_.getNode()->copy(idFactory_);
             targetFolder->addChild(std::unique_ptr<ProjectNode>(copyNode));
-            emit projectNodePastedAsCopy(clipboard_.node->getId(), copyNode);
+            emit projectNodePastedAsCopy(clipboard_.getNode()->getId(), copyNode);
             logger_->info(
                 "Successfully copy node with ID: {}, category: {}, type: {} to folder with ID: {}, name: {} and receive ID: {}",
-                clipboard_.node->getId(),
+                clipboard_.getNode()->getId(),
                 toString(context.category),
-                toString(clipboard_.node->getType()),
+                toString(clipboard_.getNode()->getType()),
                 targetFolder->getId(),
                 targetFolder->getName(),
                 copyNode->getId()
             );
         }
 
-        clipboard_.mode = ClipboardMode::NONE;
-        clipboard_.node = nullptr;
+        clipboard_.clear();
     }
 }
