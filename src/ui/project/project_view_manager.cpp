@@ -241,8 +241,12 @@ namespace project {
 
         QMenu menu;
         menu.setMinimumWidth(220);
-        if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER ||
-            type == TreeItemTypes::DIAGRAM_FOLDER) {
+        if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER) {
+            menu.addAction(newDiagramAction_);
+            menu.addAction(newFolderAction_);
+            menu.addSeparator();
+            menu.addAction(pasteAction_);
+        } else if (type == TreeItemTypes::DIAGRAM_FOLDER) {
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
