@@ -106,7 +106,7 @@ namespace project {
 
         openAction_ = new QAction(QIcon::fromTheme("document-open"), tr("Open"), this);
         openAction_->setIconVisibleInMenu(true);
-        connect(openAction_, &QAction::triggered, this, &ProjectViewManager::onOpenTriggered);
+        connect(openAction_, &QAction::triggered, this, &ProjectViewManager::onOpenActionTriggered);
         actionsManager_->addAction(app_actions::ActionGroupType::File, openAction_);
 
         renameAction_ = new QAction(QIcon::fromTheme("edit-rename"), tr("Rename"), this);
@@ -116,22 +116,22 @@ namespace project {
 
         deleteAction_ = new QAction(QIcon::fromTheme("edit-delete"), tr("Delete"), this);
         deleteAction_->setIconVisibleInMenu(true);
-        connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteTriggered);
+        connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteActionTriggered);
         actionsManager_->addAction(app_actions::ActionGroupType::Edit, deleteAction_);
 
         copyAction_ = new QAction(QIcon::fromTheme("edit-copy"), tr("Copy"), this);
         copyAction_->setIconVisibleInMenu(true);
-        connect(copyAction_, &QAction::triggered, this, &ProjectViewManager::onCopyTriggered);
+        connect(copyAction_, &QAction::triggered, this, &ProjectViewManager::onCopyActionTriggered);
         actionsManager_->addAction(app_actions::ActionGroupType::Edit, copyAction_);
 
         cutAction_ = new QAction(QIcon::fromTheme("edit-cut"), tr("Cut"), this);
         cutAction_->setIconVisibleInMenu(true);
-        connect(cutAction_, &QAction::triggered, this, &ProjectViewManager::onCutTriggered);
+        connect(cutAction_, &QAction::triggered, this, &ProjectViewManager::onCutActionTriggered);
         actionsManager_->addAction(app_actions::ActionGroupType::Edit, cutAction_);
 
         pasteAction_ = new QAction(QIcon::fromTheme("edit-paste"), tr("Paste"), this);
         pasteAction_->setIconVisibleInMenu(true);
-        connect(pasteAction_, &QAction::triggered, this, &ProjectViewManager::onPasteTriggered);
+        connect(pasteAction_, &QAction::triggered, this, &ProjectViewManager::onPasteActionTriggered);
         actionsManager_->addAction(app_actions::ActionGroupType::Edit, pasteAction_);
         pasteAction_->setEnabled(false);
     }
@@ -184,48 +184,65 @@ namespace project {
         messageBox->deleteLater();
     }
 
-    void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) {
+    void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) const {
         if (!index.isValid()) return;
 
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-        currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-
-        logger_->info("User double-clicked item ID: {}, Type: {}", currentItemId_, static_cast<int>(type));
 
         if (type == TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM) {
             const auto parent = item->parent();
             if (parent) {
-                currentItemId_ = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-                onAddNewDiagramTriggered();
+                const auto parentId = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+                const auto parentType = parent->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+                const auto parentCategory = TreeItemTypes::toProjectCategory(parentType);
+                if(parentCategory.has_value()){
+                    projectViewModel_->addNewProjectNode({parentCategory.value(), parentId, NodeType::FILE, ""}, "New Diagram");
+                }
             }
-        } else if (type == TreeItemTypes::DIAGRAM_FILE) {
-            projectViewModel_->openFileNodeRequested(currentContext_);
-        } else if (type == TreeItemTypes::DIAGRAM_FOLDER || type == TreeItemTypes::DIAGRAM_ROOT_FOLDER) {
-            projectTreeView_->toggleExpanded(index);
+            return;
         }
+
+        const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto parentId = item->parent() ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString() : "";
+        const auto category = TreeItemTypes::toProjectCategory(type);
+        const auto nodeType = TreeItemTypes::toNodeType(type);
+
+        if (!category.has_value() || !nodeType.has_value()) {
+            logger_->warn("Could not determine project context for double-clicked item");
+            return;
+        }
+
+        handleNodeOpening({category.value(), parentId, nodeType.value(), id});
     }
 
     void ProjectViewManager::onTreeViewContextMenuRequested(const QPoint &pos) {
-        currentItemIndex_ = projectTreeView_->indexAt(pos);
-        if (!currentItemIndex_.isValid()) return;
-
-        const auto item = projectTreeModel_->itemFromIndex(currentItemIndex_);
-        currentItemType_ = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-        currentItemId_ = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentItem = item->parent();
-        if (parentItem) {
-            currentParentId_ = parentItem->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto index = projectTreeView_->indexAt(pos);
+        if (!index.isValid()) {
+            contextMenuContext_ = std::nullopt;
+            return;
         }
 
-        logger_->info("User right-clicked item ID: {}, Type: {}", currentItemId_, static_cast<int>(currentItemType_));
+        const auto item = projectTreeModel_->itemFromIndex(index);
+        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+        const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto parentId = item->parent() ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString() : "";
+        const auto category = TreeItemTypes::toProjectCategory(type);
+        const auto nodeType = TreeItemTypes::toNodeType(type);
+
+        if (!category.has_value() || !nodeType.has_value()) {
+            contextMenuContext_ = std::nullopt;
+            return;
+        }
+
+        contextMenuContext_ = {category.value(), parentId, nodeType.value(), id};
+
+        logger_->info("User right-clicked item ID: {}, Type: {}", id, static_cast<int>(type));
 
         QMenu menu;
         menu.setMinimumWidth(220);
-        if (currentItemType_ == TreeItemTypes::DIAGRAM_ROOT_FOLDER ||
-            currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
-            currentContext_ = {ProjectCategoryType::DIAGRAM, currentParentId_, NodeType::FOLDER, currentItemId_};
-
+        if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER ||
+            type == TreeItemTypes::DIAGRAM_FOLDER) {
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
@@ -235,8 +252,7 @@ namespace project {
             menu.addSeparator();
             menu.addAction(renameAction_);
             menu.addAction(deleteAction_);
-        } else if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE) {
-            currentContext_ = {ProjectCategoryType::DIAGRAM, currentParentId_, NodeType::FILE, currentItemId_};
+        } else if (type == TreeItemTypes::DIAGRAM_FILE) {
             menu.addAction(openAction_);
             menu.addSeparator();
             menu.addAction(copyAction_);
@@ -252,30 +268,32 @@ namespace project {
     }
 
     void ProjectViewManager::onAddNewDiagramTriggered() const {
-        logger_->info("User triggered 'Add New Diagram' for parent: {}", currentItemId_);
-        projectViewModel_->addNewProjectNode(currentContext_, "New Diagram");
+        if (!contextMenuContext_.has_value()) return;
+        logger_->info("User triggered 'Add New Diagram' for parent: {}", contextMenuContext_.value().nodeId);
+        projectViewModel_->addNewProjectNode(contextMenuContext_.value(), "New Diagram");
     }
 
     void ProjectViewManager::onAddNewFolderTriggered() const {
-        logger_->info("User triggered 'Add New Folder' for parent: {}", currentItemId_);
-        projectViewModel_->addNewProjectNode(currentContext_, "New Folder");
+        if (!contextMenuContext_.has_value()) return;
+        logger_->info("User triggered 'Add New Folder' for parent: {}", contextMenuContext_.value().nodeId);
+        projectViewModel_->addNewProjectNode(contextMenuContext_.value(), "New Folder");
     }
 
-    void ProjectViewManager::onOpenTriggered() const {
-        logger_->info("User triggered 'Open' for item: {}", currentItemId_);
-        projectViewModel_->openFileNodeRequested(currentContext_);
+    void ProjectViewManager::onOpenActionTriggered() const {
+        if (!contextMenuContext_.has_value()) return;
+        handleNodeOpening(contextMenuContext_.value());
     }
 
     void ProjectViewManager::onRenameTriggered() const {
-        logger_->info("User triggered 'Rename' for item: {}", currentItemId_);
-        if (currentItemType_ == TreeItemTypes::DIAGRAM_FILE || currentItemType_ == TreeItemTypes::DIAGRAM_FOLDER) {
-            projectTreeView_->edit(currentItemIndex_);
-        }
+        if (!contextMenuContext_.has_value()) return;
+        logger_->info("User triggered 'Rename' for item: {}", contextMenuContext_.value().nodeId);
+        const auto index = projectTreeView_->indexAt(projectTreeView_->visualRect(projectTreeView_->currentIndex()).center());
+        projectTreeView_->edit(index);
     }
 
-    void ProjectViewManager::onDeleteTriggered() const {
-        logger_->info("User triggered 'Delete' for item: {}", currentItemId_);
-        projectViewModel_->removeProjectNode(currentContext_);
+    void ProjectViewManager::onDeleteActionTriggered() const {
+        if (!contextMenuContext_.has_value()) return;
+        handleNodeDeletion(contextMenuContext_.value());
     }
 
     void ProjectViewManager::onItemReadyForEditing(const QModelIndex &index) const {
@@ -283,19 +301,22 @@ namespace project {
         projectTreeView_->edit(index);
     }
 
-    void ProjectViewManager::onCopyTriggered() const {
-        logger_->info("User triggered 'Copy' for item: {}", currentItemId_);
-        projectViewModel_->copyProjectNode(currentContext_);
+    void ProjectViewManager::onCopyActionTriggered() {
+        if (!contextMenuContext_.has_value()) return;
+        logger_->info("User triggered 'Copy' for item: {}", contextMenuContext_.value().nodeId);
+        projectViewModel_->copyProjectNode(contextMenuContext_.value());
     }
 
-    void ProjectViewManager::onCutTriggered() const {
-        logger_->info("User triggered 'Cut' for item: {}", currentItemId_);
-        projectViewModel_->cutProjectNode(currentContext_);
+    void ProjectViewManager::onCutActionTriggered() {
+        if (!contextMenuContext_.has_value()) return;
+        logger_->info("User triggered 'Cut' for item: {}", contextMenuContext_.value().nodeId);
+        projectViewModel_->cutProjectNode(contextMenuContext_.value());
     }
 
-    void ProjectViewManager::onPasteTriggered() const {
-        logger_->info("User triggered 'Paste' for item: {}", currentItemId_);
-        projectViewModel_->pasteProjectNode(currentContext_);
+    void ProjectViewManager::onPasteActionTriggered() {
+        if (!contextMenuContext_.has_value()) return;
+        logger_->info("User triggered 'Paste' for item: {}", contextMenuContext_.value().nodeId);
+        projectViewModel_->pasteProjectNode(contextMenuContext_.value());
     }
 
     void ProjectViewManager::onNodeCopied() const {
@@ -304,5 +325,17 @@ namespace project {
 
     void ProjectViewManager::onNodeCut() const {
         pasteAction_->setEnabled(true);
+    }
+
+    void ProjectViewManager::handleNodeOpening(const ProjectContext &context) const {
+        logger_->info("Handling node opening for item: {}", context.nodeId);
+        if (context.nodeType == NodeType::FILE) {
+            projectViewModel_->openFileNodeRequested(context);
+        }
+    }
+
+    void ProjectViewManager::handleNodeDeletion(const ProjectContext &context) const {
+        logger_->info("Handling node deletion for item: {}", context.nodeId);
+        projectViewModel_->removeProjectNode(context);
     }
 }

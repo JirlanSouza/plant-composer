@@ -52,7 +52,7 @@ namespace project {
 
         void onOpenProjectFailed(const QString &errorMessage) const;
 
-        void onTreeViewDoubleClicked(const QModelIndex &index);
+        void onTreeViewDoubleClicked(const QModelIndex &index) const;
 
         void onTreeViewContextMenuRequested(const QPoint &pos);
 
@@ -60,25 +60,28 @@ namespace project {
 
         void onAddNewFolderTriggered() const;
 
-        void onOpenTriggered() const;
+        void onOpenActionTriggered() const;
 
         void onRenameTriggered() const;
 
-        void onDeleteTriggered() const;
+        void onDeleteActionTriggered() const;
 
         void onItemReadyForEditing(const QModelIndex &index) const;
 
-        void onCopyTriggered() const;
+        void onCopyActionTriggered();
 
-        void onCutTriggered() const;
+        void onCutActionTriggered();
 
-        void onPasteTriggered() const;
+        void onPasteActionTriggered();
 
         void onNodeCopied() const;
 
         void onNodeCut() const;
 
     private:
+        void handleNodeOpening(const ProjectContext &context) const;
+        void handleNodeDeletion(const ProjectContext &context) const;
+
         std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
         app_actions::ActionsManager *actionsManager_;
@@ -98,11 +101,7 @@ namespace project {
         QAction *cutAction_;
         QAction *pasteAction_;
 
-        QModelIndex currentItemIndex_;
-        std::string currentParentId_;
-        std::string currentItemId_;
-        TreeItemTypes::TreeItemType currentItemType_;
-        ProjectContext currentContext_;
+        std::optional<ProjectContext> contextMenuContext_;
 
         void createActions();
     };
