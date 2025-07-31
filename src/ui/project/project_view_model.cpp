@@ -111,7 +111,7 @@ namespace project {
             return;
         }
 
-        auto parentFolder = static_cast<NodeContainer *>(parentFolderOpt.value());
+        auto parentFolder = dynamic_cast<NodeContainer *>(parentFolderOpt.value());
         std::unique_ptr<ProjectNode> node;
 
         if (context.nodeType == NodeType::FILE) {
@@ -217,7 +217,7 @@ namespace project {
             return;
         }
 
-        nodeOpt.value()->getParent()->removeChild(context.nodeId);
+        nodeOpt.value()->rename(newName);
         emit projectNodeRenamed(context.nodeId, newName);
         logger_->info(
             "Successfully renamed node with ID: {}, category: {}, type: {}, lastName: {}, newName: {}",
