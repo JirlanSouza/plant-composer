@@ -52,6 +52,8 @@ namespace project {
 
         void onOpenProjectFailed(const QString &errorMessage) const;
 
+        void onTreeViewItemSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
         void onTreeViewDoubleClicked(const QModelIndex &index) const;
 
         void onTreeViewContextMenuRequested(const QPoint &pos);
@@ -79,9 +81,6 @@ namespace project {
         void onNodeCut() const;
 
     private:
-        void handleNodeOpening(const ProjectContext &context) const;
-        void handleNodeDeletion(const ProjectContext &context) const;
-
         std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
         app_actions::ActionsManager *actionsManager_;
@@ -103,6 +102,17 @@ namespace project {
 
         std::optional<ProjectContext> contextMenuContext_;
 
+        void handleNodeOpening(const ProjectContext &context) const;
+
+        void handleNodeDeletion(const ProjectContext &context) const;
+
         void createActions();
+
+        QAction *createAction(
+            const QString &name,
+            const QIcon::ThemeIcon &themeIcon,
+            const QString &tooltip,
+            const std::function<void()>& handler
+        );
     };
 }

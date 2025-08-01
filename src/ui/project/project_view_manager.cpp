@@ -35,6 +35,8 @@ namespace project {
         actionsManager_(actionsManager) {
         projectTreeModel_ = new ProjectTreeModel(loggerFactory, projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
+        const auto projectSelectionModel = new QItemSelectionModel(projectTreeModel_, this);
+        projectTreeView_->setSelectionModel(projectSelectionModel);
 
         createActions();
 
@@ -44,6 +46,12 @@ namespace project {
             &ProjectViewModel::openProjectFailed,
             this,
             &ProjectViewManager::onOpenProjectFailed
+        );
+        connect(
+            projectSelectionModel,
+            &QItemSelectionModel::selectionChanged,
+            this,
+            &ProjectViewManager::onTreeViewItemSelectionChanged
         );
         connect(projectTreeView_, &ProjectTreeView::activated, this, &ProjectViewManager::onTreeViewDoubleClicked);
         connect(
@@ -69,71 +77,148 @@ namespace project {
     }
 
     void ProjectViewManager::createActions() {
-        newProjectAction_ = new QAction(QIcon::fromTheme("document-new"), tr("New Project"), this);
-        newProjectAction_->setIconVisibleInMenu(true);
-        connect(newProjectAction_, &QAction::triggered, this, &ProjectViewManager::onCreateNewProjectTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::File, newProjectAction_);
+        newProjectAction_ = createAction(
+            tr("New Project"),
+            QIcon::ThemeIcon::DocumentNew,
+            tr("Create new project"),
+            [this] { onCreateNewProjectTriggered(); }
+        );
+        actionsManager_->addAction(
+            app_actions::ActionGroupType::File,
+            newProjectAction_,
+            app_actions::ShortcutId::NewProject
+        );
         actionsManager_->addAction(app_actions::ActionGroupType::ToolbarFile, newProjectAction_);
 
-        openProjectAction_ = new QAction(QIcon::fromTheme("document-open"), tr("Open Project"), this);
-        openProjectAction_->setIconVisibleInMenu(true);
-        connect(openProjectAction_, &QAction::triggered, this, &ProjectViewManager::onOpenProjectTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::File, openProjectAction_);
+        openProjectAction_ = createAction(
+            tr("Open Project"),
+            QIcon::ThemeIcon::DocumentOpen,
+            tr("Open existent project"),
+            [this] { onOpenProjectTriggered(); }
+        );
+        actionsManager_->addAction(
+            app_actions::ActionGroupType::File,
+            openProjectAction_,
+            app_actions::ShortcutId::OpenProject
+        );
         actionsManager_->addAction(app_actions::ActionGroupType::ToolbarFile, openProjectAction_);
 
-        saveProjectAction_ = new QAction(QIcon::fromTheme("document-save"), tr("Save Project"), this);
-        saveProjectAction_->setIconVisibleInMenu(true);
+        saveProjectAction_ = createAction(
+            tr("Save Project"),
+            QIcon::ThemeIcon::DocumentSave,
+            tr("Save project"),
+            [this] { projectViewModel_->saveProject(); }
+        );
         saveProjectAction_->setEnabled(false);
-        connect(saveProjectAction_, &QAction::triggered, projectViewModel_, &ProjectViewModel::saveProject);
-        actionsManager_->addAction(app_actions::ActionGroupType::File, saveProjectAction_);
+        actionsManager_->addAction(
+            app_actions::ActionGroupType::File,
+            saveProjectAction_,
+            app_actions::ShortcutId::SaveProject
+        );
         actionsManager_->addAction(app_actions::ActionGroupType::ToolbarFile, saveProjectAction_);
 
-        closeProjectAction_ = new QAction(QIcon::fromTheme("document-close"), tr("Close Project"), this);
-        closeProjectAction_->setIconVisibleInMenu(true);
+        closeProjectAction_ = createAction(
+            tr("Close Project"),
+            QIcon::ThemeIcon::NThemeIcons,
+            tr("Close current project"),
+            [this] { projectViewModel_->closeProject(); }
+        );
         closeProjectAction_->setEnabled(false);
-        connect(closeProjectAction_, &QAction::triggered, projectViewModel_, &ProjectViewModel::closeProject);
         actionsManager_->addAction(app_actions::ActionGroupType::File, closeProjectAction_);
 
-        newDiagramAction_ = new QAction(QIcon::fromTheme("document-new"), tr("New Diagram"), this);
-        newDiagramAction_->setIconVisibleInMenu(true);
-        connect(newDiagramAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewDiagramTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, newDiagramAction_);
+        newDiagramAction_ = createAction(
+            tr("New Diagram"),
+            QIcon::ThemeIcon::DocumentNew,
+            tr("Create new diagram"),
+            [this] { onAddNewDiagramTriggered(); }
+        );
+        actionsManager_->addAction(
+            app_actions::ActionGroupType::Edit,
+            newDiagramAction_,
+            app_actions::ShortcutId::NewFile
+        );
 
-        newFolderAction_ = new QAction(QIcon::fromTheme("folder-new"), tr("New Folder"), this);
-        newFolderAction_->setIconVisibleInMenu(true);
-        connect(newFolderAction_, &QAction::triggered, this, &ProjectViewManager::onAddNewFolderTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, newFolderAction_);
+        newFolderAction_ = createAction(
+            tr("New Folder"),
+            QIcon::ThemeIcon::FolderNew,
+            tr("Create new folder"),
+            [this] { onAddNewFolderTriggered(); }
+        );
+        actionsManager_->addAction(
+            app_actions::ActionGroupType::Edit,
+            newFolderAction_,
+            app_actions::ShortcutId::NewFolder
+        );
 
-        openAction_ = new QAction(QIcon::fromTheme("document-open"), tr("Open"), this);
-        openAction_->setIconVisibleInMenu(true);
-        connect(openAction_, &QAction::triggered, this, &ProjectViewManager::onOpenActionTriggered);
+        openAction_ = createAction(
+            tr("Open"),
+            QIcon::ThemeIcon::DocumentOpen,
+            tr("Open item"),
+            [this] { onOpenActionTriggered(); }
+        );
         actionsManager_->addAction(app_actions::ActionGroupType::File, openAction_);
 
-        renameAction_ = new QAction(QIcon::fromTheme("edit-rename"), tr("Rename"), this);
-        renameAction_->setIconVisibleInMenu(true);
-        connect(renameAction_, &QAction::triggered, this, &ProjectViewManager::onRenameTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, renameAction_);
+        renameAction_ = createAction(
+            tr("Rename"),
+            QIcon::ThemeIcon::NThemeIcons,
+            tr("Rename item"),
+            [this] { onRenameTriggered(); }
+        );
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, renameAction_, app_actions::ShortcutId::Rename);
 
-        deleteAction_ = new QAction(QIcon::fromTheme("edit-delete"), tr("Delete"), this);
-        deleteAction_->setIconVisibleInMenu(true);
-        connect(deleteAction_, &QAction::triggered, this, &ProjectViewManager::onDeleteActionTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, deleteAction_);
+        deleteAction_ = createAction(
+            tr("Delete"),
+            QIcon::ThemeIcon::EditDelete,
+            tr("Delete item"),
+            [this] { onDeleteActionTriggered(); }
+        );
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, deleteAction_, app_actions::ShortcutId::Delete);
 
-        copyAction_ = new QAction(QIcon::fromTheme("edit-copy"), tr("Copy"), this);
-        copyAction_->setIconVisibleInMenu(true);
-        connect(copyAction_, &QAction::triggered, this, &ProjectViewManager::onCopyActionTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, copyAction_);
+        copyAction_ = createAction(
+            tr("Copy"),
+            QIcon::ThemeIcon::EditCopy,
+            tr("Copy item"),
+            [this] { onCopyActionTriggered(); }
+        );
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, copyAction_, app_actions::ShortcutId::Copy);
 
-        cutAction_ = new QAction(QIcon::fromTheme("edit-cut"), tr("Cut"), this);
-        cutAction_->setIconVisibleInMenu(true);
-        connect(cutAction_, &QAction::triggered, this, &ProjectViewManager::onCutActionTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, cutAction_);
+        cutAction_ = createAction(
+            tr("Cut"),
+            QIcon::ThemeIcon::EditCut,
+            tr("Cut item"),
+            [this] { onCutActionTriggered(); }
+        );
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, cutAction_, app_actions::ShortcutId::Cut);
 
-        pasteAction_ = new QAction(QIcon::fromTheme("edit-paste"), tr("Paste"), this);
-        pasteAction_->setIconVisibleInMenu(true);
-        connect(pasteAction_, &QAction::triggered, this, &ProjectViewManager::onPasteActionTriggered);
-        actionsManager_->addAction(app_actions::ActionGroupType::Edit, pasteAction_);
+        pasteAction_ = createAction(
+            tr("Paste"),
+            QIcon::ThemeIcon::EditPaste,
+            tr("Paste item"),
+            [this] { onPasteActionTriggered(); }
+        );
         pasteAction_->setEnabled(false);
+        actionsManager_->addAction(app_actions::ActionGroupType::Edit, pasteAction_, app_actions::ShortcutId::Paste);
+    }
+
+    QAction *ProjectViewManager::createAction(
+        const QString &name,
+        const QIcon::ThemeIcon &themeIcon,
+        const QString &tooltip,
+        const std::function<void()> &handler
+    ) {
+        QIcon icon;
+        if (themeIcon != QIcon::ThemeIcon::NThemeIcons) {
+            icon = QIcon::fromTheme(themeIcon);
+        } else {
+            logger_->warn("Icon not found in theme for action: {}", name.toStdString());
+            icon = QIcon();
+        }
+
+        auto *action = new QAction(icon, name, this);
+        action->setToolTip(tooltip);
+        action->setIconVisibleInMenu(true);
+        connect(action, &QAction::triggered, handler);
+        return action;
     }
 
     void ProjectViewManager::onCreateNewProjectTriggered() const {
@@ -184,6 +269,35 @@ namespace project {
         messageBox->deleteLater();
     }
 
+    void ProjectViewManager::onTreeViewItemSelectionChanged(
+        const QItemSelection &selected,
+        const QItemSelection &deselected
+    ) {
+        if (selected.indexes().isEmpty()) {
+            logger_->info("User deselected all items on project tree");
+            return;
+        }
+
+        const auto item = projectTreeModel_->itemFromIndex(selected.indexes().first());
+        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+        const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto parentId = item->parent()
+                                  ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString()
+                                  : "";
+        const auto category = TreeItemTypes::toProjectCategory(type);
+        const auto nodeType = TreeItemTypes::toNodeType(type);
+
+        if (!category.has_value() || !nodeType.has_value()) {
+            contextMenuContext_ = std::nullopt;
+            return;
+        }
+
+        contextMenuContext_ = {category.value(), parentId, nodeType.value(), id};
+
+        logger_->info("User selected item ID: {}, Type: {}", id, static_cast<int>(type));
+    }
+
+
     void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) const {
         if (!index.isValid()) return;
 
@@ -191,20 +305,28 @@ namespace project {
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
 
         if (type == TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM) {
+            logger_->info("AddNewDiagram item clicked, creating new diagram in parent folder");
             const auto parent = item->parent();
             if (parent) {
                 const auto parentId = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-                const auto parentType = parent->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+                const auto parentType = parent->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<
+                    TreeItemTypes::TreeItemType>();
                 const auto parentCategory = TreeItemTypes::toProjectCategory(parentType);
-                if(parentCategory.has_value()){
-                    projectViewModel_->addNewProjectNode({parentCategory.value(), parentId, NodeType::FILE, ""}, "New Diagram");
+                if (parentCategory.has_value()) {
+                    projectViewModel_->addNewProjectNode(
+                        {parentCategory.value(), "", NodeType::FILE, parentId},
+                        NodeType::FILE,
+                        "New Diagram"
+                    );
                 }
             }
             return;
         }
 
         const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentId = item->parent() ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString() : "";
+        const auto parentId = item->parent()
+                                  ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString()
+                                  : "";
         const auto category = TreeItemTypes::toProjectCategory(type);
         const auto nodeType = TreeItemTypes::toNodeType(type);
 
@@ -226,7 +348,9 @@ namespace project {
         const auto item = projectTreeModel_->itemFromIndex(index);
         const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
         const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentId = item->parent() ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString() : "";
+        const auto parentId = item->parent()
+                                  ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString()
+                                  : "";
         const auto category = TreeItemTypes::toProjectCategory(type);
         const auto nodeType = TreeItemTypes::toNodeType(type);
 
@@ -272,15 +396,15 @@ namespace project {
     }
 
     void ProjectViewManager::onAddNewDiagramTriggered() const {
-        if (!contextMenuContext_.has_value()) return;
+        if (!contextMenuContext_.has_value() || contextMenuContext_.value().nodeType != NodeType::FOLDER) return;
         logger_->info("User triggered 'Add New Diagram' for parent: {}", contextMenuContext_.value().nodeId);
-        projectViewModel_->addNewProjectNode(contextMenuContext_.value(), "New Diagram");
+        projectViewModel_->addNewProjectNode(contextMenuContext_.value(), NodeType::FILE, "New Diagram");
     }
 
     void ProjectViewManager::onAddNewFolderTriggered() const {
         if (!contextMenuContext_.has_value()) return;
         logger_->info("User triggered 'Add New Folder' for parent: {}", contextMenuContext_.value().nodeId);
-        projectViewModel_->addNewProjectNode(contextMenuContext_.value(), "New Folder");
+        projectViewModel_->addNewProjectNode(contextMenuContext_.value(), NodeType::FOLDER, "New Folder");
     }
 
     void ProjectViewManager::onOpenActionTriggered() const {
@@ -291,7 +415,9 @@ namespace project {
     void ProjectViewManager::onRenameTriggered() const {
         if (!contextMenuContext_.has_value()) return;
         logger_->info("User triggered 'Rename' for item: {}", contextMenuContext_.value().nodeId);
-        const auto index = projectTreeView_->indexAt(projectTreeView_->visualRect(projectTreeView_->currentIndex()).center());
+        const auto index = projectTreeView_->indexAt(
+            projectTreeView_->visualRect(projectTreeView_->currentIndex()).center()
+        );
         projectTreeView_->edit(index);
     }
 
