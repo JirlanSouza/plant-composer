@@ -34,7 +34,7 @@ namespace application {
         logger_(loggerFactory->getLogger("AppMainWindow")),
         appSettings_(appSettings),
         projectLoader_(projectLoader),
-        actionsManager_(new app_actions::ActionsManager(this)),
+        actionsManager_(new app_actions::ActionsManager(new app_actions::ShortcutRegistry(this), this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
         appLayoutManager_ = new app_layout::AppLayoutManager(this, actionsManager_);

@@ -19,14 +19,24 @@
 #include "actions_manager.h"
 
 namespace app_actions {
-    ActionsManager::ActionsManager(QObject *parent) : QObject(parent) {
+    ActionsManager::ActionsManager(ShortcutRegistry *shortcutRegistry, QObject *parent) : QObject(parent),
+        shortcutRegistry_(shortcutRegistry) {
     }
 
-    void ActionsManager::addAction(ActionGroupType group, QAction *action) {
+    void ActionsManager::addAction(
+        const ActionGroupType group,
+        QAction *action,
+        const std::optional<ShortcutId> shortcutId
+    ) {
+        if (shortcutRegistry_ && action && shortcutId.has_value()) {
+            if (const QKeySequence shortcut = shortcutRegistry_->getShortcut(shortcutId.value()); !shortcut.isEmpty()) {
+                action->setShortcut(shortcut);
+            }
+        }
         actions_[group].append(action);
     }
 
-    QList<QAction *> ActionsManager::getActions(ActionGroupType group) const {
+    QList<QAction *> ActionsManager::getActions(const ActionGroupType group) const {
         return actions_.value(group);
     }
 }

@@ -1,4 +1,6 @@
-add_library(ui STATIC)
+add_library(ui STATIC
+        actions_manager/shortcuts_registry.cpp
+        actions_manager/shortcuts_registry.h)
 
 target_sources(ui
         PUBLIC

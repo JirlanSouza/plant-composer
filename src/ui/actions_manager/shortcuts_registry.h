@@ -18,40 +18,34 @@
 
 #pragma once
 
-#include <QObject>
-#include <QAction>
+#include <qkeysequence.h>
 #include <QMap>
-#include <QList>
-
-#include "shortcuts_registry.h"
+#include <QObject>
 
 namespace app_actions {
-    enum class ActionGroupType {
-        File,
-        Edit,
-        View,
-        Simulation,
-        Options,
-        Window,
-        ProjectContext,
-        ToolbarFile,
-        ToolbarEdit
+    enum class ShortcutId {
+        NewProject,
+        OpenProject,
+        SaveProject,
+        CloseProject,
+        NewFile,
+        NewFolder,
+        Copy,
+        Cut,
+        Paste,
+        Rename,
+        Delete,
     };
 
-    class ActionsManager : public QObject {
-        Q_OBJECT
-
+    class ShortcutRegistry : public QObject {
     public:
-        explicit ActionsManager(ShortcutRegistry *shortcutRegistry = nullptr, QObject *parent = nullptr);
+        explicit ShortcutRegistry(QObject *parent = nullptr);
 
-        ~ActionsManager() override = default;
+        [[nodiscard]] QKeySequence getShortcut(ShortcutId id) const;
 
-        void addAction(ActionGroupType group, QAction *action, std::optional<ShortcutId> shortcutId = std::nullopt);
-
-        [[nodiscard]] QList<QAction *> getActions(ActionGroupType group) const;
+        void setShortcut(ShortcutId id, const QKeySequence &sequence);
 
     private:
-        ShortcutRegistry *shortcutRegistry_;
-        QMap<ActionGroupType, QList<QAction *> > actions_;
+        QMap<ShortcutId, QKeySequence> shortcuts_;
     };
 }
