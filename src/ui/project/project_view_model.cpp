@@ -102,26 +102,26 @@ namespace project {
         logger_->info("Project closed successfully");
     }
 
-    void ProjectViewModel::addNewProjectNode(const ProjectContext &context, const std::string &name) {
-        logger_->info("Request to add new file '{}' to folder '{}'.", name, context.parentId);
-        const auto parentFolderOpt = project_->findNode(context.category, context.parentId);
+    void ProjectViewModel::addNewProjectNode(const ProjectContext &context, const NodeType type, const std::string &name) {
+        logger_->info("Request to add new file '{}' to folder '{}'.", name, context.nodeId);
+        const auto parentFolderOpt = project_->findNode(context.category, context.nodeId);
 
         if (!parentFolderOpt.has_value() || !parentFolderOpt.value()->isFolder()) {
-            logger_->warn("Parent folder '{}' not found for new file '{}'.", context.parentId, name);
+            logger_->warn("Parent folder '{}' not found for new file '{}'.", context.nodeId, name);
             return;
         }
 
         auto parentFolder = dynamic_cast<NodeContainer *>(parentFolderOpt.value());
         std::unique_ptr<ProjectNode> node;
 
-        if (context.nodeType == NodeType::FILE) {
+        if (type == NodeType::FILE) {
             node = std::make_unique<FileNode>(
                 idFactory_->create(),
                 parentFolder,
                 name,
                 project_->getCategoryPath(context.category)
             );
-        } else if (context.nodeType == NodeType::FOLDER) {
+        } else if (type == NodeType::FOLDER) {
             node = std::make_unique<NodeContainer>(
                 idFactory_->create(),
                 parentFolder,

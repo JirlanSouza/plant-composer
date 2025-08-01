@@ -57,7 +57,7 @@ namespace project {
 
         void closeProject();
 
-        void addNewProjectNode(const project::ProjectContext &context, const std::string &name);
+        void addNewProjectNode(const project::ProjectContext &context, NodeType type, const std::string &name);
 
         void openFileNodeRequested(project::ProjectContext context);
 
