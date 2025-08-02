@@ -18,6 +18,8 @@
 
 #include "project_view_model.h"
 
+#include <iomanip>
+
 #include "adapters/serialization/flatbuffers/project_generated.h"
 #include "domain/common/ilogger_factory.h"
 #include "domain/project/project_loader.h"
@@ -384,19 +386,11 @@ namespace project {
                 return;
             }
 
-
             const auto originalParent = clipboard_.getNode()->getParent();
             auto nodePtr = originalParent->releaseChild(clipboard_.getNode()->getId());
             const auto releasedNode = nodePtr.get();
 
-            std::string finalName = releasedNode->getName();
-            int counter = 1;
-
-            while (targetFolder->hasChildWithName(finalName)) {
-                finalName = releasedNode->getName() + "_" + std::to_string(counter++);
-            }
-
-            releasedNode->rename(finalName);
+            releasedNode->rename(createValidChildNameForFolder(targetFolder, releasedNode->getName()));
             targetFolder->addChild(std::move(nodePtr));
             emit projectNodePastedAsCut(releasedNode);
             logger_->info(
@@ -418,17 +412,8 @@ namespace project {
                 return;
             }
 
-
             const auto copyNode = clipboard_.getNode()->copy(idFactory_);
-
-            std::string finalName = copyNode->getName();
-            int counter = 1;
-
-            while (targetFolder->hasChildWithName(finalName)) {
-                finalName = copyNode->getName() + "_" + std::to_string(counter++);
-            }
-
-            copyNode->rename(finalName);
+            copyNode->rename(createValidChildNameForFolder(targetFolder, copyNode->getName()));
 
             targetFolder->addChild(std::unique_ptr<ProjectNode>(copyNode));
             emit projectNodePastedAsCopy(clipboard_.getNode()->getId(), copyNode);
@@ -444,5 +429,47 @@ namespace project {
         }
 
         clipboard_.clear();
+    }
+
+    std::string ProjectViewModel::createValidChildNameForFolder(
+        const NodeContainer *folder,
+        const std::string &name
+    ) {
+        if (!folder->hasChildWithName(name)) {
+            return name;
+        }
+
+        std::string baseName = name;
+        int counter = 1;
+        int padding = 0;
+
+        std::size_t pos = name.find_last_not_of("0123456789");
+        if (pos != std::string::npos && pos + 1 < name.size()) {
+            const std::string numberPart = name.substr(pos + 1);
+            baseName = name.substr(0, pos + 1);
+            padding = static_cast<int>(numberPart.size());
+            try {
+                counter = std::stoi(numberPart);
+            } catch (...) {
+                counter = 1;
+            }
+        }
+
+        std::string finalName = name;
+        while (folder->hasChildWithName(finalName)) {
+            std::ostringstream oss;
+            if (!baseName.empty() && baseName.back() == '_') {
+                oss << baseName << std::setw(padding) << std::setfill('0') << counter;
+            } else if (std::isdigit(name.back())) {
+                oss << baseName << std::setw(padding) << std::setfill('0') << counter;
+            } else {
+                oss << baseName << "_" << counter;
+            }
+
+            finalName = oss.str();
+            ++counter;
+        }
+
+        return finalName;
     }
 }

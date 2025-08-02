@@ -115,5 +115,7 @@ namespace project {
         IProjectLoader *projectLoader_;
         std::unique_ptr<Project> project_{nullptr};
         Clipboard clipboard_;
+
+        static std::string createValidChildNameForFolder(const NodeContainer *folder, const std::string &name);
     };
 }
