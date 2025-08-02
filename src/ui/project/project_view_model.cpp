@@ -229,14 +229,21 @@ namespace project {
         }
 
         if (newName == nodeOpt.value()->getName()) {
-            logger_->info("Node with ID: {}, category: {}, type: {} already has the name '{}', no rename needed.",
-                          context.nodeId, toString(context.category), toString(context.nodeType), newName);
+            logger_->info(
+                "Node with ID: {}, category: {}, type: {} already has the name '{}', no rename needed.",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType),
+                newName
+            );
             return;
         }
 
         if (nodeOpt.value()->getParent()->hasChildWithName(newName)) {
             logger_->warn("A node with the name '{}' already exists.", newName);
-            emit renameProjectNodeFailed(tr("A node with the name '%1' already exists.").arg(QString::fromStdString(newName)).toStdString());
+            emit renameProjectNodeFailed(
+                tr("A node with the name '%1' already exists.").arg(QString::fromStdString(newName)).toStdString()
+            );
             return;
         }
 
@@ -318,11 +325,11 @@ namespace project {
             return;
         }
 
-        const auto node = project_->findNode(context.category, context.nodeId);
+        const auto nodeOpt = project_->findNode(context.category, context.nodeId);
 
-        if (!node.has_value() || !node.value()->isFolder()) {
+        if (!nodeOpt.has_value()) {
             logger_->warn(
-                "Node with ID: {}, category: {}, type: {} node not found or parent is not folder",
+                "Node with ID: {}, category: {}, type: {} node not found",
                 context.nodeId,
                 toString(context.category),
                 toString(context.nodeType)
@@ -330,7 +337,29 @@ namespace project {
             return;
         }
 
-        const auto targetFolderOpt = node.value()->getAsFolder();
+        ProjectNode *node = nodeOpt.value();
+        if (node->getType() == NodeType::FILE) {
+            logger_->info(
+                "Node with ID: {}, category: {}, type: {} is a file, using it parent folder",
+                context.nodeId,
+                toString(context.category),
+                toString(context.nodeType)
+            );
+
+            node = node->getParent();
+
+            if (!node || !node->isFolder()) {
+                logger_->warn(
+                    "Node with ID: {}, category: {}, type: {} parent not exist or is not a folder",
+                    context.nodeId,
+                    toString(context.category),
+                    toString(context.nodeType)
+                );
+                return;
+            }
+        }
+
+        const auto targetFolderOpt = node->getAsFolder();
 
         if (!targetFolderOpt.has_value()) {
             logger_->warn(
@@ -359,6 +388,15 @@ namespace project {
             const auto originalParent = clipboard_.getNode()->getParent();
             auto nodePtr = originalParent->releaseChild(clipboard_.getNode()->getId());
             const auto releasedNode = nodePtr.get();
+
+            std::string finalName = releasedNode->getName();
+            int counter = 1;
+
+            while (targetFolder->hasChildWithName(finalName)) {
+                finalName = releasedNode->getName() + "_" + std::to_string(counter++);
+            }
+
+            releasedNode->rename(finalName);
             targetFolder->addChild(std::move(nodePtr));
             emit projectNodePastedAsCut(releasedNode);
             logger_->info(
@@ -385,9 +423,11 @@ namespace project {
 
             std::string finalName = copyNode->getName();
             int counter = 1;
+
             while (targetFolder->hasChildWithName(finalName)) {
                 finalName = copyNode->getName() + "_" + std::to_string(counter++);
             }
+
             copyNode->rename(finalName);
 
             targetFolder->addChild(std::unique_ptr<ProjectNode>(copyNode));
