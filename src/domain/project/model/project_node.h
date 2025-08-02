@@ -121,6 +121,8 @@ namespace project {
 
         [[nodiscard]] std::optional<ProjectNode *> findNode(const std::string &id) const;
 
+        [[nodiscard]] bool hasChildWithName(const std::string &name) const;
+
     private:
         std::unordered_map<std::string, std::unique_ptr<ProjectNode> > children_{};
     };

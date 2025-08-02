@@ -47,6 +47,11 @@ namespace project {
         if (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) {
             QModelIndex index = currentIndex();
             if (index.isValid()) {
+                if (state() == QAbstractItemView::EditingState) {
+                    event->accept();
+                    return;
+                }
+
                 if (model()->hasChildren(index)) {
                     toggleExpanded(index);
                     return;

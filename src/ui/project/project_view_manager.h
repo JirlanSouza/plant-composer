@@ -84,6 +84,8 @@ namespace project {
 
         void onNodeCut() const;
 
+        void onProjectNodeRenameFailed(const std::string &message) const;
+
     private:
         std::unique_ptr<common::Ilogger> logger_;
         common::IUserNotifier *notifier_;

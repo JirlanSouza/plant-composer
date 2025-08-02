@@ -116,23 +116,30 @@ namespace project {
         }
 
         auto parentFolder = dynamic_cast<NodeContainer *>(parentFolderOpt.value());
+
+        std::string finalName = name;
+        int counter = 1;
+        while (parentFolder->hasChildWithName(finalName)) {
+            finalName = name + "_" + std::to_string(counter++);
+        }
+
         std::unique_ptr<ProjectNode> node;
 
         if (type == NodeType::FILE) {
             node = std::make_unique<FileNode>(
                 idFactory_->create(),
                 parentFolder,
-                name,
+                finalName,
                 project_->getCategoryPath(context.category)
             );
         } else if (type == NodeType::FOLDER) {
             node = std::make_unique<NodeContainer>(
                 idFactory_->create(),
                 parentFolder,
-                name
+                finalName
             );
         } else {
-            logger_->warn("Unsupported node type: {} for new node '{}'.", toString(context.nodeType), name);
+            logger_->warn("Unsupported node type: {} for new node '{}'.", toString(type), name);
             emit addNewProjectNodeFailed(tr("Failed to add new node: Unsupported node type."));
             return;
         }
@@ -217,7 +224,19 @@ namespace project {
                 toString(context.category),
                 toString(context.nodeType)
             );
-            emit renameProjectNodeFailed(tr("Failed to rename node with ID: {}"));
+            emit renameProjectNodeFailed(tr("Failed to rename node with ID: {}").toStdString());
+            return;
+        }
+
+        if (newName == nodeOpt.value()->getName()) {
+            logger_->info("Node with ID: {}, category: {}, type: {} already has the name '{}', no rename needed.",
+                          context.nodeId, toString(context.category), toString(context.nodeType), newName);
+            return;
+        }
+
+        if (nodeOpt.value()->getParent()->hasChildWithName(newName)) {
+            logger_->warn("A node with the name '{}' already exists.", newName);
+            emit renameProjectNodeFailed(tr("A node with the name '%1' already exists.").arg(QString::fromStdString(newName)).toStdString());
             return;
         }
 

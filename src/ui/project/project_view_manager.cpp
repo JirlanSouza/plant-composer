@@ -77,6 +77,7 @@ namespace project {
         );
         connect(projectViewModel_, &ProjectViewModel::projectNodeCopied, this, &ProjectViewManager::onNodeCopied);
         connect(projectViewModel_, &ProjectViewModel::projectNodeCut, this, &ProjectViewManager::onNodeCut);
+        connect(projectViewModel_, &ProjectViewModel::renameProjectNodeFailed, this, &ProjectViewManager::onProjectNodeRenameFailed);
     }
 
     ProjectViewManager::~ProjectViewManager() = default;
@@ -446,6 +447,7 @@ namespace project {
 
     void ProjectViewManager::onItemReadyForEditing(const QModelIndex &index) const {
         logger_->info("Item ready for editing at index: {}", index.row());
+        projectTreeView_->setCurrentIndex(index);
         projectTreeView_->edit(index);
     }
 
@@ -473,6 +475,10 @@ namespace project {
 
     void ProjectViewManager::onNodeCut() const {
         pasteAction_->setEnabled(true);
+    }
+
+    void ProjectViewManager::onProjectNodeRenameFailed(const std::string &message) const {
+        notifier_->showAlert(tr("Rename Failed").toStdString(), message, common::NotificationLevel::Warning);
     }
 
     void ProjectViewManager::handleNodeOpening(const ProjectContext &context) const {

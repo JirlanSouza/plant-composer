@@ -95,7 +95,7 @@ namespace project {
 
         void projectNodeRenamed(const std::string &nodeId, const std::string &newName);
 
-        void renameProjectNodeFailed(const QString &errorMessage);
+        void renameProjectNodeFailed(const std::string &message);
 
         void projectNodeCopied();
 

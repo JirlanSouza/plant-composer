@@ -227,6 +227,15 @@ namespace project {
         return std::nullopt;
     }
 
+    bool NodeContainer::hasChildWithName(const std::string &name) const {
+        for (const auto &child: children_ | std::views::values) {
+            if (child->getName() == name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     ProjectCategory::ProjectCategory(std::string id, std::string name, std::string folderName)
         : NodeContainer(std::move(id), nullptr, std::move(name)), folderName_(std::move(folderName)) {
     }
