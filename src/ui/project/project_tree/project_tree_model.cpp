@@ -300,6 +300,7 @@ namespace project {
             return;
         }
 
+        removedItem->setText(QString::fromStdString(node->getName()));
         targetFolderItem->appendRow(removedItem);
         targetFolderItem->sortChildren(0, Qt::AscendingOrder);
         logger_->info(

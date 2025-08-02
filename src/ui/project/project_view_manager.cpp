@@ -404,6 +404,7 @@ namespace project {
             menu.addSeparator();
             menu.addAction(copyAction_);
             menu.addAction(cutAction_);
+            menu.addAction(pasteAction_);
             menu.addSeparator();
             menu.addAction(renameAction_);
             menu.addAction(deleteAction_);
