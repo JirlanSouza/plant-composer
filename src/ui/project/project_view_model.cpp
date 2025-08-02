@@ -382,6 +382,14 @@ namespace project {
 
 
             const auto copyNode = clipboard_.getNode()->copy(idFactory_);
+
+            std::string finalName = copyNode->getName();
+            int counter = 1;
+            while (targetFolder->hasChildWithName(finalName)) {
+                finalName = copyNode->getName() + "_" + std::to_string(counter++);
+            }
+            copyNode->rename(finalName);
+
             targetFolder->addChild(std::unique_ptr<ProjectNode>(copyNode));
             emit projectNodePastedAsCopy(clipboard_.getNode()->getId(), copyNode);
             logger_->info(
