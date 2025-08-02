@@ -22,17 +22,20 @@
 #include <QMessageBox>
 
 #include "new_project_dialog.h"
+#include "domain/common/iuser_notifier.h"
 
 namespace project {
     ProjectViewManager::ProjectViewManager(
         common::ILoggerFactory *loggerFactory,
+        common::IUserNotifier *notifier,
         ProjectViewModel *projectViewModel,
         app_actions::ActionsManager *actionsManager,
         QWidget *parent
     ): QObject(parent),
         logger_(loggerFactory->getLogger("ProjectViewManager")),
         projectViewModel_(projectViewModel),
-        actionsManager_(actionsManager) {
+        actionsManager_(actionsManager),
+        notifier_(notifier) {
         projectTreeModel_ = new ProjectTreeModel(loggerFactory, projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
         const auto projectSelectionModel = new QItemSelectionModel(projectTreeModel_, this);
@@ -40,12 +43,18 @@ namespace project {
 
         createActions();
 
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::projectCreateFailed,
+            this,
+            &ProjectViewManager::onProjectCreateFailed
+        );
         connect(projectViewModel_, &ProjectViewModel::projectOpened, this, &ProjectViewManager::onProjectOpened);
         connect(
             projectViewModel_,
-            &ProjectViewModel::openProjectFailed,
+            &ProjectViewModel::projectOpenFailed,
             this,
-            &ProjectViewManager::onOpenProjectFailed
+            &ProjectViewManager::onProjectOpenFailed
         );
         connect(
             projectSelectionModel,
@@ -234,6 +243,17 @@ namespace project {
         }
     }
 
+    void ProjectViewManager::onProjectCreateFailed(const std::string &parentDirectory) const {
+        const auto message = tr(
+            "Could not create project at the specified directory: %1. Please ensure the directory is valid and you have the necessary permissions."
+        ).arg(QString::fromStdString(parentDirectory));
+        notifier_->showAlert(
+            tr("Create Project Failed").toStdString(),
+            message.toStdString(),
+            common::NotificationLevel::Error
+        );
+    }
+
     void ProjectViewManager::onOpenProjectTriggered() const {
         logger_->info("User triggered 'Open Project' action.");
         const QString projectPath = QFileDialog::getOpenFileName(
@@ -256,17 +276,15 @@ namespace project {
         closeProjectAction_->setEnabled(true);
     }
 
-    void ProjectViewManager::onOpenProjectFailed(const QString &errorMessage) const {
-        logger_->error("Project open failed: {}", errorMessage.toStdString());
-        const auto messageBox = new QMessageBox(
-            QMessageBox::Critical,
-            tr("Open Project Failed"),
-            errorMessage,
-            QMessageBox::Ok,
-            this->getView()
+    void ProjectViewManager::onProjectOpenFailed(const std::string &path) const {
+        const auto message = tr(
+            "Could not open the project file at the specified path: %1. Please ensure the file is valid and you have the necessary permissions."
+        ).arg(QString::fromStdString(path));
+        notifier_->showAlert(
+            tr("Open Project Failed").toStdString(),
+            message.toStdString(),
+            common::NotificationLevel::Error
         );
-        messageBox->exec();
-        messageBox->deleteLater();
     }
 
     void ProjectViewManager::onTreeViewItemSelectionChanged(

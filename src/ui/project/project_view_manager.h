@@ -24,6 +24,7 @@
 #include "project_tree/project_tree_model.h"
 #include "project_tree/project_tree_view.h"
 #include "project_view_model.h"
+#include "domain/common/iuser_notifier.h"
 #include "project_tree/project_tree_item_type.h"
 #include "ui/actions_manager/actions_manager.h"
 
@@ -34,6 +35,7 @@ namespace project {
     public:
         explicit ProjectViewManager(
             common::ILoggerFactory *loggerFactory,
+            common::IUserNotifier *notifier,
             ProjectViewModel *projectViewModel,
             app_actions::ActionsManager *actionsManager,
             QWidget *parent = nullptr
@@ -46,11 +48,13 @@ namespace project {
     private slots:
         void onCreateNewProjectTriggered() const;
 
+        void onProjectCreateFailed(const std::string &parentDirectory) const;
+
         void onOpenProjectTriggered() const;
 
         void onProjectOpened() const;
 
-        void onOpenProjectFailed(const QString &errorMessage) const;
+        void onProjectOpenFailed(const std::string &path) const;
 
         void onTreeViewItemSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
@@ -82,6 +86,7 @@ namespace project {
 
     private:
         std::unique_ptr<common::Ilogger> logger_;
+        common::IUserNotifier *notifier_;
         ProjectViewModel *projectViewModel_;
         app_actions::ActionsManager *actionsManager_;
         ProjectTreeModel *projectTreeModel_;
@@ -112,7 +117,7 @@ namespace project {
             const QString &name,
             const QIcon::ThemeIcon &themeIcon,
             const QString &tooltip,
-            const std::function<void()>& handler
+            const std::function<void()> &handler
         );
     };
 }

@@ -8,6 +8,8 @@ target_sources(adapters
         common/quuid_id_factory.cpp
         common/spdlog_logger_factory.h
         common/spdlog_logger_factory.cpp
+        common/status_bar_notifier.h
+        common/status_bar_notifier.cpp
 
         components_library/json/components_library_json.cpp
         components_library/json/components_library_json.h
@@ -28,6 +30,7 @@ target_include_directories(adapters PUBLIC ../
 
 target_link_libraries(adapters
         PRIVATE Qt6::Core
+        PRIVATE Qt6::Widgets
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         domain

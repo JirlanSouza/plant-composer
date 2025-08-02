@@ -22,6 +22,7 @@
 #include <QAction>
 
 #include "app_layout_manager.h"
+#include "adapters/common/status_bar_notifier.h"
 #include "ui/actions_manager/actions_manager.h"
 #include "ui/project/project_view_manager.h"
 #include "ui/project/project_view_model.h"
@@ -37,14 +38,15 @@ namespace application {
         Q_OBJECT
 
     public:
-        AppMainWindow(
+        explicit AppMainWindow(
             common::ILoggerFactory *loggerFactory,
+            common::StatusBarNotifier *notifier,
             std::vector<components_library::Library> *libraries,
             settings::AppSettings *appSettings,
             project::IProjectLoader *projectLoader,
             common::IDFactory *idFactory,
             diagram::ComponentInstanceFactory *componentInstanceFactory,
-            QWidget *parent
+            QWidget *parent = nullptr
         );
 
         ~AppMainWindow() override;

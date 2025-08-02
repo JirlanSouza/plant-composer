@@ -75,7 +75,9 @@ namespace project {
     signals:
         void projectOpened();
 
-        void openProjectFailed(const QString &string);
+        void projectCreateFailed(const std::string &parentDirectory);
+
+        void projectOpenFailed(const std::string &path);
 
         void projectClosed();
 

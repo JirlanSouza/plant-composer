@@ -50,8 +50,8 @@ namespace project {
         logger_->info("Attempting to create new project: {}", name);
         auto projectOpt = projectLoader_->createNewProject(name, description, author, parentDirectory);
         if (!projectOpt.has_value()) {
-            emit openProjectFailed(QString("Failed to create project in path: ").append(parentDirectory));
-            logger_->error("Failed to create project: {}", name);
+            logger_->error("Failed to create project: {} on directory: {}", name, parentDirectory);
+            emit projectCreateFailed(parentDirectory);
             return;
         }
 
@@ -70,7 +70,7 @@ namespace project {
 
         if (!projectOpt.has_value()) {
             logger_->warn("Error loading project from path: {}", path);
-            emit openProjectFailed(QString("Failed to open project from path: ").append(path));
+            emit projectOpenFailed(path);
             return;
         }
 
@@ -102,7 +102,11 @@ namespace project {
         logger_->info("Project closed successfully");
     }
 
-    void ProjectViewModel::addNewProjectNode(const ProjectContext &context, const NodeType type, const std::string &name) {
+    void ProjectViewModel::addNewProjectNode(
+        const ProjectContext &context,
+        const NodeType type,
+        const std::string &name
+    ) {
         logger_->info("Request to add new file '{}' to folder '{}'.", name, context.nodeId);
         const auto parentFolderOpt = project_->findNode(context.category, context.nodeId);
 

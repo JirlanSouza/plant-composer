@@ -21,9 +21,12 @@
 #include <qboxlayout.h>
 #include <QMdiSubWindow>
 
+#include "adapters/common/status_bar_notifier.h"
+
 namespace application {
     AppMainWindow::AppMainWindow(
         common::ILoggerFactory *loggerFactory,
+        common::StatusBarNotifier *notifier,
         std::vector<components_library::Library> *libraries,
         settings::AppSettings *appSettings,
         project::IProjectLoader *projectLoader,
@@ -37,6 +40,8 @@ namespace application {
         actionsManager_(new app_actions::ActionsManager(new app_actions::ShortcutRegistry(this), this)),
         librariesViewManager_(new components_library::LibrariesViewManager(libraries, appSettings, this)),
         componentInstanceFactory_(componentInstanceFactory) {
+        notifier->setParent(this);
+        notifier->setStatusBar(statusBar());
         appLayoutManager_ = new app_layout::AppLayoutManager(this, actionsManager_);
         projectViewModel_ = new project::ProjectViewModel(loggerFactory, idFactory, projectLoader_, this);
         diagramManager_ = new diagram::DiagramManager(
@@ -47,7 +52,13 @@ namespace application {
             this
         );
 
-        projectViewManager_ = new project::ProjectViewManager(loggerFactory, projectViewModel_, actionsManager_, this);
+        projectViewManager_ = new project::ProjectViewManager(
+            loggerFactory,
+            notifier,
+            projectViewModel_,
+            actionsManager_,
+            this
+        );
         diagramEditorManager_ = new diagram::DiagramEditorManager(diagramManager_, projectViewModel_, this);
 
         appLayoutManager_->setupManuBar();

@@ -5,6 +5,7 @@ target_sources(domain
         common/ilogger.h
         common/id_factory.h
         common/ilogger_factory.h
+        common/iuser_notifier.h
         settings/app_settings.h
 
         components_library/model/component_type.h

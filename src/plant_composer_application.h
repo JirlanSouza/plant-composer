@@ -22,11 +22,12 @@
 #include <memory>
 
 #include "domain/common/ilogger_factory.h"
+#include "domain/common/iuser_notifier.h"
+#include "domain/common/id_factory.h"
 #include "domain/settings/app_settings.h"
 #include "domain/components_library/components_library_loader.h"
-#include "adapters/settings/qt_app_settings.h"
-#include "ui/main_window/app_main_windows.h"
 #include "domain/diagram/component_instance_factory.h"
+#include "ui/main_window/app_main_windows.h"
 
 namespace application {
     class PlantComposerApplication {
@@ -42,6 +43,7 @@ namespace application {
 
     private:
         std::unique_ptr<common::ILoggerFactory> loggerFactory_;
+        std::unique_ptr<common::IUserNotifier> notifier_;
         std::unique_ptr<common::IDFactory> idFactory_;
         std::unique_ptr<settings::AppSettings> appSettings_;
         std::unique_ptr<components_library::ComponentsLibraryLoader> librariesLoader_;

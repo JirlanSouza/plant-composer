@@ -26,25 +26,29 @@
 
 #include "adapters/common/quuid_id_factory.h"
 #include "adapters/common/spdlog_logger_factory.h"
+#include "adapters/common/status_bar_notifier.h"
 #include "adapters/components_library/json_components_library_loader.h"
 #include "adapters/project/flat_buffer_project_loader.h"
+#include "adapters/settings/qt_app_settings.h"
 
 namespace application {
     PlantComposerApplication::PlantComposerApplication() {
         loggerFactory_ = std::make_unique<common::SpdlogLoggerFactory>();
-        auto logger = loggerFactory_->getLogger("Application");
+        const auto logger = loggerFactory_->getLogger("Application");
+        logger->info("Initializing Plant Composer Application...");
+        idFactory_ = std::make_unique<common::QUuidIdFactory>();
         appSettings_ = std::make_unique<settings::QtAppSettings>(new QSettings(ORGANIZATION_NAME, APPLICATION_NAME));
         appSettings_->setAssetsDir(getAssetsDir());
         librariesLoader_ = std::make_unique<components_library::JsonComponentsLibraryLoader>(
             appSettings_->getComponentsLibraryDir()
         );
-        idFactory_ = std::make_unique<common::QUuidIdFactory>();
         projectLoader_ = std::make_unique<project::FlatBufferProjectLoader>(loggerFactory_.get(), idFactory_.get());
         componentInstanceFactory_ = std::make_unique<diagram::ComponentInstanceFactory>(
             idFactory_.get(),
             &libraries_,
             appSettings_.get()
         );
+        logger->info("Plant Composer Application initialized.");
     };
 
 
@@ -54,9 +58,11 @@ namespace application {
 
         try {
             setupTranslations();
+            notifier_ = std::make_unique<common::StatusBarNotifier>();
             libraries_ = std::move(librariesLoader_->loadLibraries());
             appMainWindow_ = std::make_unique<AppMainWindow>(
                 loggerFactory_.get(),
+                dynamic_cast<common::StatusBarNotifier *>(notifier_.get()),
                 &libraries_,
                 appSettings_.get(),
                 projectLoader_.get(),
