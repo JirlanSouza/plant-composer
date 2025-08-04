@@ -37,7 +37,7 @@ namespace project {
         actionsManager_(actionsManager),
         notifier_(notifier) {
         projectTreeModel_ = new ProjectTreeModel(loggerFactory, projectViewModel, this);
-        projectTreeView_ = new ProjectTreeView(projectTreeModel_, parent);
+        projectTreeView_ = new ProjectTreeView(loggerFactory, projectTreeModel_, parent);
         const auto projectSelectionModel = new QItemSelectionModel(projectTreeModel_, this);
         projectTreeView_->setSelectionModel(projectSelectionModel);
 
@@ -75,9 +75,25 @@ namespace project {
             this,
             &ProjectViewManager::onItemReadyForEditing
         );
-        connect(projectViewModel_, &ProjectViewModel::projectNodeCopied, this, &ProjectViewManager::onNodeCopied);
-        connect(projectViewModel_, &ProjectViewModel::projectNodeCut, this, &ProjectViewManager::onNodeCut);
-        connect(projectViewModel_, &ProjectViewModel::renameProjectNodeFailed, this, &ProjectViewManager::onProjectNodeRenameFailed);
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::projectNodeCopiedToClipboard,
+            this,
+            &ProjectViewManager::onNodeCopiedToClipboard
+        );
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::projectNodeCutToClipboard,
+            this,
+            &ProjectViewManager::onNodeCutToClipboard
+        );
+        connect(
+            projectViewModel_,
+            &ProjectViewModel::renameProjectNodeFailed,
+            this,
+            &ProjectViewManager::onProjectNodeRenameFailed
+        );
+        connect(projectTreeView_, &ProjectTreeView::nodeMoved, projectViewModel_, &ProjectViewModel::moveProjectNode);
     }
 
     ProjectViewManager::~ProjectViewManager() = default;
@@ -297,64 +313,71 @@ namespace project {
             return;
         }
 
-        const auto item = projectTreeModel_->itemFromIndex(selected.indexes().first());
-        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-        const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentId = item->parent()
-                                  ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString()
-                                  : "";
-        const auto category = TreeItemTypes::toProjectCategory(type);
-        const auto nodeType = TreeItemTypes::toNodeType(type);
-
-        if (!category.has_value() || !nodeType.has_value()) {
+        const std::optional<ProjectNodeItem *> itemOpt = projectTreeModel_->itemFromIndex(selected.indexes().first());
+        if (!itemOpt.has_value()) {
+            logger_->info("User selected an invalid item in project tree");
             contextMenuContext_ = std::nullopt;
             return;
         }
 
-        contextMenuContext_ = {category.value(), parentId, nodeType.value(), id};
+        contextMenuContext_ = itemOpt.value()->getContext();
 
-        logger_->info("User selected item ID: {}, Type: {}", id, static_cast<int>(type));
+        if (!contextMenuContext_.has_value()) {
+            logger_->info("User selected contextless item in project tree");
+            return;
+        }
+
+        logger_->info(
+            "User selected item ID: {}, Type: {}",
+            contextMenuContext_.value().nodeId,
+            static_cast<int>(contextMenuContext_.value().nodeType)
+        );
     }
 
 
     void ProjectViewManager::onTreeViewDoubleClicked(const QModelIndex &index) const {
-        if (!index.isValid()) return;
+        if (!index.isValid()) {
+            logger_->warn("Double clicked on an invalid index in project tree");
+            return;
+        }
 
-        const auto item = projectTreeModel_->itemFromIndex(index);
-        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
+        const auto itemOpt = projectTreeModel_->itemFromIndex(index);
+        if (!itemOpt.has_value()) {
+            logger_->warn("Invalid item clicked in project tree");
+            return;
+        }
 
-        if (type == TreeItemTypes::ADD_DIAGRAM_ACTION_ITEM) {
+        const ProjectNodeItem *item = itemOpt.value();
+        const ProjectTreeTypes::ItemType itemType = item->getType();
+
+        if (itemType == ProjectTreeTypes::ADD_DIAGRAM_ACTION_ITEM) {
             logger_->info("AddNewDiagram item clicked, creating new diagram in parent folder");
-            const auto parent = item->parent();
-            if (parent) {
-                const auto parentId = parent->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-                const auto parentType = parent->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<
-                    TreeItemTypes::TreeItemType>();
-                const auto parentCategory = TreeItemTypes::toProjectCategory(parentType);
-                if (parentCategory.has_value()) {
-                    projectViewModel_->addNewProjectNode(
-                        {parentCategory.value(), "", NodeType::FILE, parentId},
-                        NodeType::FILE,
-                        "New Diagram"
-                    );
-                }
+            const std::optional<const ProjectNodeItem *> parentOpt = item->getParentItem();
+
+            if (!parentOpt.has_value()) {
+                logger_->warn("No parent item found for AddNewDiagram item");
+                return;
             }
+
+            const std::optional<ProjectContext> parentContextOpt = parentOpt.value()->getContext();
+            if (!parentContextOpt.has_value()) {
+                logger_->warn("No parent context found for AddNewDiagram item");
+                return;
+            }
+
+            projectViewModel_->addNewProjectNode(parentContextOpt.value(), NodeType::FILE, "New Diagram");
             return;
         }
 
-        const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentId = item->parent()
-                                  ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString()
-                                  : "";
-        const auto category = TreeItemTypes::toProjectCategory(type);
-        const auto nodeType = TreeItemTypes::toNodeType(type);
+        logger_->info("Opening project node: {}, Type: {}", item->getId().toStdString(), static_cast<int>(itemType));
+        const std::optional<ProjectContext> contextOpt = item->getContext();
 
-        if (!category.has_value() || !nodeType.has_value()) {
-            logger_->warn("Could not determine project context for double-clicked item");
+        if (!contextOpt.has_value()) {
+            logger_->warn("No context found for item ID: {}", item->getId().toStdString());
             return;
         }
 
-        handleNodeOpening({category.value(), parentId, nodeType.value(), id});
+        handleNodeOpening(contextOpt.value());
     }
 
     void ProjectViewManager::onTreeViewContextMenuRequested(const QPoint &pos) {
@@ -364,32 +387,29 @@ namespace project {
             return;
         }
 
-        const auto item = projectTreeModel_->itemFromIndex(index);
-        const auto type = item->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-        const auto id = item->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentId = item->parent()
-                                  ? item->parent()->data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString()
-                                  : "";
-        const auto category = TreeItemTypes::toProjectCategory(type);
-        const auto nodeType = TreeItemTypes::toNodeType(type);
-
-        if (!category.has_value() || !nodeType.has_value()) {
+        const std::optional<ProjectNodeItem *> itemOpt = projectTreeModel_->itemFromIndex(index);
+        if (!itemOpt.has_value()) {
+            logger_->warn("Invalid item context menu requested in project tree");
             contextMenuContext_ = std::nullopt;
             return;
         }
 
-        contextMenuContext_ = {category.value(), parentId, nodeType.value(), id};
-
-        logger_->info("User right-clicked item ID: {}, Type: {}", id, static_cast<int>(type));
+        contextMenuContext_ = itemOpt.value()->getContext();
+        logger_->info(
+            "User right-clicked item ID: {}, Type: {}",
+            itemOpt.value()->getId().toStdString(),
+            static_cast<int>(itemOpt.value()->getType())
+        );
 
         QMenu menu;
         menu.setMinimumWidth(220);
-        if (type == TreeItemTypes::DIAGRAM_ROOT_FOLDER) {
+        ProjectTreeTypes::ItemType itemType = itemOpt.value()->getType();
+        if (itemType == ProjectTreeTypes::DIAGRAM_ROOT_FOLDER) {
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
             menu.addAction(pasteAction_);
-        } else if (type == TreeItemTypes::DIAGRAM_FOLDER) {
+        } else if (itemType == ProjectTreeTypes::DIAGRAM_FOLDER) {
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
@@ -399,7 +419,7 @@ namespace project {
             menu.addSeparator();
             menu.addAction(renameAction_);
             menu.addAction(deleteAction_);
-        } else if (type == TreeItemTypes::DIAGRAM_FILE) {
+        } else if (itemType == ProjectTreeTypes::DIAGRAM_FILE) {
             menu.addAction(openAction_);
             menu.addSeparator();
             menu.addAction(copyAction_);
@@ -470,11 +490,11 @@ namespace project {
         projectViewModel_->pasteProjectNode(contextMenuContext_.value());
     }
 
-    void ProjectViewManager::onNodeCopied() const {
+    void ProjectViewManager::onNodeCopiedToClipboard() const {
         pasteAction_->setEnabled(true);
     }
 
-    void ProjectViewManager::onNodeCut() const {
+    void ProjectViewManager::onNodeCutToClipboard() const {
         pasteAction_->setEnabled(true);
     }
 

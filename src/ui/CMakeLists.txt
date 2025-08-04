@@ -1,6 +1,8 @@
 add_library(ui STATIC
         actions_manager/shortcuts_registry.cpp
-        actions_manager/shortcuts_registry.h)
+        actions_manager/shortcuts_registry.h
+        project/project_tree/project_node_item.cpp
+        project/project_tree/project_node_item.h)
 
 target_sources(ui
         PUBLIC
@@ -27,6 +29,8 @@ target_sources(ui
         project/new_project_dialog.h
         project/new_project_dialog.cpp
         project/project_tree/project_tree_item_type.h
+        project/project_tree/project_node_item.h
+        project/project_tree/project_node_item.cpp
         project/project_tree/project_tree_model.h
         project/project_tree/project_tree_model.cpp
         project/project_tree/project_tree_view.h

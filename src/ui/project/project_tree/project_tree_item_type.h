@@ -20,14 +20,15 @@
 
 #include <QObject>
 
+#include "mime_types.h"
 #include "domain/project/model/project.h"
 
 namespace project {
-    class TreeItemTypes : public QObject {
+    class ProjectTreeTypes : public QObject {
         Q_OBJECT
 
     public:
-        enum TreeItemType {
+        enum ItemType {
             PROJECT_ROOT,
             DIAGRAM_ROOT_FOLDER,
             DIAGRAM_FOLDER,
@@ -35,42 +36,105 @@ namespace project {
             ADD_DIAGRAM_ACTION_ITEM,
         };
 
-        Q_ENUM(TreeItemType)
+        Q_ENUM(ItemType)
 
-        static TreeItemTypes::TreeItemType fromProjectCategoryAndNodeType(
+        static ItemType fromProjectCategoryAndNodeType(
             const ProjectCategoryType category,
-            const NodeType nodeType
+            const NodeType nodeType,
+            const bool isCategoryRootNode = false
         ) {
             if (category == ProjectCategoryType::DIAGRAM) {
-                if (nodeType == NodeType::FOLDER) {
-                    return TreeItemTypes::DIAGRAM_FOLDER;
+                if (isCategoryRootNode) {
+                    return DIAGRAM_ROOT_FOLDER;
+                } else if (nodeType == NodeType::FOLDER) {
+                    return DIAGRAM_FOLDER;
                 } else if (nodeType == NodeType::FILE) {
-                    return TreeItemTypes::DIAGRAM_FILE;
+                    return DIAGRAM_FILE;
                 }
             }
-            return TreeItemTypes::PROJECT_ROOT;
+            return PROJECT_ROOT;
         }
 
-        static std::optional<ProjectCategoryType> toProjectCategory(const TreeItemType type) {
+        static ItemType getAddNewFileNodeType(const ProjectCategoryType category) {
+            switch (category) {
+                case ProjectCategoryType::DIAGRAM: return ADD_DIAGRAM_ACTION_ITEM;
+                default: return {};
+            }
+        }
+
+        static bool isAddNewFileNodeType(const ItemType type) {
             switch (type) {
-                case TreeItemType::DIAGRAM_ROOT_FOLDER:
-                case TreeItemTypes::DIAGRAM_FOLDER:
-                case TreeItemTypes::DIAGRAM_FILE:
+                case ADD_DIAGRAM_ACTION_ITEM:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        static std::optional<ProjectCategoryType> toProjectCategory(const ItemType type) {
+            switch (type) {
+                case DIAGRAM_ROOT_FOLDER:
+                case DIAGRAM_FOLDER:
+                case DIAGRAM_FILE:
                     return ProjectCategoryType::DIAGRAM;
                 default:
                     return std::nullopt;
             }
         }
 
-        static std::optional<NodeType> toNodeType(const TreeItemType type) {
+        static std::optional<NodeType> toNodeType(const ItemType type) {
             switch (type) {
-                case TreeItemType::DIAGRAM_ROOT_FOLDER:
-                case TreeItemTypes::DIAGRAM_FOLDER:
+                case DIAGRAM_ROOT_FOLDER:
+                case DIAGRAM_FOLDER:
                     return NodeType::FOLDER;
-                case TreeItemType::DIAGRAM_FILE:
+                case DIAGRAM_FILE:
                     return NodeType::FILE;
                 default:
                     return std::nullopt;
+            }
+        }
+
+        static std::optional<QString> toMimeType(const ItemType type) {
+            switch (type) {
+                case DIAGRAM_ROOT_FOLDER:
+                    return MIME_TYPE_PROJECT_CATEGORY;
+                case DIAGRAM_FOLDER:
+                    return MIME_TYPE_PROJECT_FOLDER;
+                case DIAGRAM_FILE:
+                    return MIME_TYPE_PROJECT_FILE;
+                default: return std::nullopt;
+            }
+        }
+
+        static Qt::ItemFlags flags(const ItemType type) {
+            switch (type) {
+                case PROJECT_ROOT:
+                    return Qt::ItemIsEnabled;
+                case DIAGRAM_ROOT_FOLDER:
+                    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
+                case DIAGRAM_FOLDER:
+                case DIAGRAM_FILE:
+                    return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+                case ADD_DIAGRAM_ACTION_ITEM:
+                    return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
+                default:
+                    return {};
+            }
+        }
+
+        static QIcon getIcon(const ItemType type) {
+            switch (type) {
+                case PROJECT_ROOT:
+                    return QIcon(":/icons/project.svg");
+                case DIAGRAM_ROOT_FOLDER:
+                case DIAGRAM_FOLDER:
+                    return QIcon(":/icons/folder.svg");
+                case DIAGRAM_FILE:
+                    return QIcon(":/icons/diagram_file.svg");
+                case ADD_DIAGRAM_ACTION_ITEM:
+                    return QIcon(":/icons/diagram_file_add.svg");
+                default:
+                    return {};
             }
         }
     };

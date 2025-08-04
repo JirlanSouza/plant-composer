@@ -29,14 +29,28 @@ namespace project {
         Q_OBJECT
 
     public:
-        explicit ProjectTreeView(ProjectTreeModel *model, QWidget *parent = nullptr);
+        explicit ProjectTreeView(
+            common::ILoggerFactory *loggerFactory,
+            ProjectTreeModel *model,
+            QWidget *parent = nullptr
+        );
 
         void toggleExpanded(const QModelIndex &index);
+
 
     signals:
         void componentPropertiesViewRequested(int libraryId, int componentId);
 
+        void nodeMoved(const std::string &sourceNodeId, const std::string &targetParentId);
+
     protected:
         void keyPressEvent(QKeyEvent *event) override;
+
+        void dragMoveEvent(QDragMoveEvent *event) override;
+
+        void dropEvent(QDropEvent *event) override;
+
+    private:
+        std::unique_ptr<common::Ilogger> logger_;
     };
 }

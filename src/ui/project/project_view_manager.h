@@ -80,9 +80,9 @@ namespace project {
 
         void onPasteActionTriggered();
 
-        void onNodeCopied() const;
+        void onNodeCopiedToClipboard() const;
 
-        void onNodeCut() const;
+        void onNodeCutToClipboard() const;
 
         void onProjectNodeRenameFailed(const std::string &message) const;
 

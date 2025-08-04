@@ -21,6 +21,7 @@
 
 #include <QMimeData>
 
+#include "mime_types.h"
 #include "project_tree_item_type.h"
 
 namespace project {
@@ -41,13 +42,13 @@ namespace project {
         );
         connect(
             projectViewModel_,
-            &ProjectViewModel::projectNodePastedAsCut,
+            &ProjectViewModel::projectNodeMoved,
             this,
             &ProjectTreeModel::onProjectNodeCut
         );
         connect(
             projectViewModel_,
-            &ProjectViewModel::projectNodePastedAsCopy,
+            &ProjectViewModel::projectNodeCopied,
             this,
             &ProjectTreeModel::onProjectNodeCopied
         );
@@ -64,13 +65,13 @@ namespace project {
             return QStandardItemModel::setData(index, value, role);
         }
 
-        const auto type = index.data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-        const auto itemId = index.data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
-        const auto parentId = index.parent().data(ProjectTreeRole::ITEM_ID_ROLE).toString().toStdString();
+        const auto type = index.data(ProjectNodeItem::Role::ITEM_TYPE).value<ProjectTreeTypes::ItemType>();
+        const auto itemId = index.data(ProjectNodeItem::Role::ITEM_ID).toString().toStdString();
+        const auto parentId = index.parent().data(ProjectNodeItem::Role::ITEM_ID).toString().toStdString();
         const auto newName = value.toString().toStdString();
 
-        const auto categoryOpt = TreeItemTypes::toProjectCategory(type);
-        const auto nodeTypeOpt = TreeItemTypes::toNodeType(type);
+        const auto categoryOpt = ProjectTreeTypes::toProjectCategory(type);
+        const auto nodeTypeOpt = ProjectTreeTypes::toNodeType(type);
 
         if (!categoryOpt.has_value() || !nodeTypeOpt.has_value()) {
             logger_->warn(
@@ -86,54 +87,111 @@ namespace project {
         return false;
     }
 
+    QStringList ProjectTreeModel::mimeTypes() const {
+        auto mimeTypes = QStringList() << MIME_TYPE_PROJECT_FOLDER << MIME_TYPE_PROJECT_FILE;
+        logger_->debug("Getting supported mime types for project tree model: {}", mimeTypes.join(", ").toStdString());
+        return mimeTypes;
+    }
+
+    QMimeData *ProjectTreeModel::mimeData(const QModelIndexList &indexes) const {
+        if (indexes.isEmpty()) {
+            logger_->warn("Empty indexes for mime data");
+            return nullptr;
+        }
+
+        const QModelIndex index = indexes.first();
+        const std::optional<ProjectNodeItem *> itemOpt = itemFromIndex(index);
+
+        if (!itemOpt.has_value()) {
+            logger_->warn("Invalid index for mime data: {}", index.row());
+            return nullptr;
+        }
+        const ProjectNodeItem *item = itemOpt.value();
+        const auto mimeTypeOpt = ProjectTreeTypes::toMimeType(item->getType());
+
+        if (!mimeTypeOpt.has_value()) {
+            logger_->warn("Tried to get mime data for unsupported item type: {}", static_cast<int>(item->getType()));
+            return nullptr;
+        }
+
+        const auto id = item->getId();
+        auto *mimeData = new QMimeData();
+        mimeData->setData(mimeTypeOpt.value(), id.toUtf8());
+        logger_->info(
+            "Creating mime data for item type: {}, ID: {}",
+            static_cast<int>(item->getType()),
+            id.toStdString()
+        );
+        return mimeData;
+    }
+
+    bool ProjectTreeModel::dropMimeData(
+        const QMimeData *data,
+        Qt::DropAction action,
+        int row,
+        int column,
+        const QModelIndex &parent
+    ) {
+        return false;
+    }
+
+    Qt::DropActions ProjectTreeModel::supportedDropActions() const {
+        return Qt::MoveAction;
+    }
+
+    std::optional<ProjectNodeItem *> ProjectTreeModel::itemFromIndex(const QModelIndex &index) const {
+        if (!index.isValid()) {
+            logger_->warn("Invalid index provided to itemFromIndex");
+            return std::nullopt;
+        }
+
+        QStandardItem *item = QStandardItemModel::itemFromIndex(index);
+
+        if (!item) {
+            logger_->warn("Null item provided to itemFromIndex");
+            return std::nullopt;
+        }
+
+
+        auto nodeItem = dynamic_cast<ProjectNodeItem *>(item);
+
+        if (!nodeItem) {
+            logger_->warn("No casting possible to ProjectNodeItem in itemFromIndex");
+            return std::nullopt;
+        }
+
+        return nodeItem;
+    }
+
     void ProjectTreeModel::buildModel() {
         logger_->info("Building project tree model");
         logger_->info("Cleaning up previous model data");
         clearModel();
         setColumnCount(1);
 
+        const auto project = projectViewModel_->getProject();
+
+        if (!project) {
+            logger_->warn("No project opened, skipping model build");
+            return;
+        }
+
         logger_->info("Creating project root item");
         auto *rootItem = new QStandardItem(
-            getIconForType(TreeItemTypes::TreeItemType::PROJECT_ROOT),
-            tr("Project: %1").arg(QString::fromStdString(projectViewModel_->getProject()->getName()))
+            ProjectTreeTypes::getIcon(ProjectTreeTypes::PROJECT_ROOT),
+            tr("Project: %1").arg(QString::fromStdString(project->getName()))
         );
-        rootItem->setFlags(Qt::ItemIsEnabled);
-        rootItem->setData(TreeItemTypes::TreeItemType::PROJECT_ROOT, ProjectTreeRole::ITEM_TYPE_ROLE);
+        rootItem->setFlags(ProjectTreeTypes::flags(ProjectTreeTypes::PROJECT_ROOT));
+        rootItem->setData(ProjectTreeTypes::PROJECT_ROOT, ProjectNodeItem::Role::ITEM_TYPE);
         appendRow(rootItem);
 
-        logger_->info("Building diagrams root item");
-        const auto diagramsRootOpt = projectViewModel_->getProject()->getCategory(ProjectCategoryType::DIAGRAM);
-
+        const std::optional<ProjectCategory *> diagramsRootOpt = project->getCategory(ProjectCategoryType::DIAGRAM);
         if (!diagramsRootOpt.has_value()) {
             logger_->warn("No diagrams root found in project, skipping diagram root item creation");
             return;
         }
 
-        const auto *diagramsRoot = diagramsRootOpt.value();
-        auto *diagramsRootItem = new QStandardItem(
-            getIconForType(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER),
-            QString::fromStdString(diagramsRoot->getName())
-        );
-        diagramsRootItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-        diagramsRootItem->setData(TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER, ProjectTreeRole::ITEM_TYPE_ROLE);
-        diagramsRootItem->setData(stdStringToVariant(diagramsRoot->getId()), ProjectTreeRole::ITEM_ID_ROLE);
-        rootItem->appendRow(diagramsRootItem);
-        itemMap_[diagramsRoot->getId()] = diagramsRootItem;
-
-        logger_->info("Building addNewDiagram item");
-        auto *addNewDiagramItem = new QStandardItem(
-            getIconForType(TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM),
-            tr("Add New Diagram")
-        );
-        addNewDiagramItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-        addNewDiagramItem->setData(
-            TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM,
-            ProjectTreeRole::ITEM_TYPE_ROLE
-        );
-        diagramsRootItem->appendRow(addNewDiagramItem);
-        itemMap_["add_new_diagram"] = addNewDiagramItem;
-
-        populateFolder(diagramsRootItem, diagramsRoot, TreeItemTypes::TreeItemType::DIAGRAM_FOLDER);
+        buildCategory(rootItem, diagramsRootOpt.value(), ProjectCategoryType::DIAGRAM);
     }
 
     void ProjectTreeModel::clearModel() {
@@ -142,82 +200,16 @@ namespace project {
         itemMap_.clear();
     }
 
-    void ProjectTreeModel::populateFolder(
-        QStandardItem *parentItem,
-        const NodeContainer *folder,
-        const TreeItemTypes::TreeItemType type
+    void ProjectTreeModel::buildCategory(
+        QStandardItem *rootItem,
+        const ProjectCategory *category,
+        const ProjectCategoryType categoryType
     ) {
-        logger_->info(
-            "Populating folder with ID: {}, name: {}, children: {}",
-            folder->getId(),
-            folder->getName(),
-            folder->getChildren().size()
-        );
-        for (const auto *item: folder->getChildren()) {
-            if (item->isFile()) {
-                appendFileNode(parentItem, dynamic_cast<const FileNode *>(item), TreeItemTypes::DIAGRAM_FILE);
-            } else if (item->isFolder()) {
-                appendFolderNode(parentItem, dynamic_cast<const NodeContainer *>(item), type);
-            }
-        }
-        parentItem->sortChildren(0, Qt::AscendingOrder);
-        logger_->info(
-            "Seccess populating folder with ID: {}, name: {}, children: {}",
-            folder->getId(),
-            folder->getName(),
-            folder->getChildren().size()
-        );
-    }
+        logger_->info("Building {} root item", category->getName());
+        auto *diagramsRootItem = new ProjectNodeItem(category, categoryType, itemMap_);
+        rootItem->appendRow(diagramsRootItem);
 
-    void ProjectTreeModel::appendFileNode(
-        QStandardItem *parent,
-        const FileNode *file,
-        const TreeItemTypes::TreeItemType type
-    ) {
-        logger_->info("Appending project tree item with ID: {}, name: {}", file->getId(), file->getName());
-        auto *diagramItem = new QStandardItem(
-            getIconForType(type),
-            QString::fromStdString(file->getName())
-        );
-        diagramItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
-        diagramItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
-        diagramItem->setEditable(file->canBeRenamed());
-        diagramItem->setData(stdStringToVariant(file->getId()), ProjectTreeRole::ITEM_ID_ROLE);
-        parent->appendRow(diagramItem);
-        itemMap_[file->getId()] = diagramItem;
-        logger_->info(
-            "Successfully appended project tree item with ID: {}, name: {}",
-            file->getId(),
-            file->getName()
-        );
-    }
-
-    void ProjectTreeModel::appendFolderNode(
-        QStandardItem *parent,
-        const NodeContainer *folder,
-        const TreeItemTypes::TreeItemType type
-    ) {
-        logger_->info(
-            "Appeding project tree folder with ID: {}, name: {}, children: {}",
-            folder->getId(),
-            folder->getName(),
-            folder->getChildren().size()
-        );
-        auto *folderItem = new QStandardItem(getIconForType(type), QString::fromStdString(folder->getName()));
-        folderItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDragEnabled);
-        folderItem->setEditable(folder->canBeRenamed());
-        folderItem->setData(type, ProjectTreeRole::ITEM_TYPE_ROLE);
-        folderItem->setData(stdStringToVariant(folder->getId()), ProjectTreeRole::ITEM_ID_ROLE);
-        parent->appendRow(folderItem);
-        itemMap_[folder->getId()] = folderItem;
-        populateFolder(folderItem, folder, type);
-        parent->sortChildren(0, Qt::AscendingOrder);
-        logger_->info(
-            "Successfully appended project tree folder with ID: {}, name: {}, children: {}",
-            folder->getId(),
-            folder->getName(),
-            folder->getChildren().size()
-        );
+        logger_->info("Successfully created {} root item", category->getName());
     }
 
     void ProjectTreeModel::onProjectClosed() {
@@ -225,33 +217,22 @@ namespace project {
         clearModel();
     }
 
-    void ProjectTreeModel::onProjectNodeAdded(const ProjectNode *node) {
+    void ProjectTreeModel::onProjectNodeAdded(const ProjectNode *node, const ProjectCategoryType categoryType) {
         if (!node) {
             logger_->warn("Received null node in onProjectNodeAdded");
             return;
         }
 
+        logger_->info("Adding node to project tree: {}", node->getId());
         auto parentId = node->getParent()->getId();
+
         if (!itemMap_.contains(parentId)) {
             logger_->warn("Invalid parent ID: {} for node with ID: {}", parentId, node->getId());
             return;
         }
 
-        if (node->isFile()) {
-            appendFileNode(
-                itemMap_[parentId],
-                static_cast<const FileNode *>(node),
-                TreeItemTypes::TreeItemType::DIAGRAM_FILE
-            );
-            itemMap_[parentId]->sortChildren(0, Qt::AscendingOrder);
-        } else if (node->isFolder()) {
-            appendFolderNode(
-                itemMap_[parentId],
-                static_cast<const NodeContainer *>(node),
-                TreeItemTypes::TreeItemType::DIAGRAM_FOLDER
-            );
-        }
-
+        ProjectNodeItem *parentItem = itemMap_[parentId];
+        parentItem->appendItemAndSort(new ProjectNodeItem(node, categoryType, itemMap_));
         emit itemReadyForEditing(itemMap_[node->getId()]->index());
     }
 
@@ -279,8 +260,8 @@ namespace project {
             return;
         }
 
-        QStandardItem *nodeItem = itemMap_[node->getId()];
-        QStandardItem *targetFolderItem = itemMap_[node->getParent()->getId()];
+        const ProjectNodeItem *nodeItem = itemMap_[node->getId()];
+        ProjectNodeItem *targetFolderItem = itemMap_[node->getParent()->getId()];
 
         if (nodeItem->parent() == targetFolderItem) {
             logger_->warn("Node is already in the target folder, no action taken");
@@ -293,7 +274,7 @@ namespace project {
             return;
         }
 
-        QStandardItem *removedItem = nodeParentItem->takeChild(nodeItem->row());
+        auto *removedItem = dynamic_cast<ProjectNodeItem *>(nodeParentItem->takeChild(nodeItem->row()));
 
         if (!removedItem) {
             logger_->warn("No item found to cut for node ID: {}", node->getId());
@@ -301,8 +282,7 @@ namespace project {
         }
 
         removedItem->setText(QString::fromStdString(node->getName()));
-        targetFolderItem->appendRow(removedItem);
-        targetFolderItem->sortChildren(0, Qt::AscendingOrder);
+        targetFolderItem->appendItemAndSort(removedItem);
         logger_->info(
             "Successfully cut node from project tree: {} to folder: {}",
             node->getId(),
@@ -310,7 +290,11 @@ namespace project {
         );
     }
 
-    void ProjectTreeModel::onProjectNodeCopied(const std::string& copiedNodeId, const ProjectNode *copyNode) {
+    void ProjectTreeModel::onProjectNodeCopied(
+        const std::string &copiedNodeId,
+        const ProjectNode *copyNode,
+        const ProjectCategoryType categoryType
+    ) {
         if (!copyNode) {
             logger_->warn("Received null node in onProjectNodeCopied");
             return;
@@ -322,26 +306,8 @@ namespace project {
             return;
         }
 
-        QStandardItem *copiedNodeItem = itemMap_[copiedNodeId];
-        QStandardItem *targetFolderItem = itemMap_[copyNode->getParent()->getId()];
-        const auto itemType = copiedNodeItem->data(ProjectTreeRole::ITEM_TYPE_ROLE).value<TreeItemTypes::TreeItemType>();
-
-
-        if (copyNode->isFile()) {
-            appendFileNode(
-                targetFolderItem,
-                dynamic_cast<const FileNode *>(copyNode),
-                itemType
-            );
-            targetFolderItem->sortChildren(0, Qt::AscendingOrder);
-        } else if (copyNode->isFolder()) {
-            appendFolderNode(
-                targetFolderItem,
-                dynamic_cast<const NodeContainer *>(copyNode),
-                itemType
-            );
-        }
-
+        ProjectNodeItem *targetFolderItem = itemMap_[copyNode->getParent()->getId()];
+        targetFolderItem->appendItemAndSort(new ProjectNodeItem(copyNode, categoryType, itemMap_));
         logger_->info(
             "Successfully copy node from project tree: {} to folder: {}",
             copyNode->getId(),
@@ -358,26 +324,13 @@ namespace project {
 
         auto *nodeItem = itemMap_[fileId];
         nodeItem->setText(QString::fromStdString(newName));
-        nodeItem->parent()->sortChildren(0, Qt::AscendingOrder);
-    }
+        std::optional<ProjectNodeItem *> parentOpt = nodeItem->getParentItem();
 
-    QIcon ProjectTreeModel::getIconForType(const TreeItemTypes::TreeItemType type) {
-        switch (type) {
-            case TreeItemTypes::TreeItemType::PROJECT_ROOT:
-                return QIcon(":/icons/project.svg");
-            case TreeItemTypes::TreeItemType::DIAGRAM_ROOT_FOLDER:
-            case TreeItemTypes::TreeItemType::DIAGRAM_FOLDER:
-                return QIcon(":/icons/folder.svg");
-            case TreeItemTypes::TreeItemType::DIAGRAM_FILE:
-                return QIcon(":/icons/diagram_file.svg");
-            case TreeItemTypes::TreeItemType::ADD_DIAGRAM_ACTION_ITEM:
-                return QIcon(":/icons/diagram_file_add.svg");
-            default:
-                return {};
+        if (!parentOpt.has_value()) {
+            logger_->warn("Node item has no parent in onProjectNodeRenamed");
+            return;
         }
-    }
 
-    QVariant ProjectTreeModel::stdStringToVariant(const std::string &str) {
-        return QVariant::fromValue(QString::fromStdString(str));
+        parentOpt.value()->sortChildren(0);
     }
 }

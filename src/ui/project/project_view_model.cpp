@@ -148,7 +148,7 @@ namespace project {
 
         const auto addedNode = node.get();
         parentFolder->addChild(std::move(node));
-        emit projectNodeAdded(addedNode);
+        emit projectNodeAdded(addedNode, context.category);
         logger_->info(
             "Successfully added new node '{}' (ID: {}), type: {}, category: {} to folder '{}'.",
             name,
@@ -282,7 +282,7 @@ namespace project {
         }
 
         clipboard_.setCopy(node.value());
-        emit projectNodeCopied();
+        emit projectNodeCopiedToClipboard();
     }
 
     void ProjectViewModel::cutProjectNode(const ProjectContext &context) {
@@ -306,7 +306,7 @@ namespace project {
         }
 
         clipboard_.setCut(node.value());
-        emit projectNodeCut();
+        emit projectNodeCutToClipboard();
     }
 
     void ProjectViewModel::pasteProjectNode(const ProjectContext &context) {
@@ -392,7 +392,7 @@ namespace project {
 
             releasedNode->rename(createValidChildNameForFolder(targetFolder, releasedNode->getName()));
             targetFolder->addChild(std::move(nodePtr));
-            emit projectNodePastedAsCut(releasedNode);
+            emit projectNodeMoved(releasedNode);
             logger_->info(
                 "Successfully cut node with ID: {}, category: {}, type: {} to folder with ID: {}, name: {}",
                 releasedNode->getId(),
@@ -416,7 +416,7 @@ namespace project {
             copyNode->rename(createValidChildNameForFolder(targetFolder, copyNode->getName()));
 
             targetFolder->addChild(std::unique_ptr<ProjectNode>(copyNode));
-            emit projectNodePastedAsCopy(clipboard_.getNode()->getId(), copyNode);
+            emit projectNodeCopied(clipboard_.getNode()->getId(), copyNode, context.category);
             logger_->info(
                 "Successfully copy node with ID: {}, category: {}, type: {} to folder with ID: {}, name: {} and receive ID: {}",
                 clipboard_.getNode()->getId(),
@@ -429,6 +429,53 @@ namespace project {
         }
 
         clipboard_.clear();
+    }
+
+    void ProjectViewModel::moveProjectNode(const std::string &sourceNodeId, const std::string &targetParentId) {
+        logger_->info("Moving node with id: {} to parent with id: {}", sourceNodeId, targetParentId);
+
+        auto sourceNodeOpt = project_->findNode(ProjectCategoryType::DIAGRAM, sourceNodeId);
+        auto targetParentOpt = project_->findNode(ProjectCategoryType::DIAGRAM, targetParentId);
+
+        if (!sourceNodeOpt.has_value() || !targetParentOpt.has_value()) {
+            logger_->warn("Invalid source or target for move operation");
+            return;
+        }
+
+        if (!targetParentOpt.value()->isFolder()) {
+            logger_->info("Target parent is not a folder using its parent folder");
+            targetParentOpt = targetParentOpt.value()->getParent();
+        }
+
+        if (!targetParentOpt.has_value() || !targetParentOpt.value()->isFolder()) {
+            logger_->warn("Target parent is not a valid folder");
+            return;
+        }
+
+        auto sourceNode = sourceNodeOpt.value();
+        auto targetParent = dynamic_cast<NodeContainer *>(targetParentOpt.value());
+
+        if (sourceNode->getParent() == targetParent) {
+            logger_->info("Source node is already in the target folder");
+            return;
+        }
+
+        auto currentParent = targetParent;
+        while (currentParent) {
+            if (currentParent == sourceNode) {
+                logger_->warn("Cannot move a folder into one of its own descendants");
+                return;
+            }
+            currentParent = currentParent->getParent();
+        }
+
+        auto originalParent = sourceNode->getParent();
+        auto nodePtr = originalParent->releaseChild(sourceNodeId);
+        auto releasedNode = nodePtr.get();
+
+        releasedNode->rename(createValidChildNameForFolder(targetParent, releasedNode->getName()));
+        targetParent->addChild(std::move(nodePtr));
+        emit projectNodeMoved(releasedNode);
     }
 
     std::string ProjectViewModel::createValidChildNameForFolder(

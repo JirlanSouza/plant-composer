@@ -21,15 +21,11 @@
 #include <QStandardItemModel>
 #include <unordered_map>
 
-#include "project_tree_item_type.h"
+#include "project_node_item.h"
 #include "domain/project/model/project.h"
 #include "ui/project/project_view_model.h"
 
 namespace project {
-    enum ProjectTreeRole {
-        ITEM_TYPE_ROLE = Qt::UserRole + 1, ITEM_ID_ROLE,
-    };
-
     class ProjectTreeModel final : public QStandardItemModel {
         Q_OBJECT
 
@@ -42,39 +38,51 @@ namespace project {
 
         bool setData(const QModelIndex &index, const QVariant &value, int role) override;
 
+        [[nodiscard]] Qt::DropActions supportedDropActions() const override;
+
+        [[nodiscard]] QStringList mimeTypes() const override;
+
+        [[nodiscard]] QMimeData *mimeData(const QModelIndexList &indexes) const override;
+
+        bool dropMimeData(
+            const QMimeData *data,
+            Qt::DropAction action,
+            int row,
+            int column,
+            const QModelIndex &parent
+        ) override;
+
+        [[nodiscard]] std::optional<ProjectNodeItem *> itemFromIndex(const QModelIndex &index) const;
+
     signals:
         void itemReadyForEditing(const QModelIndex &index);
 
     private slots:
         void onProjectClosed();
 
-        void onProjectNodeAdded(const project::ProjectNode *node);
+        void onProjectNodeAdded(const project::ProjectNode *node, ProjectCategoryType categoryType);
 
         void onProjectNodeRemoved(const std::string &nodeId);
 
         void onProjectNodeCut(const project::ProjectNode *node);
 
-        void onProjectNodeCopied(const std::string& copiedNodeId, const project::ProjectNode *copyNode);
+        void onProjectNodeCopied(
+            const std::string &copiedNodeId,
+            const project::ProjectNode *copyNode,
+            ProjectCategoryType categoryType
+        );
 
         void onProjectNodeRenamed(const std::string &fileId, const std::string &newName);
 
     private:
         std::unique_ptr<common::Ilogger> logger_;
         ProjectViewModel *projectViewModel_;
-        std::unordered_map<std::string, QStandardItem *> itemMap_;
+        std::unordered_map<std::string, ProjectNodeItem *> itemMap_;
 
         void buildModel();
 
         void clearModel();
 
-        void populateFolder(QStandardItem *parentItem, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
-
-        void appendFileNode(QStandardItem *parent, const FileNode *file, TreeItemTypes::TreeItemType type);
-
-        void appendFolderNode(QStandardItem *parent, const NodeContainer *folder, TreeItemTypes::TreeItemType type);
-
-        static QIcon getIconForType(TreeItemTypes::TreeItemType type);
-
-        static QVariant stdStringToVariant(const std::string &str);
+        void buildCategory(QStandardItem *rootItem, const ProjectCategory *category, ProjectCategoryType categoryType);
     };
 }

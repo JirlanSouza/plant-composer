@@ -71,6 +71,8 @@ namespace project {
 
         void pasteProjectNode(const project::ProjectContext &context);
 
+        void moveProjectNode(const std::string &sourceNodeId, const std::string &targetParentId);
+
 
     signals:
         void projectOpened();
@@ -81,7 +83,7 @@ namespace project {
 
         void projectClosed();
 
-        void projectNodeAdded(const project::ProjectNode *node);
+        void projectNodeAdded(const project::ProjectNode *node, ProjectCategoryType categoryType);
 
         void addNewProjectNodeFailed(const QString &errorMessage);
 
@@ -97,17 +99,21 @@ namespace project {
 
         void renameProjectNodeFailed(const std::string &message);
 
-        void projectNodeCopied();
+        void projectNodeCopiedToClipboard();
 
         void projectNodeCopiedFailed(const QString &errorMessage);
 
-        void projectNodeCut();
+        void projectNodeCutToClipboard();
 
         void projectNodeCutFailed(const QString &errorMessage);
 
-        void projectNodePastedAsCopy(const std::string &copiedNodeId, const project::ProjectNode *copyNode);
+        void projectNodeCopied(
+            const std::string &copiedNodeId,
+            const project::ProjectNode *copyNode,
+            ProjectCategoryType categoryType
+        );
 
-        void projectNodePastedAsCut(const project::ProjectNode *node);
+        void projectNodeMoved(const project::ProjectNode *node);
 
     private:
         std::unique_ptr<common::Ilogger> logger_;

@@ -20,3 +20,6 @@
 
 #define MIME_TYPE_COMPONENT "application/plant-composer.component"
 #define MIME_TYPE_DIAGRAM "application/plant-composer.diagram"
+#define MIME_TYPE_PROJECT_CATEGORY "application/plant-composer.project_category"
+#define MIME_TYPE_PROJECT_FOLDER "application/plant-composer.projectfolder"
+#define MIME_TYPE_PROJECT_FILE "application/plant-composer.projectfile"

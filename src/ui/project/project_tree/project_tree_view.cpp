@@ -19,7 +19,11 @@
 #include "project_tree_view.h"
 
 namespace project {
-    ProjectTreeView::ProjectTreeView(ProjectTreeModel *model, QWidget *parent): QTreeView(parent) {
+    ProjectTreeView::ProjectTreeView(
+        common::ILoggerFactory *loggerFactory,
+        ProjectTreeModel *model,
+        QWidget *parent
+    ): QTreeView(parent), logger_(loggerFactory->getLogger("ProjectTreeView")) {
         QTreeView::setModel(model);
         setHeaderHidden(true);
         setExpandsOnDoubleClick(true);
@@ -29,8 +33,9 @@ namespace project {
         setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         setDragEnabled(true);
-        setDragDropMode(QAbstractItemView::DragOnly);
-        setDefaultDropAction(Qt::CopyAction);
+        setAcceptDrops(true);
+        setDropIndicatorShown(true);
+        setDragDropMode(QAbstractItemView::InternalMove);
 
         setRootIsDecorated(false);
         expandAll();
@@ -62,5 +67,64 @@ namespace project {
         } else {
             QTreeView::keyPressEvent(event);
         }
+    }
+
+    void ProjectTreeView::dragMoveEvent(QDragMoveEvent *event) {
+        logger_->info("Drag move event");
+        const QModelIndex index = indexAt(event->position().toPoint());
+
+        if (!index.isValid()) {
+            logger_->info("Ignore drag move event for invalid index");
+            event->ignore();
+        }
+
+        logger_->info("Valid index at drag move event: {}", index.row());
+        const std::optional<ProjectNodeItem *> itemOpt = dynamic_cast<ProjectTreeModel *>(model())->
+                itemFromIndex(index);
+
+        if (!itemOpt.has_value()) {
+            logger_->info("Ignore drag move event for invalid item");
+            event->ignore();
+            return;
+        }
+
+        if (itemOpt.value()->isDropEnabled()) {
+            logger_->info("Accepted drag move event for folder or file");
+            QTreeView::dragMoveEvent(event);
+            return;
+        }
+
+        logger_->info("Ignore drag move event for non-folder or non-file item");
+        event->ignore();
+    }
+
+    void ProjectTreeView::dropEvent(QDropEvent *event) {
+        logger_->debug("Starting drop event");
+        const QModelIndex index = indexAt(event->position().toPoint());
+
+        if (!index.isValid()) {
+            logger_->debug("Ignore drop event for invalid index");
+            return;
+        }
+
+        const auto mimeData = event->mimeData();
+        auto sourceNodeId = mimeData->data(MIME_TYPE_PROJECT_FILE).toStdString();
+
+        if (sourceNodeId.empty()) {
+            sourceNodeId = mimeData->data(MIME_TYPE_PROJECT_FOLDER).toStdString();
+        }
+
+        logger_->info("Valid index at drop event: {}", index.row());
+        const std::optional<ProjectNodeItem *> itemOpt = dynamic_cast<ProjectTreeModel *>(model())->
+                itemFromIndex(index);
+
+        if (!itemOpt.has_value()) {
+            logger_->info("Ignore drop event for invalid item");
+            event->ignore();
+            return;
+        }
+
+        logger_->info("Drop to target parent: {}", itemOpt.value()->getId().toStdString());
+        emit nodeMoved(sourceNodeId, itemOpt.value()->getId().toStdString());
     }
 }
