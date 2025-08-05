@@ -28,7 +28,8 @@ target_sources(ui
         project/clipboard.h
         project/new_project_dialog.h
         project/new_project_dialog.cpp
-        project/project_tree/project_tree_item_type.h
+        project/project_tree/project_tree_types.h
+        project/project_tree/project_tree_types.cpp
         project/project_tree/project_node_item.h
         project/project_tree/project_node_item.cpp
         project/project_tree/project_tree_model.h

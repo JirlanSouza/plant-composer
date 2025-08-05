@@ -20,31 +20,24 @@
 
 #include <qstandarditemmodel.h>
 
-#include "project_tree_item_type.h"
+#include "project_tree_types.h"
 #include "domain/project/model/project_node.h"
+#include "domain/project/model/project.h"
 
 namespace project {
     class ProjectNodeItem : public QStandardItem {
     public:
-        enum Role {
-            ITEM_TYPE = Qt::UserRole + 1, ITEM_ID,
-        };
-
         ProjectNodeItem(
             const ProjectNode *node,
             ProjectCategoryType categoryType,
             std::unordered_map<std::string, ProjectNodeItem *> &itemMap
         );
 
-        ProjectNodeItem(
-            const ProjectCategory *category,
-            ProjectCategoryType categoryType,
-            std::unordered_map<std::string, ProjectNodeItem *> &itemMap
-        );
+        ProjectNodeItem(const Project *project, std::unordered_map<std::string, ProjectNodeItem *> &itemMap);
 
         [[nodiscard]] const ProjectNode *getNode() const;
 
-        [[nodiscard]] ProjectTreeTypes::ItemType getType() const;
+        [[nodiscard]] tree::ItemType getType() const;
 
         [[nodiscard]] QString getId() const;
 
@@ -54,19 +47,32 @@ namespace project {
 
         [[nodiscard]] std::optional<ProjectNodeItem *> getParentItem() const;
 
+        [[nodiscard]] QString getMimeType() const;
+
         void appendItemAndSort(ProjectNodeItem *item);
 
         bool operator<(const QStandardItem &other) const override;
 
     private:
+        static QIcon getIconFor(tree::ItemType type);
+
+        static Qt::ItemFlags getFlagsFor(tree::ItemType type);
+
+        static std::optional<QString> getMimeTypeFor(tree::ItemType type);
+
         const ProjectNode *node_;
         ProjectCategoryType categoryType_;
-        ProjectTreeTypes::ItemType nodeType_;
+        tree::ItemType nodeType_;
+
+        ProjectNodeItem(
+            const ProjectCategory *category,
+            ProjectCategoryType categoryType,
+            std::unordered_map<std::string, ProjectNodeItem *> &itemMap
+        );
 
         ProjectNodeItem(
             const QString &text,
-            ProjectCategoryType categoryType,
-            std::unordered_map<std::string, ProjectNodeItem *> &itemMap
+            ProjectCategoryType categoryType
         );
 
         void populateItem(std::unordered_map<std::string, ProjectNodeItem *> &itemMap);

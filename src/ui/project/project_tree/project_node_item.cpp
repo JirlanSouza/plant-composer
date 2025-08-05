@@ -18,6 +18,8 @@
 
 #include "project_node_item.h"
 
+#include "mime_types.h"
+
 namespace project {
     ProjectNodeItem::ProjectNodeItem(
         const ProjectNode *node,
@@ -27,16 +29,31 @@ namespace project {
         : QStandardItem(QString::fromStdString(node->getName())),
         node_(node),
         categoryType_(categoryType),
-        nodeType_(ProjectTreeTypes::fromProjectCategoryAndNodeType(categoryType, node->getType())) {
-        setIcon(ProjectTreeTypes::getIcon(nodeType_));
-        setFlags(ProjectTreeTypes::flags(nodeType_));
+        nodeType_(tree::from(categoryType, node->getType())) {
+        setIcon(getIconFor(nodeType_));
+        setFlags(getFlagsFor(nodeType_));
         setEditable(node->canBeRenamed());
-
-        QStandardItem::setData(nodeType_, Role::ITEM_TYPE);
-        QStandardItem::setData(stdStringToVariant(node->getId()), Role::ITEM_ID);
 
         itemMap[node_->getId()] = this;
         populateItem(itemMap);
+    }
+
+    ProjectNodeItem::ProjectNodeItem(
+        const Project *project,
+        std::unordered_map<std::string, ProjectNodeItem *> &itemMap
+    )
+        : QStandardItem(QString::fromStdString(project->getName())),
+        nodeType_(tree::ItemType::PROJECT_ROOT) {
+        setIcon(getIconFor(nodeType_));
+        setFlags(getFlagsFor(nodeType_));
+        setEditable(false);
+
+        std::map<ProjectCategoryType, ProjectCategory *> categories = project->getCategories();
+        for (auto [categoryType, category]: categories) {
+            if (category) {
+                appendRow(new ProjectNodeItem(category, categoryType, itemMap));
+            }
+        }
     }
 
     ProjectNodeItem::ProjectNodeItem(
@@ -48,39 +65,31 @@ namespace project {
         ),
         node_(category),
         categoryType_(categoryType),
-        nodeType_(ProjectTreeTypes::fromProjectCategoryAndNodeType(categoryType, category->getType())) {
-        setIcon(ProjectTreeTypes::getIcon(nodeType_));
-        setFlags(ProjectTreeTypes::flags(nodeType_));
+        nodeType_(tree::from(categoryType, category->getType(), true)) {
+        setIcon(getIconFor(nodeType_));
+        setFlags(getFlagsFor(nodeType_));
         setEditable(category->canBeRenamed());
 
-        QStandardItem::setData(nodeType_, Role::ITEM_TYPE);
-        QStandardItem::setData(stdStringToVariant(category->getId()), Role::ITEM_ID);
-
         itemMap[category->getId()] = this;
-        auto *addNewFileNodeItem = new ProjectNodeItem(
-            QString("Add New ").append(category->getName()),
-            categoryType_,
-            itemMap
+        appendRow(
+            new ProjectNodeItem(
+                QString("Add New ").append(category->getName()),
+                categoryType_
+            )
         );
-
-        appendRow(addNewFileNodeItem);
         populateItem(itemMap);
     }
 
     ProjectNodeItem::ProjectNodeItem(
         const QString &text,
-        const ProjectCategoryType categoryType,
-        std::unordered_map<std::string, ProjectNodeItem *> &itemMap
+        const ProjectCategoryType categoryType
     ): QStandardItem(text),
         node_(nullptr),
         categoryType_(categoryType),
-        nodeType_(ProjectTreeTypes::getAddNewFileNodeType(categoryType)) {
-        setIcon(ProjectTreeTypes::getIcon(nodeType_));
-        setFlags(ProjectTreeTypes::flags(nodeType_));
+        nodeType_(tree::getAddNewFileNodeType(categoryType)) {
+        setIcon(getIconFor(nodeType_));
+        setFlags(getFlagsFor(nodeType_));
         setEditable(false);
-
-        QStandardItem::setData(nodeType_, Role::ITEM_TYPE);
-        QStandardItem::setData(stdStringToVariant("add_new_file"), Role::ITEM_ID);
     }
 
 
@@ -88,7 +97,7 @@ namespace project {
         return node_;
     }
 
-    ProjectTreeTypes::ItemType ProjectNodeItem::getType() const {
+    tree::ItemType ProjectNodeItem::getType() const {
         return nodeType_;
     }
 
@@ -121,6 +130,10 @@ namespace project {
         return dynamic_cast<ProjectNodeItem *>(parentItem);
     }
 
+    QString ProjectNodeItem::getMimeType() const {
+        std::optional<QString> mimeTypeOpt = getMimeTypeFor(nodeType_);
+    }
+
     void ProjectNodeItem::appendItemAndSort(ProjectNodeItem *item) {
         if (!item) {
             return;
@@ -131,7 +144,7 @@ namespace project {
     }
 
     bool ProjectNodeItem::operator<(const QStandardItem &other) const {
-        if (ProjectTreeTypes::isAddNewFileNodeType(nodeType_)) {
+        if (tree::isAddNewFileNodeType(nodeType_)) {
             return true;
         }
 
@@ -141,7 +154,7 @@ namespace project {
             return true;
         }
 
-        if (ProjectTreeTypes::isAddNewFileNodeType(otherProjectNodeItem->nodeType_)) {
+        if (tree::isAddNewFileNodeType(otherProjectNodeItem->nodeType_)) {
             return false;
         }
 
@@ -149,11 +162,13 @@ namespace project {
             return false;
         }
 
-        if (otherProjectNodeItem->node_ && otherProjectNodeItem->node_->isFolder() && (!node_ || node_ && !node_->isFolder())) {
+        if (otherProjectNodeItem->node_ && otherProjectNodeItem->node_->isFolder() && (
+                !node_ || node_ && !node_->isFolder())) {
             return false;
         }
 
-        if (node_ && node_->isFolder() && (!otherProjectNodeItem->node_ || otherProjectNodeItem->node_ && !otherProjectNodeItem->node_->isFolder())) {
+        if (node_ && node_->isFolder() && (!otherProjectNodeItem->node_ || otherProjectNodeItem->node_ && !
+                                           otherProjectNodeItem->node_->isFolder())) {
             return true;
         }
 
@@ -175,6 +190,50 @@ namespace project {
         }
 
         sortChildren(0);
+    }
+
+    QIcon ProjectNodeItem::getIconFor(tree::ItemType type) {
+        switch (type) {
+            case tree::ItemType::PROJECT_ROOT:
+                return QIcon(":/icons/project.svg");
+            case tree::ItemType::DIAGRAM_ROOT_FOLDER:
+            case tree::ItemType::DIAGRAM_FOLDER:
+                return QIcon(":/icons/folder.svg");
+            case tree::ItemType::DIAGRAM_FILE:
+                return QIcon(":/icons/diagram_file.svg");
+            case tree::ItemType::ADD_DIAGRAM_ACTION_ITEM:
+                return QIcon(":/icons/diagram_file_add.svg");
+            default:
+                return {};
+        }
+    }
+
+    Qt::ItemFlags ProjectNodeItem::getFlagsFor(tree::ItemType type) {
+        switch (type) {
+            case tree::ItemType::PROJECT_ROOT:
+                return Qt::ItemIsEnabled;
+            case tree::ItemType::DIAGRAM_ROOT_FOLDER:
+                return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
+            case tree::ItemType::DIAGRAM_FOLDER:
+            case tree::ItemType::DIAGRAM_FILE:
+                return Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+            case tree::ItemType::ADD_DIAGRAM_ACTION_ITEM:
+                return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
+            default:
+                return {};
+        }
+    }
+
+    std::optional<QString> ProjectNodeItem::getMimeTypeFor(tree::ItemType type) {
+        switch (type) {
+            case tree::ItemType::DIAGRAM_ROOT_FOLDER:
+                return MIME_TYPE_PROJECT_CATEGORY;
+            case tree::ItemType::DIAGRAM_FOLDER:
+                return MIME_TYPE_PROJECT_FOLDER;
+            case tree::ItemType::DIAGRAM_FILE:
+                return MIME_TYPE_PROJECT_FILE;
+            default: return std::nullopt;
+        }
     }
 
     QVariant ProjectNodeItem::stdStringToVariant(const std::string &str) {

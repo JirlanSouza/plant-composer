@@ -18,6 +18,8 @@
 
 #include "project_tree_view.h"
 
+#include "mime_types.h"
+
 namespace project {
     ProjectTreeView::ProjectTreeView(
         common::ILoggerFactory *loggerFactory,

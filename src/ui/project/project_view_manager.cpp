@@ -20,7 +20,7 @@
 
 #include <QMenu>
 
-#include "project/new_project_dialog.h"
+#include "new_project_dialog.h"
 #include "domain/common/iuser_notifier.h"
 
 namespace project {

@@ -22,7 +22,7 @@
 #include <QMimeData>
 
 #include "mime_types.h"
-#include "project_tree_item_type.h"
+#include "project_tree_types.h"
 
 namespace project {
     ProjectTreeModel::ProjectTreeModel(
@@ -60,31 +60,24 @@ namespace project {
         );
     }
 
-    bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+    bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, const int role) {
         if (role != Qt::EditRole) {
             return QStandardItemModel::setData(index, value, role);
         }
 
-        const auto type = index.data(ProjectNodeItem::Role::ITEM_TYPE).value<ProjectTreeTypes::ItemType>();
-        const auto itemId = index.data(ProjectNodeItem::Role::ITEM_ID).toString().toStdString();
-        const auto parentId = index.parent().data(ProjectNodeItem::Role::ITEM_ID).toString().toStdString();
-        const auto newName = value.toString().toStdString();
-
-        const auto categoryOpt = ProjectTreeTypes::toProjectCategory(type);
-        const auto nodeTypeOpt = ProjectTreeTypes::toNodeType(type);
-
-        if (!categoryOpt.has_value() || !nodeTypeOpt.has_value()) {
-            logger_->warn(
-                "Invalid item type for renaming: {}, ID: {}, parent ID: {}",
-                static_cast<int>(type),
-                itemId,
-                parentId
-            );
+        const auto itemOpt = itemFromIndex(index);
+        if (!itemOpt.has_value()) {
             return QStandardItemModel::setData(index, value, role);
         }
 
-        projectViewModel_->renameProjectNode({categoryOpt.value(), parentId, nodeTypeOpt.value(), itemId}, newName);
-        return false;
+        const ProjectNodeItem *item = itemOpt.value();
+        const std::optional<ProjectContext> contextOpt = item->getContext();
+
+        if (!contextOpt.has_value()) {
+            return QStandardItemModel::setData(index, value, role);
+        }
+
+        projectViewModel_->renameProjectNode(contextOpt.value(), value.toString().toStdString());
     }
 
     QStringList ProjectTreeModel::mimeTypes() const {
@@ -107,20 +100,12 @@ namespace project {
             return nullptr;
         }
         const ProjectNodeItem *item = itemOpt.value();
-        const auto mimeTypeOpt = ProjectTreeTypes::toMimeType(item->getType());
-
-        if (!mimeTypeOpt.has_value()) {
-            logger_->warn("Tried to get mime data for unsupported item type: {}", static_cast<int>(item->getType()));
-            return nullptr;
-        }
-
-        const auto id = item->getId();
         auto *mimeData = new QMimeData();
-        mimeData->setData(mimeTypeOpt.value(), id.toUtf8());
+        mimeData->setData(item->getMimeType(), item->getId().toUtf8());
         logger_->info(
             "Creating mime data for item type: {}, ID: {}",
             static_cast<int>(item->getType()),
-            id.toStdString()
+            item->getId().toStdString()
         );
         return mimeData;
     }
@@ -177,39 +162,13 @@ namespace project {
         }
 
         logger_->info("Creating project root item");
-        auto *rootItem = new QStandardItem(
-            ProjectTreeTypes::getIcon(ProjectTreeTypes::PROJECT_ROOT),
-            tr("Project: %1").arg(QString::fromStdString(project->getName()))
-        );
-        rootItem->setFlags(ProjectTreeTypes::flags(ProjectTreeTypes::PROJECT_ROOT));
-        rootItem->setData(ProjectTreeTypes::PROJECT_ROOT, ProjectNodeItem::Role::ITEM_TYPE);
-        appendRow(rootItem);
-
-        const std::optional<ProjectCategory *> diagramsRootOpt = project->getCategory(ProjectCategoryType::DIAGRAM);
-        if (!diagramsRootOpt.has_value()) {
-            logger_->warn("No diagrams root found in project, skipping diagram root item creation");
-            return;
-        }
-
-        buildCategory(rootItem, diagramsRootOpt.value(), ProjectCategoryType::DIAGRAM);
+        appendRow(new ProjectNodeItem(project, itemMap_));
     }
 
     void ProjectTreeModel::clearModel() {
         logger_->info("Clearing project tree model");
         clear();
         itemMap_.clear();
-    }
-
-    void ProjectTreeModel::buildCategory(
-        QStandardItem *rootItem,
-        const ProjectCategory *category,
-        const ProjectCategoryType categoryType
-    ) {
-        logger_->info("Building {} root item", category->getName());
-        auto *diagramsRootItem = new ProjectNodeItem(category, categoryType, itemMap_);
-        rootItem->appendRow(diagramsRootItem);
-
-        logger_->info("Successfully created {} root item", category->getName());
     }
 
     void ProjectTreeModel::onProjectClosed() {
