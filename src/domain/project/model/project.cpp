@@ -87,6 +87,12 @@ namespace project {
         }
     }
 
+    std::map<ProjectCategoryType, ProjectCategory *> Project::getCategories() const {
+        return {
+            {ProjectCategoryType::DIAGRAM, diagrams_.get()}
+        };
+    }
+
     std::optional<ProjectCategory *> Project::getCategory(const ProjectCategoryType category) const {
         switch (category) {
             case ProjectCategoryType::DIAGRAM:

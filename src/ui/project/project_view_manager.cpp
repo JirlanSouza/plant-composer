@@ -19,9 +19,8 @@
 #include "project_view_manager.h"
 
 #include <QMenu>
-#include <QMessageBox>
 
-#include "new_project_dialog.h"
+#include "project/new_project_dialog.h"
 #include "domain/common/iuser_notifier.h"
 
 namespace project {
@@ -348,9 +347,9 @@ namespace project {
         }
 
         const ProjectNodeItem *item = itemOpt.value();
-        const ProjectTreeTypes::ItemType itemType = item->getType();
+        const tree::ItemType itemType = item->getType();
 
-        if (itemType == ProjectTreeTypes::ADD_DIAGRAM_ACTION_ITEM) {
+        if (itemType == tree::ItemType::ADD_DIAGRAM_ACTION_ITEM) {
             logger_->info("AddNewDiagram item clicked, creating new diagram in parent folder");
             const std::optional<const ProjectNodeItem *> parentOpt = item->getParentItem();
 
@@ -403,13 +402,13 @@ namespace project {
 
         QMenu menu;
         menu.setMinimumWidth(220);
-        ProjectTreeTypes::ItemType itemType = itemOpt.value()->getType();
-        if (itemType == ProjectTreeTypes::DIAGRAM_ROOT_FOLDER) {
+        tree::ItemType itemType = itemOpt.value()->getType();
+        if (itemType == tree::ItemType::DIAGRAM_ROOT_FOLDER) {
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
             menu.addAction(pasteAction_);
-        } else if (itemType == ProjectTreeTypes::DIAGRAM_FOLDER) {
+        } else if (itemType == tree::ItemType::DIAGRAM_FOLDER) {
             menu.addAction(newDiagramAction_);
             menu.addAction(newFolderAction_);
             menu.addSeparator();
@@ -419,7 +418,7 @@ namespace project {
             menu.addSeparator();
             menu.addAction(renameAction_);
             menu.addAction(deleteAction_);
-        } else if (itemType == ProjectTreeTypes::DIAGRAM_FILE) {
+        } else if (itemType == tree::ItemType::DIAGRAM_FILE) {
             menu.addAction(openAction_);
             menu.addSeparator();
             menu.addAction(copyAction_);

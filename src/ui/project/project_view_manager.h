@@ -21,11 +21,10 @@
 #include <QObject>
 #include <QAction>
 
-#include "project_tree/project_tree_model.h"
-#include "project_tree/project_tree_view.h"
-#include "project_view_model.h"
+#include "project/project_tree/project_tree_model.h"
+#include "project/project_tree/project_tree_view.h"
+#include "project/project_view_model.h"
 #include "domain/common/iuser_notifier.h"
-#include "project_tree/project_tree_item_type.h"
 #include "ui/actions_manager/actions_manager.h"
 
 namespace project {

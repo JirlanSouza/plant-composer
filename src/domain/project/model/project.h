@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <map>
 #include <string>
 #include <memory>
 
@@ -72,6 +73,8 @@ namespace project {
         [[nodiscard]] std::string getPath() const;
 
         [[nodiscard]] std::string getCategoryPath(ProjectCategoryType category) const;
+
+        std::map<ProjectCategoryType, ProjectCategory *> getCategories() const;
 
         [[nodiscard]] std::optional<ProjectCategory *> getCategory(ProjectCategoryType category) const;
 
