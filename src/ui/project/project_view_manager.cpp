@@ -92,7 +92,12 @@ namespace project {
             this,
             &ProjectViewManager::onProjectNodeRenameFailed
         );
-        connect(projectTreeView_, &ProjectTreeView::internalNodeDropped, projectViewModel_, &ProjectViewModel::onInternalNodeDropped);
+        connect(
+            projectTreeView_,
+            &ProjectTreeView::internalNodeDropped,
+            projectViewModel_,
+            &ProjectViewModel::onInternalNodeDropped
+        );
     }
 
     ProjectViewManager::~ProjectViewManager() = default;
@@ -223,6 +228,22 @@ namespace project {
         );
         pasteAction_->setEnabled(false);
         actionsManager_->addAction(app_actions::ActionGroupType::Edit, pasteAction_, app_actions::ShortcutId::Paste);
+
+        expandAllAction_ = createAction(
+            tr("Expand All"),
+            QIcon::ThemeIcon::NThemeIcons,
+            tr("Expand all items in the project tree"),
+            [this] { onExpandAllTriggered(); }
+        );
+        actionsManager_->addAction(app_actions::ActionGroupType::View, expandAllAction_);
+
+        collapseAllAction_ = createAction(
+            tr("Collapse All"),
+            QIcon::ThemeIcon::NThemeIcons,
+            tr("Collapse all items in the project tree"),
+            [this] { onCollapseAllTriggered(); }
+        );
+        actionsManager_->addAction(app_actions::ActionGroupType::View, collapseAllAction_);
     }
 
     QAction *ProjectViewManager::createAction(
@@ -286,7 +307,8 @@ namespace project {
 
     void ProjectViewManager::onProjectOpened() const {
         logger_->info("Project opened signal received. Expanding tree.");
-        projectTreeView_->expandAll();
+        onCollapseAllTriggered();
+        projectTreeView_->expand(projectTreeModel_->index(0, 0));
         projectTreeView_->setFocus();
         saveProjectAction_->setEnabled(true);
         closeProjectAction_->setEnabled(true);
@@ -499,6 +521,15 @@ namespace project {
 
     void ProjectViewManager::onProjectNodeRenameFailed(const std::string &message) const {
         notifier_->showAlert(tr("Rename Failed").toStdString(), message, common::NotificationLevel::Warning);
+    }
+
+    void ProjectViewManager::onExpandAllTriggered() const {
+        projectTreeView_->expandAll();
+    }
+
+    void ProjectViewManager::onCollapseAllTriggered() const {
+        projectTreeView_->collapseAll();
+        projectTreeView_->expand(projectTreeModel_->index(0, 0));
     }
 
     void ProjectViewManager::handleNodeOpening(const ProjectContext &context) const {

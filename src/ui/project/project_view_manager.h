@@ -85,6 +85,10 @@ namespace project {
 
         void onProjectNodeRenameFailed(const std::string &message) const;
 
+        void onExpandAllTriggered() const;
+
+        void onCollapseAllTriggered() const;
+
     private:
         std::unique_ptr<common::Ilogger> logger_;
         common::IUserNotifier *notifier_;
@@ -105,6 +109,8 @@ namespace project {
         QAction *copyAction_;
         QAction *cutAction_;
         QAction *pasteAction_;
+        QAction *expandAllAction_;
+        QAction *collapseAllAction_;
 
         std::optional<ProjectContext> contextMenuContext_;
 
