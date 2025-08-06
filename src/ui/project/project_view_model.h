@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QMimeData>
 #include <QObject>
 
 #include "domain/project/project_loader.h"
@@ -71,7 +72,9 @@ namespace project {
 
         void pasteProjectNode(const project::ProjectContext &context);
 
-        void moveProjectNode(const std::string &sourceNodeId, const std::string &targetParentId);
+        void moveProjectNode(const ProjectContext &sourceContext, const ProjectContext &targetContext);
+
+        void onInternalNodeDropped(const QMimeData *data, const ProjectContext &targetContext);
 
 
     signals:

@@ -101,32 +101,35 @@ namespace project {
     }
 
     void ProjectTreeView::dropEvent(QDropEvent *event) {
-        logger_->debug("Starting drop event");
-        const QModelIndex index = indexAt(event->position().toPoint());
-
-        if (!index.isValid()) {
-            logger_->debug("Ignore drop event for invalid index");
-            return;
-        }
-
-        const auto mimeData = event->mimeData();
-        auto sourceNodeId = mimeData->data(MIME_TYPE_PROJECT_FILE).toStdString();
-
-        if (sourceNodeId.empty()) {
-            sourceNodeId = mimeData->data(MIME_TYPE_PROJECT_FOLDER).toStdString();
-        }
-
-        logger_->info("Valid index at drop event: {}", index.row());
-        const std::optional<ProjectNodeItem *> itemOpt = dynamic_cast<ProjectTreeModel *>(model())->
-                itemFromIndex(index);
-
-        if (!itemOpt.has_value()) {
-            logger_->info("Ignore drop event for invalid item");
+        logger_->info("Drop event started");
+        if (!event->mimeData()->hasFormat(MIME_TYPE_INTERNAL_PROJECT_NODE)) {
+            logger_->info("Ignore drag move event not have mime format: {}", MIME_TYPE_INTERNAL_PROJECT_NODE);
             event->ignore();
             return;
         }
 
-        logger_->info("Drop to target parent: {}", itemOpt.value()->getId().toStdString());
-        emit nodeMoved(sourceNodeId, itemOpt.value()->getId().toStdString());
+        const QModelIndex index = indexAt(event->position().toPoint());
+        if (!index.isValid()) {
+            logger_->info("Ignore drag move event for invalid index: {}", index.row());
+            event->ignore();
+            return;
+        }
+
+        const auto itemOpt = dynamic_cast<ProjectTreeModel *>(model())->itemFromIndex(index);
+        if (!itemOpt.has_value()) {
+            logger_->info("Ignore drag move event for invalid item");
+            event->ignore();
+            return;
+        }
+
+        const std::optional<ProjectContext> targetContextOpt = itemOpt.value()->getContext();
+        if (!targetContextOpt.has_value()) {
+            logger_->info("Ignore drag move event for invalid context item");
+            event->ignore();
+            return;
+        }
+
+        emit internalNodeDropped(event->mimeData(), targetContextOpt.value());
+        event->acceptProposedAction();
     }
 }

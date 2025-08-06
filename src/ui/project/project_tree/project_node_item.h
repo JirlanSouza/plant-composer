@@ -47,8 +47,6 @@ namespace project {
 
         [[nodiscard]] std::optional<ProjectNodeItem *> getParentItem() const;
 
-        [[nodiscard]] QString getMimeType() const;
-
         void appendItemAndSort(ProjectNodeItem *item);
 
         bool operator<(const QStandardItem &other) const override;
@@ -57,8 +55,6 @@ namespace project {
         static QIcon getIconFor(tree::ItemType type);
 
         static Qt::ItemFlags getFlagsFor(tree::ItemType type);
-
-        static std::optional<QString> getMimeTypeFor(tree::ItemType type);
 
         const ProjectNode *node_;
         ProjectCategoryType categoryType_;

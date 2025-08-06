@@ -18,8 +18,6 @@
 
 #include "project_node_item.h"
 
-#include "mime_types.h"
-
 namespace project {
     ProjectNodeItem::ProjectNodeItem(
         const ProjectNode *node,
@@ -130,10 +128,6 @@ namespace project {
         return dynamic_cast<ProjectNodeItem *>(parentItem);
     }
 
-    QString ProjectNodeItem::getMimeType() const {
-        std::optional<QString> mimeTypeOpt = getMimeTypeFor(nodeType_);
-    }
-
     void ProjectNodeItem::appendItemAndSort(ProjectNodeItem *item) {
         if (!item) {
             return;
@@ -221,18 +215,6 @@ namespace project {
                 return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsDropEnabled;
             default:
                 return {};
-        }
-    }
-
-    std::optional<QString> ProjectNodeItem::getMimeTypeFor(tree::ItemType type) {
-        switch (type) {
-            case tree::ItemType::DIAGRAM_ROOT_FOLDER:
-                return MIME_TYPE_PROJECT_CATEGORY;
-            case tree::ItemType::DIAGRAM_FOLDER:
-                return MIME_TYPE_PROJECT_FOLDER;
-            case tree::ItemType::DIAGRAM_FILE:
-                return MIME_TYPE_PROJECT_FILE;
-            default: return std::nullopt;
         }
     }
 

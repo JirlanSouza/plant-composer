@@ -78,12 +78,11 @@ namespace project {
         }
 
         projectViewModel_->renameProjectNode(contextOpt.value(), value.toString().toStdString());
+        return false;
     }
 
     QStringList ProjectTreeModel::mimeTypes() const {
-        auto mimeTypes = QStringList() << MIME_TYPE_PROJECT_FOLDER << MIME_TYPE_PROJECT_FILE;
-        logger_->debug("Getting supported mime types for project tree model: {}", mimeTypes.join(", ").toStdString());
-        return mimeTypes;
+        return {MIME_TYPE_INTERNAL_PROJECT_NODE};
     }
 
     QMimeData *ProjectTreeModel::mimeData(const QModelIndexList &indexes) const {
@@ -99,13 +98,27 @@ namespace project {
             logger_->warn("Invalid index for mime data: {}", index.row());
             return nullptr;
         }
+
         const ProjectNodeItem *item = itemOpt.value();
+        const std::optional<ProjectContext> contextOpt = item->getContext();
+        if (!contextOpt.has_value()) {
+            return nullptr;
+        }
+
+        const auto &[category, parentId, nodeType, nodeId] = contextOpt.value();
+        const QString dataString = QString("%1;%2;%3;%4")
+                                   .arg(static_cast<int>(category))
+                                   .arg(QString::fromStdString(parentId))
+                                   .arg(static_cast<int>(nodeType))
+                                   .arg(QString::fromStdString(nodeId));
+
         auto *mimeData = new QMimeData();
-        mimeData->setData(item->getMimeType(), item->getId().toUtf8());
+        mimeData->setData(MIME_TYPE_INTERNAL_PROJECT_NODE, dataString.toUtf8());
         logger_->info(
-            "Creating mime data for item type: {}, ID: {}",
-            static_cast<int>(item->getType()),
-            item->getId().toStdString()
+            "Creating mime data for node ID: {}, category: {}, type: {}",
+            nodeId,
+            toString(category),
+            toString(nodeType)
         );
         return mimeData;
     }

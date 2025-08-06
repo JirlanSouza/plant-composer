@@ -82,7 +82,5 @@ namespace project {
         void buildModel();
 
         void clearModel();
-
-        void buildCategory(QStandardItem *rootItem, const ProjectCategory *category, ProjectCategoryType categoryType);
     };
 }

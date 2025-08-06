@@ -18,7 +18,6 @@
 
 #pragma once
 
-#include <QMimeData>
 #include <QTreeView>
 #include <QKeyEvent>
 
@@ -39,9 +38,7 @@ namespace project {
 
 
     signals:
-        void componentPropertiesViewRequested(int libraryId, int componentId);
-
-        void nodeMoved(const std::string &sourceNodeId, const std::string &targetParentId);
+        void internalNodeDropped(const QMimeData *data, const project::ProjectContext targetContext);
 
     protected:
         void keyPressEvent(QKeyEvent *event) override;

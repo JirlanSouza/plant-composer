@@ -20,6 +20,7 @@
 
 #include <iomanip>
 
+#include "mime_types.h"
 #include "adapters/serialization/flatbuffers/project_generated.h"
 #include "domain/common/ilogger_factory.h"
 #include "domain/project/project_loader.h"
@@ -431,11 +432,16 @@ namespace project {
         clipboard_.clear();
     }
 
-    void ProjectViewModel::moveProjectNode(const std::string &sourceNodeId, const std::string &targetParentId) {
-        logger_->info("Moving node with id: {} to parent with id: {}", sourceNodeId, targetParentId);
+    void ProjectViewModel::moveProjectNode(const ProjectContext &sourceContext, const ProjectContext &targetContext) {
+        logger_->info("Moving node with id: {} to parent with id: {}", sourceContext.nodeId, targetContext.nodeId);
 
-        auto sourceNodeOpt = project_->findNode(ProjectCategoryType::DIAGRAM, sourceNodeId);
-        auto targetParentOpt = project_->findNode(ProjectCategoryType::DIAGRAM, targetParentId);
+        if (sourceContext.category != targetContext.category) {
+            logger_->warn("Source and target categories do not match");
+            return;
+        }
+
+        const auto sourceNodeOpt = project_->findNode(sourceContext.category, sourceContext.nodeId);
+        auto targetParentOpt = project_->findNode(targetContext.category, targetContext.nodeId);
 
         if (!sourceNodeOpt.has_value() || !targetParentOpt.has_value()) {
             logger_->warn("Invalid source or target for move operation");
@@ -452,8 +458,8 @@ namespace project {
             return;
         }
 
-        auto sourceNode = sourceNodeOpt.value();
-        auto targetParent = dynamic_cast<NodeContainer *>(targetParentOpt.value());
+        const auto sourceNode = sourceNodeOpt.value();
+        const auto targetParent = dynamic_cast<NodeContainer *>(targetParentOpt.value());
 
         if (sourceNode->getParent() == targetParent) {
             logger_->info("Source node is already in the target folder");
@@ -469,13 +475,38 @@ namespace project {
             currentParent = currentParent->getParent();
         }
 
-        auto originalParent = sourceNode->getParent();
-        auto nodePtr = originalParent->releaseChild(sourceNodeId);
-        auto releasedNode = nodePtr.get();
+        const auto originalParent = sourceNode->getParent();
+        auto nodePtr = originalParent->releaseChild(sourceContext.nodeId);
+        const auto releasedNode = nodePtr.get();
 
         releasedNode->rename(createValidChildNameForFolder(targetParent, releasedNode->getName()));
         targetParent->addChild(std::move(nodePtr));
         emit projectNodeMoved(releasedNode);
+    }
+
+    void ProjectViewModel::onInternalNodeDropped(const QMimeData *data, const ProjectContext &targetContext) {
+        const QByteArray encodedData = data->data(MIME_TYPE_INTERNAL_PROJECT_NODE);
+        QStringList parts = QString(encodedData).split(';');
+
+        if (parts.size() != 4) {
+            logger_->warn("Invalid mime data for internal node drop");
+            return;
+        }
+
+        ProjectContext sourceContext{
+            static_cast<ProjectCategoryType>(parts[0].toInt()),
+            parts[1].toStdString(),
+            static_cast<NodeType>(parts[2].toInt()),
+            parts[3].toStdString()
+        };
+
+        logger_->info(
+            "Internal node dropped: {} on {} of category: {}",
+            sourceContext.nodeId,
+            targetContext.nodeId,
+            toString(sourceContext.category)
+        );
+        moveProjectNode(sourceContext, targetContext);
     }
 
     std::string ProjectViewModel::createValidChildNameForFolder(

@@ -92,7 +92,7 @@ namespace project {
             this,
             &ProjectViewManager::onProjectNodeRenameFailed
         );
-        connect(projectTreeView_, &ProjectTreeView::nodeMoved, projectViewModel_, &ProjectViewModel::moveProjectNode);
+        connect(projectTreeView_, &ProjectTreeView::internalNodeDropped, projectViewModel_, &ProjectViewModel::onInternalNodeDropped);
     }
 
     ProjectViewManager::~ProjectViewManager() = default;
