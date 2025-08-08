@@ -73,7 +73,10 @@ namespace project {
 
     std::string Project::getId() const { return id_; }
     std::string Project::getName() const { return name_; }
+    void Project::setName(const std::string &name) { name_ = name; }
+
     std::string Project::getDescription() const { return description_; }
+    void Project::setDescription(const std::string &description) { description_ = description; }
     std::string Project::getAuthor() const { return author_; }
     std::string Project::getVersion() const { return version_; }
     std::string Project::getPath() const { return path_; }

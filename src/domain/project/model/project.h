@@ -63,8 +63,10 @@ namespace project {
         [[nodiscard]] std::string getId() const;
 
         [[nodiscard]] std::string getName() const;
+        void setName(const std::string &name);
 
         [[nodiscard]] std::string getDescription() const;
+        void setDescription(const std::string &description);
 
         [[nodiscard]] std::string getAuthor() const;
 
@@ -74,7 +76,7 @@ namespace project {
 
         [[nodiscard]] std::string getCategoryPath(ProjectCategoryType category) const;
 
-        std::map<ProjectCategoryType, ProjectCategory *> getCategories() const;
+        [[nodiscard]] std::map<ProjectCategoryType, ProjectCategory *> getCategories() const;
 
         [[nodiscard]] std::optional<ProjectCategory *> getCategory(ProjectCategoryType category) const;
 
