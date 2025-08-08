@@ -64,6 +64,10 @@ namespace project {
 
         void removeProjectNode(const project::ProjectContext &context);
 
+        void renameProject(const std::string &newName);
+
+        void changeProjectComment(const std::string &newComment);
+
         void renameProjectNode(const project::ProjectContext &context, const std::string &newName);
 
         void copyProjectNode(const project::ProjectContext &context);
@@ -99,6 +103,10 @@ namespace project {
         void removeProjectNodeFailed(const QString &errorMessage);
 
         void projectNodeRenamed(const std::string &nodeId, const std::string &newName);
+
+        void projectRenamed(const std::string &newName);
+
+        void projectCommentChanged(const std::string &newComment);
 
         void renameProjectNodeFailed(const std::string &message);
 

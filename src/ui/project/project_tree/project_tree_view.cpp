@@ -43,6 +43,27 @@ namespace project {
         expandAll();
     }
 
+    void ProjectTreeView::mouseDoubleClickEvent(QMouseEvent *event) {
+        const QModelIndex index = indexAt(event->pos());
+        if (!index.isValid()) {
+            QTreeView::mouseDoubleClickEvent(event);
+            return;
+        }
+
+        const auto itemOpt = dynamic_cast<ProjectTreeModel *>(model())->itemFromIndex(index);
+        if (!itemOpt.has_value()) {
+            QTreeView::mouseDoubleClickEvent(event);
+            return;
+        }
+
+        if (itemOpt.value()->getType() == tree::ItemType::PROJECT_ROOT) {
+            emit activated(index);
+            event->accept();
+        } else {
+            QTreeView::mouseDoubleClickEvent(event);
+        }
+    }
+
     void ProjectTreeView::toggleExpanded(const QModelIndex &index) {
         if (index.isValid()) {
             const bool expanded = isExpanded(index);
@@ -55,6 +76,13 @@ namespace project {
             QModelIndex index = currentIndex();
             if (index.isValid()) {
                 if (state() == QAbstractItemView::EditingState) {
+                    event->accept();
+                    return;
+                }
+
+                const auto itemOpt = dynamic_cast<ProjectTreeModel *>(model())->itemFromIndex(index);
+                if (itemOpt.has_value() && itemOpt.value()->getType() == tree::ItemType::PROJECT_ROOT) {
+                    emit activated(index);
                     event->accept();
                     return;
                 }

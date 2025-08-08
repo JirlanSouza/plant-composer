@@ -37,6 +37,7 @@ namespace project {
         notifier_(notifier) {
         projectTreeModel_ = new ProjectTreeModel(loggerFactory, projectViewModel, this);
         projectTreeView_ = new ProjectTreeView(loggerFactory, projectTreeModel_, parent);
+        projectActions_ = new ProjectActions(projectViewModel, projectTreeView_);
         const auto projectSelectionModel = new QItemSelectionModel(projectTreeModel_, this);
         projectTreeView_->setSelectionModel(projectSelectionModel);
 
@@ -244,6 +245,13 @@ namespace project {
             [this] { onCollapseAllTriggered(); }
         );
         actionsManager_->addAction(app_actions::ActionGroupType::View, collapseAllAction_);
+
+        projectPropertiesAction_ = createAction(
+            tr("Properties"),
+            QIcon::ThemeIcon::NThemeIcons,
+            tr("Edit properties for the current project"),
+            [this] { projectActions_->editProperties(); }
+        );
     }
 
     QAction *ProjectViewManager::createAction(
@@ -371,6 +379,12 @@ namespace project {
         const ProjectNodeItem *item = itemOpt.value();
         const tree::ItemType itemType = item->getType();
 
+        if (itemType == tree::ItemType::PROJECT_ROOT) {
+            logger_->info("Project root double-clicked, showing properties.");
+            projectActions_->editProperties();
+            return;
+        }
+
         if (itemType == tree::ItemType::ADD_DIAGRAM_ACTION_ITEM) {
             logger_->info("AddNewDiagram item clicked, creating new diagram in parent folder");
             const std::optional<const ProjectNodeItem *> parentOpt = item->getParentItem();
@@ -415,40 +429,56 @@ namespace project {
             return;
         }
 
-        contextMenuContext_ = itemOpt.value()->getContext();
-        logger_->info(
-            "User right-clicked item ID: {}, Type: {}",
-            itemOpt.value()->getId().toStdString(),
-            static_cast<int>(itemOpt.value()->getType())
-        );
+        const auto item = itemOpt.value();
+        const tree::ItemType itemType = item->getType();
 
         QMenu menu;
         menu.setMinimumWidth(220);
-        tree::ItemType itemType = itemOpt.value()->getType();
-        if (itemType == tree::ItemType::DIAGRAM_ROOT_FOLDER) {
-            menu.addAction(newDiagramAction_);
-            menu.addAction(newFolderAction_);
+
+        if (itemType == tree::ItemType::PROJECT_ROOT) {
+            logger_->info("User right-clicked project root item");
+            contextMenuContext_ = std::nullopt;
+            menu.addAction(saveProjectAction_);
+            menu.addAction(closeProjectAction_);
             menu.addSeparator();
-            menu.addAction(pasteAction_);
-        } else if (itemType == tree::ItemType::DIAGRAM_FOLDER) {
-            menu.addAction(newDiagramAction_);
-            menu.addAction(newFolderAction_);
-            menu.addSeparator();
-            menu.addAction(copyAction_);
-            menu.addAction(cutAction_);
-            menu.addAction(pasteAction_);
-            menu.addSeparator();
-            menu.addAction(renameAction_);
-            menu.addAction(deleteAction_);
-        } else if (itemType == tree::ItemType::DIAGRAM_FILE) {
-            menu.addAction(openAction_);
-            menu.addSeparator();
-            menu.addAction(copyAction_);
-            menu.addAction(cutAction_);
-            menu.addAction(pasteAction_);
-            menu.addSeparator();
-            menu.addAction(renameAction_);
-            menu.addAction(deleteAction_);
+            menu.addAction(projectPropertiesAction_);
+        } else {
+            contextMenuContext_ = item->getContext();
+            if (!contextMenuContext_.has_value()) {
+                logger_->warn("Item type {} requires a context, but none was found.", static_cast<int>(itemType));
+                return;
+            }
+            logger_->info(
+                "User right-clicked item ID: {}, Type: {}",
+                item->getId().toStdString(),
+                static_cast<int>(itemType)
+            );
+
+            if (itemType == tree::ItemType::DIAGRAM_ROOT_FOLDER) {
+                menu.addAction(newDiagramAction_);
+                menu.addAction(newFolderAction_);
+                menu.addSeparator();
+                menu.addAction(pasteAction_);
+            } else if (itemType == tree::ItemType::DIAGRAM_FOLDER) {
+                menu.addAction(newDiagramAction_);
+                menu.addAction(newFolderAction_);
+                menu.addSeparator();
+                menu.addAction(copyAction_);
+                menu.addAction(cutAction_);
+                menu.addAction(pasteAction_);
+                menu.addSeparator();
+                menu.addAction(renameAction_);
+                menu.addAction(deleteAction_);
+            } else if (itemType == tree::ItemType::DIAGRAM_FILE) {
+                menu.addAction(openAction_);
+                menu.addSeparator();
+                menu.addAction(copyAction_);
+                menu.addAction(cutAction_);
+                menu.addAction(pasteAction_);
+                menu.addSeparator();
+                menu.addAction(renameAction_);
+                menu.addAction(deleteAction_);
+            }
         }
 
         if (!menu.isEmpty()) {

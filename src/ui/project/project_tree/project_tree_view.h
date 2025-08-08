@@ -20,8 +20,10 @@
 
 #include <QTreeView>
 #include <QKeyEvent>
+#include <QMouseEvent>
 
 #include "project_tree_model.h"
+#include "ui/project/project_actions.h"
 
 namespace project {
     class ProjectTreeView final : public QTreeView {
@@ -41,6 +43,8 @@ namespace project {
         void internalNodeDropped(const QMimeData *data, const project::ProjectContext targetContext);
 
     protected:
+        void mouseDoubleClickEvent(QMouseEvent *event) override;
+
         void keyPressEvent(QKeyEvent *event) override;
 
         void dragMoveEvent(QDragMoveEvent *event) override;

@@ -1,8 +1,4 @@
-add_library(ui STATIC
-        actions_manager/shortcuts_registry.cpp
-        actions_manager/shortcuts_registry.h
-        project/project_tree/project_node_item.cpp
-        project/project_tree/project_node_item.h)
+add_library(ui STATIC)
 
 target_sources(ui
         PUBLIC
@@ -14,6 +10,8 @@ target_sources(ui
 
         actions_manager/actions_manager.h
         actions_manager/actions_manager.cpp
+        actions_manager/shortcuts_registry.cpp
+        actions_manager/shortcuts_registry.h
         main_window/sidebar/side_bar.h
         main_window/sidebar/side_bar.cpp
         main_window/sidebar/side_bar_tabs.h
@@ -28,6 +26,11 @@ target_sources(ui
         project/clipboard.h
         project/new_project_dialog.h
         project/new_project_dialog.cpp
+        project/project_actions.cpp
+        project/project_actions.h
+        
+        project/project_properties_dialog.cpp
+        project/project_properties_dialog.h
         project/project_tree/project_tree_types.h
         project/project_tree/project_tree_types.cpp
         project/project_tree/project_node_item.h

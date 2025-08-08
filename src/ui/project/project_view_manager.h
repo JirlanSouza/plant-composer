@@ -26,6 +26,7 @@
 #include "project_view_model.h"
 #include "domain/common/iuser_notifier.h"
 #include "ui/actions_manager/actions_manager.h"
+#include "project_actions.h"
 
 namespace project {
     class ProjectViewManager : public QObject {
@@ -96,6 +97,7 @@ namespace project {
         app_actions::ActionsManager *actionsManager_;
         ProjectTreeModel *projectTreeModel_;
         ProjectTreeView *projectTreeView_;
+        ProjectActions *projectActions_;
 
         QAction *newProjectAction_;
         QAction *openProjectAction_;
@@ -111,6 +113,7 @@ namespace project {
         QAction *pasteAction_;
         QAction *expandAllAction_;
         QAction *collapseAllAction_;
+        QAction *projectPropertiesAction_;
 
         std::optional<ProjectContext> contextMenuContext_;
 

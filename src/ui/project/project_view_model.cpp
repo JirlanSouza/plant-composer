@@ -262,6 +262,40 @@ namespace project {
         );
     }
 
+    void ProjectViewModel::renameProject(const std::string &newName) {
+        logger_->info("Request to rename project to: {}", newName);
+        if (!project_) {
+            logger_->warn("Rename project requested but no project is open.");
+            return;
+        }
+
+        if (newName == project_->getName()) {
+            logger_->info("Project already has the name '{}', no rename needed.", newName);
+            return;
+        }
+
+        project_->setName(newName);
+        emit projectRenamed(newName);
+        logger_->info("Successfully renamed project to: {}", newName);
+    }
+
+    void ProjectViewModel::changeProjectComment(const std::string &newComment) {
+        logger_->info("Request to change project comment to: {}", newComment);
+        if (!project_) {
+            logger_->warn("Change project comment requested but no project is open.");
+            return;
+        }
+
+        if (newComment == project_->getDescription()) {
+            logger_->info("Project already has the comment '{}', no change needed.", newComment);
+            return;
+        }
+
+        project_->setDescription(newComment);
+        emit projectCommentChanged(newComment);
+        logger_->info("Successfully changed project comment to: {}", newComment);
+    }
+
     void ProjectViewModel::copyProjectNode(const ProjectContext &context) {
         logger_->info(
             "Cuting node with id: {}, category: {}, type: {}",
